@@ -67,7 +67,7 @@ let mapleader="\\"
 let maplocalleader=","
 let g:vimhome = fnamemodify(resolve(expand('<sfile>:p')), ':h')
 
-map <leader>h :help <C-R>=expand("<cword>")<CR><CR>
+nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
 
 " Restore cursor position
@@ -86,6 +86,9 @@ if executable('ag')
   let g:ackprg = 'ag --vimgrep'
 endif
 
+" Setting for asyncrun
+let g:asyncrun_open = 6
+
 " exec 'so '.fnameescape(g:vimhome).'/ctrlp.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/airline.vim'
@@ -94,3 +97,4 @@ exec 'so '.fnameescape(g:vimhome).'/conf/ale.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/python-mode.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/leaderf.vim'
+exec 'so '.fnameescape(g:vimhome).'/conf/gutentags.vim'

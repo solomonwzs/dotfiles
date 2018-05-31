@@ -2,7 +2,7 @@ call plug#begin(fnameescape(g:vimhome).'/bundle')
 
 Plug 'https://github.com/scrooloose/nerdtree'
 Plug 'https://github.com/vim-scripts/DrawIt'
-Plug 'https://github.com/kien/ctrlp.vim'
+" Plug 'https://github.com/kien/ctrlp.vim'
 Plug 'https://github.com/bling/vim-airline'
 Plug 'https://github.com/vim-erlang/vim-erlang-tags'
 Plug 'https://github.com/klen/python-mode'
@@ -18,5 +18,7 @@ Plug 'https://github.com/tpope/vim-commentary'
 Plug 'https://github.com/Yggdroot/LeaderF.git'
 Plug 'https://github.com/majutsushi/tagbar'
 Plug 'https://github.com/mileszs/ack.vim.git'
+Plug 'https://github.com/ludovicchabant/vim-gutentags.git'
+Plug 'https://github.com/justinmk/vim-dirvish.git'
 
 call plug#end()
