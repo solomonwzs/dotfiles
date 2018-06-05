@@ -49,6 +49,7 @@ autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 set grepprg=grep\ -nH\ $*
 let g:tex_flavor="latex"
 
+autocmd FileType java setlocal omnifunc=javacomplete#Complete
 autocmd Filetype c setlocal omnifunc=ccomplete#Complete
 autocmd Filetype html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
 autocmd Filetype xml setlocal omnifunc=xmlcomplete#CompleteTags
@@ -95,13 +96,17 @@ autocmd FileType nginx setlocal commentstring=#\ %s
 " Setting for jedi
 let g:jedi#completions_enabled = 0
 
-" exec 'so '.fnameescape(g:vimhome).'/ctrlp.vim'
+" Setting for vim-signify
+let g:signify_sign_change = '~'
+
+
+exec 'so '.fnameescape(g:vimhome).'/asc/terminal_meta.vim'
+
 exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/airline.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/vim-go.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/ale.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
-" exec 'so '.fnameescape(g:vimhome).'/conf/python-mode.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/leaderf.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/gutentags.vim'
 exec 'so '.fnameescape(g:vimhome).'/conf/syntastic.vim'

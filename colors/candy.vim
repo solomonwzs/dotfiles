@@ -80,7 +80,7 @@ hi htmlUnderlineItalic      gui=UNDERLINE,ITALIC
 
 set cursorline
 highlight clear CursorLine
-highlight LineNR ctermfg=242
+highlight LineNR ctermfg=240
 highlight CursorLineNR cterm=bold ctermfg=255
 highlight CursorLine ctermbg=237
 augroup CursorLine

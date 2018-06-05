@@ -70,4 +70,10 @@ Plug 'https://github.com/davidhalter/jedi-vim.git'
 " Syntax checking hacks for vim
 Plug 'https://github.com/vim-syntastic/syntastic.git'
 
+" Updated javacomplete plugin for vim
+Plug 'https://github.com/artur-shaik/vim-javacomplete2.git'
+
+" Plugin to toggle, display and navigate marks
+Plug 'https://github.com/kshenoy/vim-signature.git'
+
 call plug#end()
