@@ -79,22 +79,31 @@ hi htmlUnderline            gui=UNDERLINE
 hi htmlUnderlineItalic      gui=UNDERLINE,ITALIC
 
 set cursorline
-highlight clear CursorLine
-highlight LineNR ctermfg=240
-highlight CursorLineNR cterm=bold ctermfg=255
-highlight CursorLine ctermbg=237
+hi clear CursorLine
+hi LineNR ctermfg=240
+hi CursorLineNR cterm=bold ctermfg=255
+hi CursorLine ctermbg=237
 augroup CursorLine
     au!
     au VimEnter,WinEnter,BufWinEnter * setlocal cursorline
     au WinLeave * setlocal nocursorline
 augroup END
 
-highlight DiffAdd ctermbg=24
-highlight DiffDelete ctermbg=81
-highlight DiffChange ctermbg=53
-highlight DiffText ctermbg=243
+hi DiffAdd ctermbg=24
+hi DiffDelete ctermbg=81
+hi DiffChange ctermbg=53
+hi DiffText ctermbg=243
 
-highlight SignatureMarkLine ctermbg=96
-highlight SignatureMarkText cterm=bold ctermbg=96
-highlight SignatureMarkerLine ctermbg=95
-highlight SignatureMarkerText cterm=bold ctermbg=95
+hi SignatureMarkLine ctermbg=96
+hi SignatureMarkText cterm=bold ctermbg=96
+hi SignatureMarkerLine ctermbg=95
+hi SignatureMarkerText cterm=bold ctermbg=95
+
+" Setting for gitgutter
+hi GitGutterAdd ctermbg=black ctermfg=green
+hi GitGutterChange ctermbg=black ctermfg=yellow
+hi GitGutterDelete ctermbg=black ctermfg=red
+hi GitGutterChangeDelete ctermbg=black ctermfg=red
+
+" Setting for leaderf
+hi Lf_hl_match cterm=bold ctermfg=0 ctermbg=255
