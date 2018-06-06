@@ -39,11 +39,11 @@ Plug 'https://github.com/skywind3000/asyncrun.vim.git'
 Plug 'https://github.com/w0rp/ale.git'
 
 " Show a diff using Vim its sign column.
-Plug 'https://github.com/mhinz/vim-signify.git'
+" Plug 'https://github.com/mhinz/vim-signify.git'
 
 " A Vim plugin which shows a git diff in the gutter
 " (sign column) and stages/undoes hunks.
-" Plug 'https://github.com/airblade/vim-gitgutter.git'
+Plug 'https://github.com/airblade/vim-gitgutter.git', {'commit': '7b81a8a'}
 
 " Commentary.vim: comment stuff out
 Plug 'https://github.com/tpope/vim-commentary'
@@ -75,5 +75,11 @@ Plug 'https://github.com/artur-shaik/vim-javacomplete2.git'
 
 " Plugin to toggle, display and navigate marks
 Plug 'https://github.com/kshenoy/vim-signature.git'
+
+" A Git wrapper so awesome, it should be illegal
+Plug 'https://github.com/tpope/vim-fugitive.git'
+
+" Markdown Vim Mode
+Plug 'https://github.com/plasticboy/vim-markdown.git'
 
 call plug#end()

@@ -32,6 +32,8 @@ set foldlevel=1
 
 set noea
 
+set diffopt=vertical
+
 " Setting for search
 set hlsearch
 set magic
