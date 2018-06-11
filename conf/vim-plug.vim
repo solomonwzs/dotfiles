@@ -1,7 +1,7 @@
 call plug#begin(fnameescape(g:vimhome).'/bundle')
 
 " A tree explorer plugin for vim
-Plug 'https://github.com/scrooloose/nerdtree'
+" Plug 'https://github.com/scrooloose/nerdtree'
 
 " Ascii drawing plugin: lines, ellipses, arrows, fills,
 " and more!
@@ -14,7 +14,7 @@ Plug 'https://github.com/vim-scripts/DrawIt'
 Plug 'https://github.com/bling/vim-airline'
 
 " Generate Vim tags for Erlang files
-" Plug 'https://github.com/vim-erlang/vim-erlang-tags'
+Plug 'https://github.com/vim-erlang/vim-erlang-tags'
 
 " Vim python-mode. PyLint, Rope, Pydoc, breakpoints from box.
 " Plug 'https://github.com/klen/python-mode'

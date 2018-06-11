@@ -101,14 +101,19 @@ let g:jedi#completions_enabled = 0
 " Setting for vim-signify
 let g:signify_sign_change = '~'
 
+for s:lib in split(glob(fnameescape(g:vimhome).'/lib/*.vim'), '\n')
+    exec 'so '.s:lib
+endfor
 
-exec 'so '.fnameescape(g:vimhome).'/asc/terminal_meta.vim'
-
-exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/airline.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/vim-go.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/ale.vim'
+if !empty($VIM_GROUP)
+    echo $VIM_GROUP
+else
+    let s:bundledir = fnameescape(g:vimhome).'/.bundle_normal'
+    let s:bundle_exclude = ['syntastic', 'vim-erlang-tags']
+endif
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/leaderf.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/gutentags.vim'
-exec 'so '.fnameescape(g:vimhome).'/conf/syntastic.vim'
+
+if exists("s:bundledir") && exists("s:bundle_exclude")
+    call GenBundleFiles(s:bundledir, s:bundle_exclude)
+    call LoadBundle(s:bundledir)
+endif
