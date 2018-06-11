@@ -105,8 +105,9 @@ for s:lib in split(glob(fnameescape(g:vimhome).'/lib/*.vim'), '\n')
     exec 'so '.s:lib
 endfor
 
-if !empty($VIM_GROUP)
-    echo $VIM_GROUP
+" if !empty($VIM_GROUP)
+if $VIM_GROUP == "plug"
+    exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
 else
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_normal'
     let s:bundle_exclude = ['syntastic', 'vim-erlang-tags']
@@ -114,6 +115,8 @@ endif
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 
 if exists("s:bundledir") && exists("s:bundle_exclude")
-    call GenBundleFiles(s:bundledir, s:bundle_exclude)
+    if !filereadable(s:bundledir)
+        call GenBundleFiles(s:bundledir, s:bundle_exclude)
+    endif
     call LoadBundle(s:bundledir)
 endif

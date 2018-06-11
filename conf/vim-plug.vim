@@ -1,7 +1,7 @@
 call plug#begin(fnameescape(g:vimhome).'/bundle')
 
 " A tree explorer plugin for vim
-" Plug 'https://github.com/scrooloose/nerdtree'
+Plug 'https://github.com/scrooloose/nerdtree'
 
 " Ascii drawing plugin: lines, ellipses, arrows, fills,
 " and more!
