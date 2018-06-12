@@ -1,4 +1,6 @@
-call plug#begin(fnameescape(g:vimhome).'/bundle')
+let s:bundledir = fnameescape(g:vimhome).'/bundle'
+
+call plug#begin(s:bundledir)
 
 " A tree explorer plugin for vim
 Plug 'https://github.com/scrooloose/nerdtree'
@@ -83,3 +85,5 @@ Plug 'https://github.com/tpope/vim-fugitive.git'
 Plug 'https://github.com/plasticboy/vim-markdown.git'
 
 call plug#end()
+
+call LoadBundle(s:bundledir)

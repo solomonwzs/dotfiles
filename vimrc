@@ -107,7 +107,11 @@ endfor
 
 " if !empty($VIM_GROUP)
 if $VIM_GROUP == "plug"
+    let g:loaded_youcompleteme = 1
     exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
+elseif $VIM_GROUP == "erl"
+    let s:bundledir = fnameescape(g:vimhome).'/.bundle_erl'
+    let s:bundle_exclude = ['ale', 'vim-gutentags']
 else
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_normal'
     let s:bundle_exclude = ['syntastic', 'vim-erlang-tags']
@@ -115,7 +119,7 @@ endif
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 
 if exists("s:bundledir") && exists("s:bundle_exclude")
-    if !filereadable(s:bundledir)
+    if empty(glob(s:bundledir))
         call GenBundleFiles(s:bundledir, s:bundle_exclude)
     endif
     call LoadBundle(s:bundledir)
