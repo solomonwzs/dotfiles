@@ -3,7 +3,9 @@ let g:Lf_ShortcutF = '<C-p>'
 noremap <A-m> :LeaderfMru<CR>
 noremap <A-f> :LeaderfFunction<CR>
 noremap <A-b> :LeaderfBuffer<CR>
-noremap <A-t> :LeaderfTag<CR>
+if $VIM_GROUP != "twit"
+    noremap <A-t> :LeaderfTag<CR>
+endif
 " let g:Lf_StlSeparator = {'left': '', 'right': '', 'font': ''}
 let g:Lf_StlSeparator = { 'left': '', 'right': '' }
 

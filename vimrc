@@ -101,6 +101,9 @@ let g:jedi#completions_enabled = 0
 " Setting for vim-signify
 let g:signify_sign_change = '~'
 
+" Setting for twitvim
+let twitvim_proxy = 'http://127.0.0.1:8118'
+
 for s:lib in split(glob(fnameescape(g:vimhome).'/lib/*.vim'), '\n')
     exec 'so '.s:lib
 endfor
@@ -109,18 +112,24 @@ endfor
 if $VIM_GROUP == "plug"
     let g:loaded_youcompleteme = 1
     exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
+elseif $VIM_GROUP == "twit"
+    let s:bundledir = fnameescape(g:vimhome).'/.bundle_twit'
+    let s:bundle_iwl = 0
+    let s:bundle_list = ['ale', 'syntastic', 'vim-gutentags', 'vim-erlang-tags']
 elseif $VIM_GROUP == "erl"
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_erl'
-    let s:bundle_exclude = ['ale', 'vim-gutentags']
+    let s:bundle_iwl = 0
+    let s:bundle_list = ['ale', 'vim-gutentags', 'twitvim']
 else
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_normal'
-    let s:bundle_exclude = ['syntastic', 'vim-erlang-tags']
+    let s:bundle_iwl = 0
+    let s:bundle_list = ['syntastic', 'vim-erlang-tags', 'twitvim']
 endif
 exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 
-if exists("s:bundledir") && exists("s:bundle_exclude")
+if exists("s:bundledir") && exists("s:bundle_iwl") && exists("s:bundle_list")
     if empty(glob(s:bundledir))
-        call GenBundleFiles(s:bundledir, s:bundle_exclude)
+        call GenBundleFiles(s:bundledir, s:bundle_iwl, s:bundle_list)
     endif
     call LoadBundle(s:bundledir)
 endif

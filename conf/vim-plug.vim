@@ -84,6 +84,9 @@ Plug 'https://github.com/tpope/vim-fugitive.git'
 " Markdown Vim Mode
 Plug 'https://github.com/plasticboy/vim-markdown.git'
 
+" Twitter client for Vim
+Plug 'https://github.com/twitvim/twitvim.git'
+
 call plug#end()
 
-call LoadBundle(s:bundledir)
+" call LoadBundle(s:bundledir)
