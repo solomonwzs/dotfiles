@@ -81,6 +81,9 @@ Plug 'https://github.com/kshenoy/vim-signature.git'
 " A Git wrapper so awesome, it should be illegal
 Plug 'https://github.com/tpope/vim-fugitive.git'
 
+" Vim script for text filtering and alignment
+Plug 'https://github.com/godlygeek/tabular.git'
+
 " Markdown Vim Mode
 Plug 'https://github.com/plasticboy/vim-markdown.git'
 
