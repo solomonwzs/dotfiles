@@ -112,7 +112,6 @@ endfor
 if $VIM_GROUP == "plug"
     let g:loaded_youcompleteme = 1
     exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
-    call lib#bundle#load(fnameescape(g:vimhome).'/bundle')
 elseif $VIM_GROUP == "twit"
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_twit'
     let s:bundle_iwl = 0
