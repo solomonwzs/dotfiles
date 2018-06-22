@@ -1,4 +1,4 @@
-function! Terminal_MetaMode(mode)
+function! lib#terminal#meta_mode(mode)
     set ttimeout
     if $TMUX != ''
         set ttimeoutlen=30
@@ -38,6 +38,6 @@ function! Terminal_MetaMode(mode)
         endfor
     endif
 endfunc
-command! -nargs=0 -bang VimMetaInit call Terminal_MetaMode(<bang>0)
+command! -nargs=0 -bang VimMetaInit call lib#terminal#meta_mode(<bang>0)
 
 exec 'VimMetaInit'

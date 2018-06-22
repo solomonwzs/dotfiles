@@ -1,4 +1,4 @@
-function! GenBundleFiles(dir, is_white_list, list)
+function! lib#bundle#gen(dir, is_white_list, list)
     let a:edir=fnameescape(a:dir)
     silent exec '![ -d '.a:edir.' ] && rm -r '.a:edir
     silent exec '!mkdir '.a:edir
@@ -25,7 +25,7 @@ function! GenBundleFiles(dir, is_white_list, list)
 endfunc
 
 
-function! LoadBundle(dir)
+function! lib#bundle#load(dir)
     call plug#begin(a:dir)
     let a:edir = fnameescape(a:dir)
     for a:bundle in split(glob(a:edir.'/*'), '\n')

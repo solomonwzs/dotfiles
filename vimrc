@@ -112,6 +112,7 @@ endfor
 if $VIM_GROUP == "plug"
     let g:loaded_youcompleteme = 1
     exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
+    call lib#bundle#load(fnameescape(g:vimhome).'/bundle')
 elseif $VIM_GROUP == "twit"
     let s:bundledir = fnameescape(g:vimhome).'/.bundle_twit'
     let s:bundle_iwl = 0
@@ -129,7 +130,9 @@ exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 
 if exists("s:bundledir") && exists("s:bundle_iwl") && exists("s:bundle_list")
     if empty(glob(s:bundledir))
-        call GenBundleFiles(s:bundledir, s:bundle_iwl, s:bundle_list)
+        call lib#bundle#gen(s:bundledir, s:bundle_iwl, s:bundle_list)
     endif
-    call LoadBundle(s:bundledir)
+    call lib#bundle#load(s:bundledir)
+
+    command! -nargs=0 GenBundleFiles call lib#bundle#gen(s:bundledir, s:bundle_iwl, s:bundle_list)
 endif
