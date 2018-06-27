@@ -90,6 +90,9 @@ Plug 'https://github.com/plasticboy/vim-markdown.git'
 " Twitter client for Vim
 Plug 'https://github.com/twitvim/twitvim.git'
 
+" Next generation completion framework after neocomplcache
+Plug 'https://github.com/Shougo/neocomplete.vim.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

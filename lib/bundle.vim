@@ -4,7 +4,7 @@ function! lib#bundle#gen(dir, is_white_list, list)
     silent exec '!mkdir '.a:edir
 
     if a:is_white_list == 0
-        for a:bundle in split(glob(fnameescape(g:vimhome).'/bundle/*'), '\n')
+        for a:bundle in split(glob(g:vimhome.'/bundle/*'), '\n')
             let a:symbolic = split(a:bundle, '/')[-1]
             silent exec '!ln -s '.a:bundle.' '.a:edir.'/'.a:symbolic
         endfor
@@ -18,7 +18,7 @@ function! lib#bundle#gen(dir, is_white_list, list)
     else
         for a:bundle in a:list
             let a:name = split(a:bundle, '/')[-1]
-            let a:ori = fnameescape(g:vimhome).'/bundle/'.a:name
+            let a:ori = g:vimhome.'/bundle/'.a:name
             silent exec '!ln -s '.a:ori.' '.a:edir.'/'.a:name
         endfor
     end
@@ -32,10 +32,16 @@ function! lib#bundle#load(dir)
         Plug ''.a:bundle
 
         let a:name=split(a:bundle, '/')[-1]
-        let a:cfile=fnameescape(g:vimhome).'/conf/'.a:name.'.vim'
+        let a:cfile=g:vimhome.'/conf/'.a:name.'.vim'
         if filereadable(a:cfile)
             exec 'so '.a:cfile
         endif
     endfor
     call plug#end()
+endfunc
+
+
+function! lib#bundle#ycm()
+    unlet g:loaded_youcompleteme
+    exec 'so '.g:vimhome.'/ycm/ycm.vim'
 endfunc

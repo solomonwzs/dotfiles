@@ -68,7 +68,7 @@ autocmd FileType html,xml,yaml setlocal sw=2 tabstop=2 softtabstop=2
 
 let mapleader="\\"
 let maplocalleader=","
-let g:vimhome = fnamemodify(resolve(expand('<sfile>:p')), ':h')
+let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
@@ -104,28 +104,33 @@ let g:signify_sign_change = '~'
 " Setting for twitvim
 let twitvim_proxy = 'http://127.0.0.1:8118'
 
-for s:lib in split(glob(fnameescape(g:vimhome).'/lib/*.vim'), '\n')
+for s:lib in split(glob(g:vimhome.'/lib/*.vim'), '\n')
     exec 'so '.s:lib
 endfor
 
-" if !empty($VIM_GROUP)
+let g:loaded_youcompleteme = 1
 if $VIM_GROUP == "plug"
-    let g:loaded_youcompleteme = 1
-    exec 'so '.fnameescape(g:vimhome).'/conf/vim-plug.vim'
+    exec 'so '.g:vimhome.'/conf/vim-plug.vim'
 elseif $VIM_GROUP == "twit"
-    let s:bundledir = fnameescape(g:vimhome).'/.bundle_twit'
+    let s:bundledir = g:vimhome.'/.bundle_twit'
     let s:bundle_iwl = 0
-    let s:bundle_list = ['ale', 'syntastic', 'vim-gutentags', 'vim-erlang-tags']
+    let s:bundle_list = ['ale', 'syntastic', 'vim-gutentags', 'vim-erlang-tags', 'neocomplete.vim']
+    call lib#bundle#ycm()
 elseif $VIM_GROUP == "erl"
-    let s:bundledir = fnameescape(g:vimhome).'/.bundle_erl'
+    let s:bundledir = g:vimhome.'/.bundle_erl'
+    let s:bundle_iwl = 0
+    let s:bundle_list = ['ale', 'vim-gutentags', 'twitvim', 'neocomplete.vim']
+    call lib#bundle#ycm()
+elseif $VIM_GROUP == "test"
+    let s:bundledir = g:vimhome.'/.bundle_test'
     let s:bundle_iwl = 0
     let s:bundle_list = ['ale', 'vim-gutentags', 'twitvim']
 else
-    let s:bundledir = fnameescape(g:vimhome).'/.bundle_normal'
+    let s:bundledir = g:vimhome.'/.bundle_normal'
     let s:bundle_iwl = 0
-    let s:bundle_list = ['syntastic', 'vim-erlang-tags', 'twitvim']
+    let s:bundle_list = ['syntastic', 'vim-erlang-tags', 'twitvim', 'neocomplete.vim']
+    call lib#bundle#ycm()
 endif
-exec 'so '.fnameescape(g:vimhome).'/conf/ycm.vim'
 
 if exists("s:bundledir") && exists("s:bundle_iwl") && exists("s:bundle_list")
     if empty(glob(s:bundledir))
