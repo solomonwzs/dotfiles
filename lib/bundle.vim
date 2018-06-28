@@ -28,16 +28,19 @@ endfunc
 function! lib#bundle#load(dir)
     call plug#begin(a:dir)
     let a:edir = fnameescape(a:dir)
-    for a:bundle in split(glob(a:edir.'/*'), '\n')
+    let a:bundles = split(glob(a:edir.'/*'), '\n')
+    for a:bundle in a:bundles
         Plug ''.a:bundle
+    endfor
+    call plug#end()
 
+    for a:bundle in a:bundles
         let a:name=split(a:bundle, '/')[-1]
         let a:cfile=g:vimhome.'/conf/'.a:name.'.vim'
         if filereadable(a:cfile)
             exec 'so '.a:cfile
         endif
     endfor
-    call plug#end()
 endfunc
 
 

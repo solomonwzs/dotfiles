@@ -93,6 +93,9 @@ Plug 'https://github.com/twitvim/twitvim.git'
 " Next generation completion framework after neocomplcache
 Plug 'https://github.com/Shougo/neocomplete.vim.git'
 
+" Retro groove color scheme for Vim
+Plug 'https://github.com/morhetz/gruvbox.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
