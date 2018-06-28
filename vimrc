@@ -104,39 +104,26 @@ let g:signify_sign_change = '~'
 " Setting for twitvim
 let twitvim_proxy = 'http://127.0.0.1:8118'
 
+let g:loaded_youcompleteme = 1
+
+if $VIM_GROUP == "erl"
+    let g:lib_bundle_ycm_load = 1
+    let g:lib_bundle_blacklist = [
+                \ 'ale',
+                \ 'supertab',
+                \ 'vim-gutentags',
+                \ 'neocomplete.vim'
+                \ ]
+else
+    let g:lib_bundle_ycm_load = 1
+    let g:lib_bundle_blacklist = [
+                \ 'syntastic',
+                \ 'supertab',
+                \ 'vim-erlang-tags',
+                \ 'neocomplete.vim'
+                \ ]
+endif
+
 for s:lib in split(glob(g:vimhome.'/lib/*.vim'), '\n')
     exec 'so '.s:lib
 endfor
-
-let g:loaded_youcompleteme = 1
-if $VIM_GROUP == "plug"
-    exec 'so '.g:vimhome.'/conf/vim-plug.vim'
-elseif $VIM_GROUP == "twit"
-    let s:bundledir = g:vimhome.'/.bundle_twit'
-    let s:bundle_iwl = 0
-    let s:bundle_list = ['ale', 'syntastic', 'vim-gutentags', 'vim-erlang-tags', 'neocomplete.vim']
-    call lib#bundle#ycm()
-elseif $VIM_GROUP == "erl"
-    let s:bundledir = g:vimhome.'/.bundle_erl'
-    let s:bundle_iwl = 0
-    let s:bundle_list = ['ale', 'vim-gutentags', 'twitvim', 'neocomplete.vim']
-    call lib#bundle#ycm()
-elseif $VIM_GROUP == "test"
-    let s:bundledir = g:vimhome.'/.bundle_test'
-    let s:bundle_iwl = 0
-    let s:bundle_list = ['ale', 'vim-gutentags', 'twitvim']
-else
-    let s:bundledir = g:vimhome.'/.bundle_normal'
-    let s:bundle_iwl = 0
-    let s:bundle_list = ['syntastic', 'vim-erlang-tags', 'twitvim', 'neocomplete.vim']
-    call lib#bundle#ycm()
-endif
-
-if exists("s:bundledir") && exists("s:bundle_iwl") && exists("s:bundle_list")
-    if empty(glob(s:bundledir))
-        call lib#bundle#gen(s:bundledir, s:bundle_iwl, s:bundle_list)
-    endif
-    call lib#bundle#load(s:bundledir)
-
-    command! -nargs=0 GenBundleFiles call lib#bundle#gen(s:bundledir, s:bundle_iwl, s:bundle_list)
-endif

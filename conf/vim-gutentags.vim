@@ -1,6 +1,6 @@
 set tags=./.tags;,.tags
 
-let g:gutentags_modules = ['ctags', 'cscope']
+let g:gutentags_modules = ['ctags']
 let g:gutenttags_cscope_executable = 'cscope'
 
 let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
