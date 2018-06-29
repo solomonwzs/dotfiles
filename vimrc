@@ -78,32 +78,6 @@ if has("autocmd")
     au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
 endif
 
-" Setting for ocamlmerlin (ocaml)
-set rtp+=/usr/share/ocamlmerlin/vim
-
-" Setting for cabal (haskell)
-let $PATH=$PATH.':'.expand("$HOME/.cabal/bin")
-
-" Setting for ack.vim
-if executable('ag')
-  let g:ackprg = 'ag --vimgrep'
-endif
-
-" Setting for asyncrun
-let g:asyncrun_open = 6
-
-" Setting for vim-commentary
-autocmd FileType nginx setlocal commentstring=#\ %s
-
-" Setting for jedi
-let g:jedi#completions_enabled = 0
-
-" Setting for vim-signify
-let g:signify_sign_change = '~'
-
-" Setting for twitvim
-let twitvim_proxy = 'http://127.0.0.1:8118'
-
 let g:loaded_youcompleteme = 1
 
 if $VIM_GROUP == "erl"
@@ -112,6 +86,12 @@ if $VIM_GROUP == "erl"
                 \ 'ale',
                 \ 'supertab',
                 \ 'vim-gutentags',
+                \ 'neocomplete.vim'
+                \ ]
+elseif $VIM_GROUP == "scheme"
+    let g:lib_bundle_blacklist = [
+                \ 'ale',
+                \ 'vim-erlang-tags',
                 \ 'neocomplete.vim'
                 \ ]
 else

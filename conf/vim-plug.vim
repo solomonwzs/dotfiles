@@ -31,7 +31,7 @@ Plug 'https://github.com/fatih/vim-go'
 Plug 'https://github.com/will133/vim-dirdiff'
 
 " Perform all your vim insert mode completions with Tab
-" Plug 'https://github.com/ervandew/supertab'
+Plug 'https://github.com/ervandew/supertab'
 
 " Run Async Shell Commands in Vim 8.0 / NeoVim and Output
 " to Quickfix Window
@@ -95,6 +95,10 @@ Plug 'https://github.com/Shougo/neocomplete.vim.git'
 
 " Retro groove color scheme for Vim
 Plug 'https://github.com/morhetz/gruvbox.git'
+
+" Rainbow Parentheses Improved, shorter code, no level limit, smooth and fast,
+" powerful configuration.
+Plug 'https://github.com/luochen1990/rainbow.git'
 
 call plug#end()
 

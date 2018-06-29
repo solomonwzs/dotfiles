@@ -41,6 +41,7 @@ function! lib#bundle#load()
             exec 'so '.a:cfile
         endif
     endfor
+    exec 'so '.g:vimhome.'/conf/others.vim'
 endfunc
 
 
