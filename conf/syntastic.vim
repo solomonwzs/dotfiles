@@ -1,10 +1,6 @@
-let b:syntastic_skip_checks=0
-function s:syntastic_check_toggle()
-    if !exists("b:syntastic_skip_checks")
-        let b:syntastic_skip_checks=1
-    else
-        let b:syntastic_skip_checks=!b:syntastic_skip_checks
-    endif
-endfunction
+scriptencoding utf-8
 
-command! -nargs=0 SyntasticCheckToggle call s:syntastic_check_toggle()
+" let g:syntastic_error_symbol = 'X'
+" let g:syntastic_warning_symbol = '!'
+let g:syntastic_error_symbol = '✖'
+let g:syntastic_warning_symbol = '⚠'

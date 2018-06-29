@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " let g:ale_linters_explicit = 1
 let g:ale_completion_delay = 500
 let g:ale_echo_delay = 20
@@ -12,10 +14,10 @@ let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
 let g:ale_c_cppcheck_options = ''
 let g:ale_cpp_cppcheck_options = ''
 
-" let g:ale_sign_error = "X"
-" let g:ale_sign_warning = "!"
-let g:ale_sign_error = "✖"
-let g:ale_sign_warning = "⚠"
+" let g:ale_sign_error = 'X'
+" let g:ale_sign_warning = '!'
+let g:ale_sign_error = '✖'
+let g:ale_sign_warning = '⚠'
 
 hi! clear SpellBad
 hi! clear SpellCap

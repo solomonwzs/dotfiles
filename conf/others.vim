@@ -1,8 +1,8 @@
 " Setting for ocamlmerlin (ocaml)
-set rtp+=/usr/share/ocamlmerlin/vim
+set runtimepath+=/usr/share/ocamlmerlin/vim
 
 " Setting for cabal (haskell)
-let $PATH=$PATH.':'.expand("$HOME/.cabal/bin")
+let $PATH=$PATH.':'.expand($HOME.'/.cabal/bin')
 
 " Setting for ack.vim
 if executable('ag')
@@ -11,9 +11,6 @@ endif
 
 " Setting for asyncrun
 let g:asyncrun_open = 6
-
-" Setting for vim-commentary
-autocmd FileType nginx setlocal commentstring=#\ %s
 
 " Setting for jedi
 let g:jedi#completions_enabled = 0

@@ -5,38 +5,39 @@ endfunc
 
 
 function! lib#bundle#load()
-    if exists("g:lib_bundle_whitelist")
-        let a:wlist = []
-        for a:i in g:lib_bundle_whitelist
-            call add(a:wlist, g:vimhome.'/bundle/'.a:i)
-        endfor
+    if exists('g:lib_bundle_whitelist')
+        let a:wlist = g:lib_bundle_whitelist
     else
-        let a:wlist = split(glob(g:vimhome.'/bundle/*'), '\n')
+        let a:wlist = []
+        for a:i in split(glob(g:vimhome.'/bundle/*'), '\n')
+            let a:name=split(a:i, '/')[-1]
+            call add(a:wlist, a:name)
+        endfor
     endif
-    let a:blist = []
-    if exists("g:lib_bundle_blacklist")
+    let a:bdict = {}
+    if exists('g:lib_bundle_blacklist')
         for a:i in g:lib_bundle_blacklist
-            call add(a:blist, g:vimhome.'/bundle/'.a:i)
+            let a:bdict[a:i] = 1
         endfor
     endif
     let a:lib_bundle_list = []
     for a:i in a:wlist
-        if index(a:blist, a:i) == -1
+        if !has_key(a:bdict, a:i)
             call add(a:lib_bundle_list, a:i)
         endif
     endfor
 
-    call plug#begin(g:vimhome.'/bundle')
+    let a:dir = g:vimhome.'/bundle'
+    call plug#begin(a:dir)
     for a:i in a:lib_bundle_list
-        Plug ''.a:i
+        Plug a:dir.'/'.a:i
     endfor
     call plug#end()
 
     let g:lib_bundle_loaded_list = []
     for a:i in a:lib_bundle_list
-        let a:name=split(a:i, '/')[-1]
         call add(g:lib_bundle_loaded_list, a:name)
-        let a:cfile=g:vimhome.'/conf/'.a:name.'.vim'
+        let a:cfile=g:vimhome.'/conf/'.a:i.'.vim'
         if filereadable(a:cfile)
             exec 'so '.a:cfile
         endif
@@ -46,6 +47,6 @@ endfunc
 
 
 call lib#bundle#load()
-if exists("g:lib_bundle_ycm_load")
+if exists('g:lib_bundle_ycm_load')
     call lib#bundle#ycm()
 endif

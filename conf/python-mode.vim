@@ -1,4 +1,4 @@
-let g:pymode_python="python3"
+let g:pymode_python='python3'
 let g:pymode_options_colorcolumn=0
 
 let g:pymode_run=1

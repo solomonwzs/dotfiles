@@ -1,6 +1,6 @@
 function! lib#terminal#meta_mode(mode)
     set ttimeout
-    if $TMUX != ''
+    if $TMUX !=? ''
         set ttimeoutlen=30
     elseif &ttimeoutlen > 80 || &ttimeoutlen <= 0
         set ttimeoutlen=80
@@ -10,9 +10,9 @@ function! lib#terminal#meta_mode(mode)
     endif
     function! s:metacode(mode, key)
         if a:mode == 0
-            exec "set <M-".a:key.">=\e".a:key
+            exec 'set <M-'.a:key.'>=\e'.a:key
         else
-            exec "set <M-".a:key.">=\e]{0}".a:key."~"
+            exec 'set <M-'.a:key.'>=\e]{0}'.a:key.'~'
         endif
     endfunc
     for i in range(10)

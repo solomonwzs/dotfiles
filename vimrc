@@ -1,5 +1,5 @@
 " Encrypt
-set cm=blowfish2
+set cryptmethod=blowfish2
 set viminfo=
 set nobackup
 set nowritebackup
@@ -30,7 +30,7 @@ set foldmethod=indent
 set nofoldenable
 set foldlevel=1
 
-set noea
+set noequalalways
 
 set diffopt=vertical
 
@@ -45,42 +45,47 @@ set autoread
 set linebreak
 set wrap
 
-autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
-autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+
+augroup cursor_group
+    autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
+    autocmd InsertLeave * if pumvisible() == 0|pclose|endif
+
+    " Restore cursor position
+    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
+augroup END
 
 set grepprg=grep\ -nH\ $*
-let g:tex_flavor="latex"
+let g:tex_flavor='latex'
 
-autocmd FileType java setlocal omnifunc=javacomplete#Complete
-autocmd Filetype c setlocal omnifunc=ccomplete#Complete
-autocmd Filetype html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
-autocmd Filetype xml setlocal omnifunc=xmlcomplete#CompleteTags
-autocmd Filetype python setlocal omnifunc=pythoncomplete#CompleteTags
-autocmd FileType python setlocal completeopt-=preview
-autocmd Filetype tex setlocal omnifunc=syntaxcomplete#Complete
-autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
-if executable('ghc-mod')
-    autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
-endif
+augroup fileType_group
+    autocmd FileType java setlocal omnifunc=javacomplete#Complete
+    autocmd Filetype c setlocal omnifunc=ccomplete#Complete
+    autocmd Filetype html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+    autocmd Filetype xml setlocal omnifunc=xmlcomplete#CompleteTags
+    autocmd Filetype python setlocal omnifunc=pythoncomplete#CompleteTags
+    autocmd FileType python setlocal completeopt-=preview
+    autocmd Filetype tex setlocal omnifunc=syntaxcomplete#Complete
+    autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+    if executable('ghc-mod')
+        autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
+    endif
 
-let g:html_indent_inctags="li,body,head"
-autocmd FileType html,xml,yaml setlocal sw=2 tabstop=2 softtabstop=2
+    autocmd FileType html,xml,yaml setlocal sw=2 tabstop=2 softtabstop=2
+    autocmd FileType nginx setlocal commentstring=#\ %s
+augroup END
+
+let g:html_indent_inctags='li,body,head'
 
 let mapleader="\\"
-let maplocalleader=","
+let maplocalleader=','
 let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
 
-" Restore cursor position
-if has("autocmd")
-    au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
-endif
-
 let g:loaded_youcompleteme = 1
 
-if $VIM_GROUP == "erl"
+if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_ycm_load = 1
     let g:lib_bundle_blacklist = [
                 \ 'ale',
@@ -88,7 +93,7 @@ if $VIM_GROUP == "erl"
                 \ 'vim-gutentags',
                 \ 'neocomplete.vim'
                 \ ]
-elseif $VIM_GROUP == "scheme"
+elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = [
                 \ 'ale',
                 \ 'vim-erlang-tags',

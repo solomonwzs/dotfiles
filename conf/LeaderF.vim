@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 let g:Lf_ShortcutF = '<C-p>'
 
 noremap <A-m> :LeaderfMru<CR>
