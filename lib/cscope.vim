@@ -18,7 +18,13 @@ if !exists('g:lib_cscope_dir')
 else
     let s:workspace = g:lib_cscope_dir
 end
-silent exec '![ -d '.s:workspace.' ] || mkdir -p '.s:workspace
+if !isdirectory(s:workspace)
+    if exists('*mkdir')
+        call mkdir(s:workspace)
+    else
+        silent exec '!mkdir -p '.s:workspace
+    end
+endif
 
 
 function! lib#cscope#basename()
