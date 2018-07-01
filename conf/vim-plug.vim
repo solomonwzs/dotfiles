@@ -100,6 +100,9 @@ Plug 'https://github.com/morhetz/gruvbox.git'
 " powerful configuration.
 Plug 'https://github.com/luochen1990/rainbow.git'
 
+" Vim configuration for Rust.
+Plug 'https://github.com/rust-lang/rust.vim.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

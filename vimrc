@@ -91,12 +91,14 @@ if $VIM_GROUP ==? 'erl'
                 \ 'ale',
                 \ 'supertab',
                 \ 'vim-gutentags',
+                \ 'rust.vim',
                 \ 'neocomplete.vim'
                 \ ]
 elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = [
                 \ 'ale',
                 \ 'vim-erlang-tags',
+                \ 'rust.vim',
                 \ 'neocomplete.vim'
                 \ ]
 else
@@ -104,6 +106,7 @@ else
     let g:lib_bundle_blacklist = [
                 \ 'syntastic',
                 \ 'supertab',
+                \ 'rust.vim',
                 \ 'vim-erlang-tags',
                 \ 'neocomplete.vim'
                 \ ]
