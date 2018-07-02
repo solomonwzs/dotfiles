@@ -33,6 +33,8 @@ let s:bundle_priority = {
             \ 'gruvbox': -1
             \ }
 
+let s:loaded_bundles = {}
+
 
 function! s:priority_comp(i1, i2)
     function! s:get_priority(i)
@@ -86,13 +88,18 @@ function! lib#bundle#load()
     endfor
     call plug#end()
 
-    let g:lib_bundle_loaded_list = []
+    let s:loaded_bundles = {}
     for a:i in a:lib_bundle_list
-        call add(g:lib_bundle_loaded_list, a:i)
+        let s:loaded_bundles[a:i] = 1
         let a:cfile=g:vimhome.'/conf/'.a:i.'.vim'
         if filereadable(a:cfile)
             exec 'so '.a:cfile
         endif
     endfor
     exec 'so '.g:vimhome.'/conf/others.vim'
+endfunc
+
+
+function! lib#bundle#has_loaded(name)
+    return has_key(s:loaded_bundles, a:name)
 endfunc
