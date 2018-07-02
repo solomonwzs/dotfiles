@@ -5,5 +5,10 @@ let g:gruvbox_vert_split = 'bg0'
 
 colorscheme gruvbox
 
-highlight Normal ctermbg=NONE
-highlight Comment cterm=italic
+if g:colors_name ==# 'gruvbox'
+    highlight Normal ctermbg=NONE
+    highlight Comment cterm=italic
+
+    highlight ALEWarning ctermbg=208 ctermfg=223
+    highlight ALEError ctermbg=167 ctermfg=223
+endif

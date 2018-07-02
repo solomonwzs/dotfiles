@@ -96,6 +96,9 @@ Plug 'https://github.com/Shougo/neocomplete.vim.git'
 " Retro groove color scheme for Vim
 Plug 'https://github.com/morhetz/gruvbox.git'
 
+" An arctic, north-bluish clean and elegant Vim theme.
+Plug 'https://github.com/arcticicestudio/nord-vim.git'
+
 " Rainbow Parentheses Improved, shorter code, no level limit, smooth and fast,
 " powerful configuration.
 Plug 'https://github.com/luochen1990/rainbow.git'

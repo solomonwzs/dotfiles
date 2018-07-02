@@ -38,6 +38,3 @@ function! lib#terminal#meta_mode(mode)
         endfor
     endif
 endfunc
-command! -nargs=0 -bang VimMetaInit call lib#terminal#meta_mode(<bang>0)
-
-exec 'VimMetaInit'

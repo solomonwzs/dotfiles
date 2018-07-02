@@ -1,12 +1,3 @@
-if has('cscope')
-    set cscopeprg=/usr/bin/cscope
-    set cscopetagorder=0
-    set cscopetag
-    set nocscopeverbose
-    set cscopeverbose
-endif
-set cscopequickfix=s-,d-,c-,t-,e-,f-,i-
-
 if !exists('g:lib_cscope_code_ext')
     let s:code_ext = ['c', 'cc', 'cpp', 'h', 'hpp']
 else
@@ -55,4 +46,3 @@ function! lib#cscope#gen_tags()
     redraw!
     echo 'reset cscope tags'
 endfunc
-command! -nargs=0 CscopeTags call lib#cscope#gen_tags()

@@ -1,5 +1,5 @@
 " Setting for ycm
-let g:ycm_server_python_interpreter = "python2"
+let g:ycm_server_python_interpreter = 'python2'
 let g:ycm_global_ycm_extra_conf = g:vimhome.'/ycm/ycm_extra_conf.py'
 let g:ycm_min_num_identifier_candidate_chars = 2
 set completeopt=menu,menuone

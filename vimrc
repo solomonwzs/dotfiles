@@ -45,6 +45,15 @@ set autoread
 set linebreak
 set wrap
 
+" Setting for cscope
+if has('cscope')
+    set cscopeprg=/usr/bin/cscope
+    set cscopetagorder=0
+    set cscopetag
+    set nocscopeverbose
+    set cscopeverbose
+    set cscopequickfix=s-,d-,c-,t-,e-,f-,i-
+endif
 
 augroup cursor_group
     autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
@@ -91,27 +100,18 @@ if $VIM_GROUP ==? 'erl'
                 \ 'ale',
                 \ 'supertab',
                 \ 'vim-gutentags',
-                \ 'rust.vim',
-                \ 'neocomplete.vim'
                 \ ]
 elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = [
                 \ 'ale',
                 \ 'vim-erlang-tags',
-                \ 'rust.vim',
-                \ 'neocomplete.vim'
                 \ ]
 else
     let g:lib_bundle_ycm_load = 1
     let g:lib_bundle_blacklist = [
                 \ 'syntastic',
                 \ 'supertab',
-                \ 'rust.vim',
                 \ 'vim-erlang-tags',
-                \ 'neocomplete.vim'
                 \ ]
 endif
-
-for s:lib in split(glob(g:vimhome.'/lib/*.vim'), '\n')
-    exec 'so '.s:lib
-endfor
+call lib#bundle#load()
