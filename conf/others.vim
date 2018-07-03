@@ -20,3 +20,8 @@ let g:signify_sign_change = '~'
 
 " Setting for twitvim
 let twitvim_proxy = 'http://127.0.0.1:8118'
+
+" Setting for vim-signature
+highlight VimSignatureMarkLine ctermbg=96
+let g:SignatureMarkTextHL = 'VimSignatureMarkLine'
+" let g:SignatureMarkLineHL = 'VimSignatureMarkLine'
