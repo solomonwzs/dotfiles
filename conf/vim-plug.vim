@@ -106,6 +106,9 @@ Plug 'https://github.com/luochen1990/rainbow.git'
 " Vim configuration for Rust.
 Plug 'https://github.com/rust-lang/rust.vim.git'
 
+" Preview colours in source code while editing
+Plug 'https://github.com/ap/vim-css-color.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
