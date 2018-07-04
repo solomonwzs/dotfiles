@@ -52,7 +52,7 @@ Plug 'https://github.com/tpope/vim-commentary'
 
 " An asynchronous fuzzy finder which is used to quickly
 " locate files, buffers, mrus, tags, etc. in large project.
-Plug 'https://github.com/Yggdroot/LeaderF.git'
+Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 
 " Vim plugin that displays tags in a window, ordered by scope
 Plug 'https://github.com/majutsushi/tagbar'
