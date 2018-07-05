@@ -118,6 +118,9 @@ Plug 'https://github.com/google/vim-glaive.git'
 " Syntax-aware code formatting, depends on maktaba.
 Plug 'https://github.com/google/vim-codefmt.git'
 
+" Syntax Highlight for Vue.js components.
+Plug 'https://github.com/posva/vim-vue.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
