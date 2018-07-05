@@ -1,11 +1,11 @@
 let s:all_valid_bundles = [
+            \ 'DrawIt',
+            \ 'LeaderF',
             \ 'ack.vim',
             \ 'ale',
             \ 'asyncrun.vim',
-            \ 'DrawIt',
             \ 'gruvbox',
             \ 'jedi-vim',
-            \ 'LeaderF',
             \ 'nerdtree',
             \ 'nord-vim',
             \ 'rainbow',
@@ -26,10 +26,12 @@ let s:all_valid_bundles = [
             \ 'vim-javacomplete2',
             \ 'vim-markdown',
             \ 'vim-python-pep8-indent',
-            \ 'vim-signature'
+            \ 'vim-signature',
             \ ]
 
 let s:bundle_priority = {
+            \ 'vim-maktaba': 1,
+            \ 'vim-glaive': 1,
             \ 'gruvbox': -1
             \ }
 

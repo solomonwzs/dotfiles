@@ -99,8 +99,8 @@ Plug 'https://github.com/morhetz/gruvbox.git'
 " An arctic, north-bluish clean and elegant Vim theme.
 Plug 'https://github.com/arcticicestudio/nord-vim.git'
 
-" Rainbow Parentheses Improved, shorter code, no level limit, smooth and fast,
-" powerful configuration.
+" Rainbow Parentheses Improved, shorter code, no level limit,
+" smooth and fast, powerful configuration.
 Plug 'https://github.com/luochen1990/rainbow.git'
 
 " Vim configuration for Rust.
@@ -108,6 +108,15 @@ Plug 'https://github.com/rust-lang/rust.vim.git'
 
 " Preview colours in source code while editing
 Plug 'https://github.com/ap/vim-css-color.git'
+
+" Maktaba is a vimscript plugin library.
+Plug 'https://github.com/google/vim-maktaba.git'
+
+" Glaive is a utility for configuring maktaba plugins.
+Plug 'https://github.com/google/vim-glaive.git'
+
+" Syntax-aware code formatting, depends on maktaba.
+Plug 'https://github.com/google/vim-codefmt.git'
 
 call plug#end()
 

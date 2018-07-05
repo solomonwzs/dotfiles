@@ -115,17 +115,3 @@ else
                 \ ]
 endif
 call lib#bundle#load()
-
-" let s:commands = [
-"             \ ['/bin/sh', '-c', 'sleep 1s; echo 1'],
-"             \ ['/bin/sh', '-c', 'sleep 1s; echox 2'],
-"             \ ['/bin/sh', '-c', 'sleep 1s; echo 3'],
-"             \ ]
-
-" function! s:Finish(channel, msg)
-"     echo 'finish'
-" endfunc
-
-
-" let s:node = lib#job#aexec(s:commands, function('s:Finish'))
-" call s:node.jrun(v:null, 'start')
