@@ -79,7 +79,8 @@ augroup fileType_group
         autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
     endif
 
-    autocmd FileType html,xml,yaml setlocal sw=2 tabstop=2 softtabstop=2
+    autocmd FileType html,xml,yaml,vue,javascript
+                \ setlocal sw=2 tabstop=2 softtabstop=2
     autocmd FileType nginx setlocal commentstring=#\ %s
 augroup END
 

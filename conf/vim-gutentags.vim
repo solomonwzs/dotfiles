@@ -5,6 +5,8 @@ let g:gutenttags_cscope_executable = 'cscope'
 
 let g:gutentags_project_root = ['.root', '.svn', '.git', '.hg', '.project']
 
+let g:gutentags_ctags_exclude = ['node_modules']
+
 let g:gutentags_ctags_tagfile = '.tags'
 
 let s:vim_tags = expand('~/.cache/tags')
