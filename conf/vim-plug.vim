@@ -121,6 +121,9 @@ Plug 'https://github.com/google/vim-codefmt.git'
 " Syntax Highlight for Vue.js components.
 Plug 'https://github.com/posva/vim-vue.git'
 
+" Vim syntax for TOML.
+Plug 'https://github.com/cespare/vim-toml.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

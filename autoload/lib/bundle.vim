@@ -28,6 +28,7 @@ let s:all_valid_bundles = [
             \ 'vim-python-pep8-indent',
             \ 'vim-signature',
             \ 'vim-vue',
+            \ 'vim-toml',
             \ ]
 
 let s:bundle_priority = {
