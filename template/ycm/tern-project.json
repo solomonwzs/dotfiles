@@ -1,0 +1,16 @@
+{
+    "libs": [
+        "lodash",
+        "moment",
+        "browser",
+        "ecmascript"
+    ],
+    "plugins": {
+        "node": {},
+        "webpack": {},
+        "es_modules": {}
+    },
+    "loadEagerly": [
+        "./src/"
+    ]
+}

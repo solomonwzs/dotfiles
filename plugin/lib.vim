@@ -10,3 +10,9 @@ command! -nargs=0 -bang VimMetaClose call lib#terminal#meta_mode(<bang>1)
 if has('cscope')
     command! -nargs=0 CscopeTags call lib#cscope#gen_tags()
 endif
+
+command! -nargs=0 YcmCursorMovedAutoCmdsToggle
+            \ call lib#ycm#cursor_move_autocmds_toggle()
+
+command! -nargs=0 GenTernProject
+            \ call lib#javascript#tern_project()

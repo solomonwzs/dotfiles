@@ -67,19 +67,22 @@ set grepprg=grep\ -nH\ $*
 let g:tex_flavor='latex'
 
 augroup fileType_group
-    autocmd FileType java setlocal omnifunc=javacomplete#Complete
-    autocmd Filetype c setlocal omnifunc=ccomplete#Complete
-    autocmd Filetype html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
-    autocmd Filetype xml setlocal omnifunc=xmlcomplete#CompleteTags
-    autocmd Filetype python setlocal omnifunc=pythoncomplete#CompleteTags
-    autocmd FileType python setlocal completeopt-=preview
-    autocmd Filetype tex setlocal omnifunc=syntaxcomplete#Complete
-    autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+    autocmd FileType java       setlocal omnifunc=javacomplete#Complete
+    autocmd Filetype c          setlocal omnifunc=ccomplete#Complete
+    autocmd Filetype html       setlocal omnifunc=htmlcomplete#CompleteTags
+    autocmd Filetype markdown   setlocal omnifunc=htmlcomplete#CompleteTags
+    autocmd Filetype xml        setlocal omnifunc=xmlcomplete#CompleteTags
+    autocmd Filetype python     setlocal omnifunc=pythoncomplete#CompleteTags
+    autocmd FileType python     setlocal completeopt-=preview
+    autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
+    autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
     if executable('ghc-mod')
         autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
     endif
 
-    autocmd FileType html,xml,yaml,vue,javascript
+    autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
+
+    autocmd FileType html,xml,yaml,vue.javascript,javascript
                 \ setlocal sw=2 tabstop=2 softtabstop=2
     autocmd FileType nginx setlocal commentstring=#\ %s
 augroup END

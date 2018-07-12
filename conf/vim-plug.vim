@@ -124,6 +124,9 @@ Plug 'https://github.com/posva/vim-vue.git'
 " Vim syntax for TOML.
 Plug 'https://github.com/cespare/vim-toml.git'
 
+" Vastly improved Javascript indentation and syntax support in Vim.
+Plug 'https://github.com/pangloss/vim-javascript.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
