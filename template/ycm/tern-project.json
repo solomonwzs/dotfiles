@@ -9,8 +9,5 @@
         "node": {},
         "webpack": {},
         "es_modules": {}
-    },
-    "loadEagerly": [
-        "./src/"
-    ]
+    }
 }

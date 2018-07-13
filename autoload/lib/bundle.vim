@@ -29,7 +29,6 @@ let s:all_valid_bundles = [
             \ 'vim-signature',
             \ 'vim-vue',
             \ 'vim-toml',
-            \ 'vim-javascript',
             \ ]
 
 let s:bundle_priority = {
