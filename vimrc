@@ -85,6 +85,7 @@ augroup fileType_group
     autocmd FileType html,xml,yaml,vue.javascript,javascript
                 \ setlocal sw=2 tabstop=2 softtabstop=2
     autocmd FileType nginx setlocal commentstring=#\ %s
+    autocmd FileType make setlocal noet
 augroup END
 
 let g:html_indent_inctags='li,body,head'
@@ -109,6 +110,7 @@ elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = [
                 \ 'ale',
                 \ 'vim-erlang-tags',
+                \ 'vim-erlang-omnicomplete',
                 \ ]
 else
     let g:lib_bundle_ycm_load = 1
@@ -116,6 +118,7 @@ else
                 \ 'syntastic',
                 \ 'supertab',
                 \ 'vim-erlang-tags',
+                \ 'vim-erlang-omnicomplete',
                 \ ]
 endif
 call lib#bundle#load()

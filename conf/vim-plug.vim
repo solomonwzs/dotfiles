@@ -127,6 +127,9 @@ Plug 'https://github.com/cespare/vim-toml.git'
 " Vastly improved Javascript indentation and syntax support in Vim.
 Plug 'https://github.com/pangloss/vim-javascript.git'
 
+" Erlang omnicomplete plugin for Vim.
+Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

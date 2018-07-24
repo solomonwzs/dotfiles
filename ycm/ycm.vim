@@ -12,6 +12,7 @@ let g:ycm_python_binary_path = '/usr/bin/python3'
 let g:ycm_filetype_blacklist = {
             \}
 let g:ycm_semantic_triggers = {
-            \ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
+            \ 'c,cpp,python,java,go,perl': ['re!\w{2}'],
             \ 'cs,lua,javascript': ['re!\w{2}'],
+            \ 'erlang': [':'],
             \ }

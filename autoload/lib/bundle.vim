@@ -29,6 +29,7 @@ let s:all_valid_bundles = [
             \ 'vim-signature',
             \ 'vim-vue',
             \ 'vim-toml',
+            \ 'vim-erlang-omnicomplete',
             \ ]
 
 let s:bundle_priority = {
