@@ -18,6 +18,7 @@ let s:all_valid_bundles = [
             \ 'vim-commentary',
             \ 'vim-dirdiff',
             \ 'vim-dirvish',
+            \ 'vim-erlang-omnicomplete',
             \ 'vim-erlang-tags',
             \ 'vim-fugitive',
             \ 'vim-gitgutter',
@@ -26,10 +27,10 @@ let s:all_valid_bundles = [
             \ 'vim-javacomplete2',
             \ 'vim-markdown',
             \ 'vim-python-pep8-indent',
+            \ 'vim-racer',
             \ 'vim-signature',
-            \ 'vim-vue',
             \ 'vim-toml',
-            \ 'vim-erlang-omnicomplete',
+            \ 'vim-vue',
             \ ]
 
 let s:bundle_priority = {

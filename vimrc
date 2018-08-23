@@ -76,6 +76,7 @@ augroup fileType_group
     autocmd FileType python     setlocal completeopt-=preview
     autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
     autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
+
     if executable('ghc-mod')
         autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
     endif

@@ -25,7 +25,6 @@ let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 " --regex-Go=/^var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/
 " --regex-Go=/^type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/
 "
-" ctags for Rust
 " --langdef=Rust
 " --langmap=Rust:.rs
 " --regex-Rust=/^[ \t]*(#\[[^\]]\][ \t]*)*(pub[ \t]+)?(extern[ \t]+)?("[^"]+"[ \t]+)?(unsafe[ \t]+)?fn[ \t]+([a-zA-Z0-9_]+)/\6/f,functions,function definitions/
@@ -36,3 +35,4 @@ let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 " --regex-Rust=/^[ \t]*(pub[ \t]+)?(static|const)[ \t]+(mut[ \t]+)?([a-zA-Z0-9_]+)/\4/c,consts,static constants/
 " --regex-Rust=/^[ \t]*(pub[ \t]+)?(unsafe[ \t]+)?trait[ \t]+([a-zA-Z0-9_]+)/\3/t,traits,traits/
 " --regex-Rust=/^[ \t]*(pub[ \t]+)?(unsafe[ \t]+)?impl([ \t\n]*<[^>]*>)?[ \t]+(([a-zA-Z0-9_:]+)[ \t]*(<[^>]*>)?[ \t]+(for)[ \t]+)?([a-zA-Z0-9_]+)/\5 \7 \8/i,impls,trait implementations/
+" --regex-Rust=/^[ \t]*macro_rules![ \t]+([a-zA-Z0-9_]+)/\1/d,macros,macro definitions/

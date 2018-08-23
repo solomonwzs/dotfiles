@@ -130,6 +130,18 @@ Plug 'https://github.com/pangloss/vim-javascript.git'
 " Erlang omnicomplete plugin for Vim.
 Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
+" Language Server Protocol (LSP) support for vim and neovim.
+" Plug 'https://github.com/autozimu/LanguageClient-neovim.git'
+
+" async language server protocol plugin for vim and neovim.
+" Plug 'https://github.com/prabirshrestha/vim-lsp.git'
+
+" Racer support for Vim.
+Plug 'https://github.com/racer-rust/vim-racer.git'
+
+" fzf heart vim.
+" Plug 'https://github.com/junegunn/fzf.vim.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
