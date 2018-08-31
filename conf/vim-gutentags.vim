@@ -25,6 +25,7 @@ let g:gutentags_ctags_extra_args += ['--c-kinds=+px']
 " --regex-Go=/^var[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/v,var/
 " --regex-Go=/^type[ \t]+([a-zA-Z_][a-zA-Z0-9_]+)/\1/t,type/
 "
+" ctags for Rust
 " --langdef=Rust
 " --langmap=Rust:.rs
 " --regex-Rust=/^[ \t]*(#\[[^\]]\][ \t]*)*(pub[ \t]+)?(extern[ \t]+)?("[^"]+"[ \t]+)?(unsafe[ \t]+)?fn[ \t]+([a-zA-Z0-9_]+)/\6/f,functions,function definitions/
