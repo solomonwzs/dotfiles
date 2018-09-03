@@ -14,6 +14,7 @@ let g:asyncrun_open = 6
 
 " Setting for jedi
 let g:jedi#completions_enabled = 0
+let g:jedi#force_py_version = 3
 
 " Setting for vim-signify
 let g:signify_sign_change = '~'
