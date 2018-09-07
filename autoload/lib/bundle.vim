@@ -9,6 +9,7 @@ let s:all_valid_bundles = [
             \ 'nerdtree',
             \ 'nord-vim',
             \ 'rainbow',
+            \ 'rust.vim',
             \ 'supertab',
             \ 'syntastic',
             \ 'tabular',

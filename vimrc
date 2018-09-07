@@ -113,6 +113,14 @@ elseif $VIM_GROUP ==? 'scheme'
                 \ 'vim-erlang-tags',
                 \ 'vim-erlang-omnicomplete',
                 \ ]
+elseif $VIM_GROUP ==? 'non_ale'
+    let g:lib_bundle_ycm_load = 1
+    let g:lib_bundle_blacklist = [
+                \ 'ale',
+                \ 'supertab',
+                \ 'vim-erlang-tags',
+                \ 'vim-erlang-omnicomplete',
+                \ ]
 else
     let g:lib_bundle_ycm_load = 1
     let g:lib_bundle_blacklist = [
