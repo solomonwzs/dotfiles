@@ -37,7 +37,7 @@ let s:all_valid_bundles = [
 let s:bundle_priority = {
             \ 'vim-maktaba': 1,
             \ 'vim-glaive': 1,
-            \ 'gruvbox': -1
+            \ 'gruvbox': -1,
             \ }
 
 let s:loaded_bundles = {}

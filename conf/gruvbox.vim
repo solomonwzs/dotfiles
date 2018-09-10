@@ -9,6 +9,10 @@ if g:colors_name ==# 'gruvbox'
     highlight Normal ctermbg=NONE
     highlight Comment cterm=italic
 
+    highlight SyntasticWarning ctermbg=208 ctermfg=223
+    highlight SyntasticError ctermbg=167 ctermfg=223
+
     highlight ALEWarning ctermbg=208 ctermfg=223
     highlight ALEError ctermbg=167 ctermfg=223
+
 endif
