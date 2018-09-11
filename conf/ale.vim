@@ -19,13 +19,6 @@ let g:ale_cpp_cppcheck_options = ''
 let g:ale_sign_error = '✖'
 let g:ale_sign_warning = '⚠'
 
-hi! clear SpellBad
-hi! clear SpellCap
-hi! clear SpellRare
-hi! SpellBad gui=undercurl guisp=red
-hi! SpellCap gui=undercurl guisp=blue
-hi! SpellRare gui=undercurl guisp=magenta
-
 " pylint --generate-rcfile > ~/.pylintrc
 " let g:ale_python_pylint_executable = 'pylint'
 " let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
