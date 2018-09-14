@@ -33,6 +33,7 @@ let g:ale_fixers = {
             \ }
 
 let g:ale_linters = {
+            \ 'c':      ['clang'],
             \ 'python': ['flake8'],
             \ 'rust':   ['cargo'],
             \ 'sh':     ['shellcheck'],
