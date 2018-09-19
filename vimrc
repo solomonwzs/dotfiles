@@ -85,7 +85,6 @@ augroup fileType_group
 
     autocmd FileType html,xml,yaml,vue.javascript,javascript
                 \ setlocal sw=2 tabstop=2 softtabstop=2
-    autocmd FileType nginx setlocal commentstring=#\ %s
     autocmd FileType make setlocal noet
 augroup END
 

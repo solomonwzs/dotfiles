@@ -25,3 +25,9 @@ let twitvim_proxy = 'http://127.0.0.1:8118'
 " Setting for vim-signature
 let g:SignatureMarkTextHL = 'VimSignatureMarkLine'
 " let g:SignatureMarkLineHL = 'VimSignatureMarkLine'
+
+" Setting for vim-commentary
+augroup commentary_group
+    autocmd FileType nginx setlocal commentstring=#\ %s
+    autocmd FileType c,cpp setlocal commentstring=//\ %s
+augroup END
