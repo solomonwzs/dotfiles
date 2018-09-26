@@ -142,6 +142,9 @@ Plug 'https://github.com/racer-rust/vim-racer.git'
 " fzf heart vim.
 " Plug 'https://github.com/junegunn/fzf.vim.git'
 
+" The fancy start screen for Vim.
+" Plug 'https://github.com/mhinz/vim-startify.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
