@@ -1,6 +1,6 @@
 " Encrypt
 set cryptmethod=blowfish2
-set viminfo=
+" set viminfo=
 set nobackup
 set nowritebackup
 

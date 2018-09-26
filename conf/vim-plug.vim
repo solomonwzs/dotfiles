@@ -143,7 +143,10 @@ Plug 'https://github.com/racer-rust/vim-racer.git'
 " Plug 'https://github.com/junegunn/fzf.vim.git'
 
 " The fancy start screen for Vim.
-" Plug 'https://github.com/mhinz/vim-startify.git'
+Plug 'https://github.com/mhinz/vim-startify.git'
+
+" Vim motions on speed!
+" Plug 'https://github.com/easymotion/vim-easymotion.git'
 
 call plug#end()
 
