@@ -15,6 +15,7 @@ let s:all_valid_bundles = [
             \ 'tabular',
             \ 'tagbar',
             \ 'twitvim',
+            \ 'ultisnips',
             \ 'vim-airline',
             \ 'vim-commentary',
             \ 'vim-dirdiff',

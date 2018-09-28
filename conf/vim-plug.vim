@@ -148,6 +148,9 @@ Plug 'https://github.com/mhinz/vim-startify.git'
 " Vim motions on speed!
 " Plug 'https://github.com/easymotion/vim-easymotion.git'
 
+" The ultimate snippet solution for Vim.
+Plug 'https://github.com/SirVer/ultisnips.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

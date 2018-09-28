@@ -1,0 +1,12 @@
+snippet #! "script header" b
+#!/bin/bash
+#
+# author:		${1:author}
+# email:		${2:email}
+# description:	${3:desc}
+
+set -euo pipefail
+
+SCRIPT=$(readlink -f "\$0")
+DIR=$(dirname "$SCRIPT")
+endsnippet

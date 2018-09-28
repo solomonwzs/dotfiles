@@ -31,3 +31,6 @@ augroup commentary_group
     autocmd FileType nginx setlocal commentstring=#\ %s
     autocmd FileType c,cpp setlocal commentstring=//\ %s
 augroup END
+
+" Setting for ultisnips
+let g:UltiSnipsExpandTrigger = '<c-a>'
