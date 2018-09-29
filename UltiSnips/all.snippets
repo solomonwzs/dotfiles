@@ -1,0 +1,15 @@
+global !p
+from comment import comment_line
+endglobal
+
+
+snippet comment_line "toggle comment single line"
+`!p
+snip.rv = comment_line(snip)
+`
+endsnippet
+
+
+snippet ft "filetype" b
+${1:COMMENT} vi: set filetype=${2:FILETYPE} :
+endsnippet

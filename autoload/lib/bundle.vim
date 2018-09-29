@@ -17,7 +17,6 @@ let s:all_valid_bundles = [
             \ 'twitvim',
             \ 'ultisnips',
             \ 'vim-airline',
-            \ 'vim-commentary',
             \ 'vim-dirdiff',
             \ 'vim-dirvish',
             \ 'vim-erlang-omnicomplete',

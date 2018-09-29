@@ -1,0 +1,35 @@
+# global !p
+# def fraction(a, b):
+#     try:
+#         return "%.1f" % (float(a)/float(b))
+#     except (ValueError, ZeroDivisionError):
+#         return "ERR"
+# endglobal
+
+
+# snippet 75w "Log a 750words.com session" b
+# 750words.com: ${1:750} words in ${2:20} minutes - `!p
+# snip.rv = fraction(t[1], t[2])
+# ` wpm.
+# endsnippet
+
+
+snippet #! "header" b
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Solomon Ng"
+endsnippet
+
+
+snippet main "main" b
+if __name__ == "__main__":
+endsnippet
+
+
+snippet def "define function"
+def ${1:FUNCTION}($2):
+	"""
+	${3:DOC}
+	"""
+endsnippet
