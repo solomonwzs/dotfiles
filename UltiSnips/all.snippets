@@ -1,5 +1,8 @@
 global !p
-from comment import comment_line
+from comment import (
+	comment_line,
+	vi_set_filetype,
+)
 endglobal
 
 
@@ -10,6 +13,8 @@ snip.rv = comment_line(snip)
 endsnippet
 
 
-snippet ft "filetype" b
-${1:COMMENT} vi: set filetype=${2:FILETYPE} :
+snippet file_type "vi set filetype" b
+`!p
+snip.rv = vi_set_filetype(snip)
+`
 endsnippet

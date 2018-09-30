@@ -1,7 +1,17 @@
+global !p
+from common import strtoday
+endglobal
+
+
 snippet #! "header" b
 #!/bin/bash
 #
-# author: Solomon Ng
+# @author    Solomon Ng <solomon.wzs@gmail.com>
+# @date      `!p
+snip.rv = strtoday()
+`
+# @version   1.0
+# @copyright MIT
 
 set -euo pipefail
 

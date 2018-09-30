@@ -1,24 +1,19 @@
-# global !p
-# def fraction(a, b):
-#     try:
-#         return "%.1f" % (float(a)/float(b))
-#     except (ValueError, ZeroDivisionError):
-#         return "ERR"
-# endglobal
-
-
-# snippet 75w "Log a 750words.com session" b
-# 750words.com: ${1:750} words in ${2:20} minutes - `!p
-# snip.rv = fraction(t[1], t[2])
-# ` wpm.
-# endsnippet
+global !p
+from common import strtoday
+from python_snip import write_doc_function
+endglobal
 
 
 snippet #! "header" b
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-__author__ = "Solomon Ng"
+#
+# @author    Solomon Ng <solomon.wzs@gmail.com>
+# @date      `!p
+snip.rv = strtoday()
+`
+# @version   1.0
+# @copyright MIT
 endsnippet
 
 
@@ -27,9 +22,16 @@ if __name__ == "__main__":
 endsnippet
 
 
-snippet def "define function"
-def ${1:FUNCTION}($2):
-	"""
-	${3:DOC}
-	"""
+snippet def "function with docstrings" b
+def ${1:function}(${2:arg1}):`!p
+write_doc_function(snip, t)`
+    ${3:${VISUAL:pass}}
+endsnippet
+
+
+snippet try "Try / Except" b
+try:
+	${1:${VISUAL:pass}}
+except ${2:Exception} as ${3:e}:
+	${4:raise $3}
 endsnippet

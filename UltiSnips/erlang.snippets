@@ -1,0 +1,22 @@
+global !p
+from erlang_snip import write_arguments
+endglobal
+
+
+snippet hdr "header" b
+%% @author    Solomon Ng <solomon.wzs@gmail.com>
+%% @version   1.0
+%% @copyright MIT
+
+-module(`!p
+snip.rv = snip.fn.split('.')[0]
+`).
+endsnippet
+
+
+snippet spec "spec function" b
+-spec(${1:function}(${2:Arg1::any()}) -> ${3:ok}).
+$1(`!p
+write_arguments(snip, t)
+`) -> ok.
+endsnippet

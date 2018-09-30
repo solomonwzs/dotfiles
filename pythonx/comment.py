@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-__author__ = "Solomon Ng"
+#
+# @author    Solomon Ng <solomon.wzs@gmail.com>
+# @date      2018-09-30
+# @version   1.0
+# @copyright MIT
 
 import re
 
@@ -29,6 +32,22 @@ COMMENT_SYMBOL = {
     'xml':          ('<!-- ', ' -->', '<!--', '-->'),
     'yaml':         ('# ', '', None, None),
 }
+
+
+def vi_set_filetype(snip):
+    lines = snip.v.text.split('\n')[:-1]
+    if len(lines) != 1:
+        return snip.v.text
+
+    filetype = lines[0].strip()
+    symbol = COMMENT_SYMBOL.get(filetype)
+    if symbol is None:
+        START = '#'
+        END = ''
+    else:
+        START, END, _, _ = symbol
+
+    return f'{START} vi: set filetype={filetype}{END} :'
 
 
 def comment_line(snip):
