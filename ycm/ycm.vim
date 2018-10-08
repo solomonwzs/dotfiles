@@ -7,7 +7,9 @@ let g:ycm_min_num_identifier_candidate_chars = 2
 let g:ycm_add_preview_to_completeopt = 0
 let g:ycm_show_diagnostics_ui = 0
 
-let g:ycm_python_binary_path = '/usr/bin/python3'
+if executable('python3')
+    let g:ycm_python_binary_path = '/usr/bin/python3'
+endif
 
 if executable('gocode')
     " let g:ycm_gocode_binary_path = 'gocode'

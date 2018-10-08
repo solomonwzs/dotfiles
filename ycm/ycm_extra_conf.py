@@ -28,9 +28,16 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-from distutils.sysconfig import get_python_inc
+import sys
 import os
+
+vimhome = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(vimhome, 'pythonx'))
+
+from distutils.sysconfig import get_python_inc
+from project.project import find_cxx_header_files_dir
 import ycm_core
+
 
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
@@ -46,8 +53,8 @@ flags = [
     '-x', 'c++',
     '-isystem', '/usr/include',
     '-isystem', get_python_inc(),
-    '-I', '.',
-]
+    '-I.',
+] + ['-I%s' % x for x in find_cxx_header_files_dir(path=os.path.abspath('.'))]
 
 SOURCE_EXTENSIONS = ['.cpp', '.cxx', '.cc', '.c', '.m', '.mm']
 
@@ -99,6 +106,8 @@ def FlagsForFile(filename, **kwargs):
     # makes it possible to jump from a declaration in the header file to its
     # definition in the corresponding source file.
     filename = FindCorrespondingSourceFile(filename)
+    with open('/tmp/1.txt', 'a') as fd:
+        fd.write(str(find_cxx_header_files_dir()))
 
     if not database:
         return {

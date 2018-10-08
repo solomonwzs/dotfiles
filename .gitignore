@@ -2,3 +2,4 @@ bundle/
 cache/
 tags
 __pycache__/
+*.pyc
