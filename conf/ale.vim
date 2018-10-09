@@ -9,10 +9,12 @@ let g:ale_lint_on_text_changed = 'normal'
 let g:ale_lint_on_insert_leave = 1
 let g:airline#extensions#ale#enabled = 1
 
-" let g:ale_c_gcc_options = '-Wall -O2 -std=c99'
-" let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
+let g:ale_c_gcc_options = '-Wall -O2 -std=c99'
+let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
 let g:ale_c_cppcheck_options = ''
 let g:ale_cpp_cppcheck_options = ''
+
+let g:ale_c_parse_compile_commands = 1
 
 " let g:ale_sign_error = 'X'
 " let g:ale_sign_warning = '!'
@@ -22,6 +24,8 @@ let g:ale_sign_warning = '⚠'
 " pylint --generate-rcfile > ~/.pylintrc
 " let g:ale_python_pylint_executable = 'pylint'
 " let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
+
+let g:ale_python_flake8_options = '--ignore=E402'
 
 let g:ale_rust_cargo_use_check = 1
 let g:ale_rust_cargo_check_tests = 1
@@ -46,7 +50,7 @@ let g:ale_pattern_options = {
 
 
 python3 << EOF
-from vconf.ale import set_cxx_gcc_opts
+from vconf.ale import set_cxx_gcc_options
 
-set_cxx_gcc_opts()
+set_cxx_gcc_options()
 EOF

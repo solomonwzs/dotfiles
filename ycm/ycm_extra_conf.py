@@ -1,5 +1,5 @@
-# This file is NOT licensed under the GPLv3, which is the license for the rest
-# of YouCompleteMe.
+# This file is NOT licensed under the GPLv3, which is the license for the
+# rest of YouCompleteMe.
 #
 # Here's the license text for this file:
 #
@@ -28,20 +28,24 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-import sys
 import os
+import sys
 
 vimhome = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(vimhome, 'pythonx'))
 
 from distutils.sysconfig import get_python_inc
-from project.project import find_cxx_header_files_dir
+from project.project import (
+    find,
+    find_cxx_header_files_dir,
+)
 import ycm_core
 
 
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
-# CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING FOR.
+# CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING
+# FOR.
 flags = [
     '-Wall',
     '-Wextra',
@@ -54,7 +58,8 @@ flags = [
     '-isystem', '/usr/include',
     '-isystem', get_python_inc(),
     '-I.',
-] + ['-I%s' % x for x in find_cxx_header_files_dir(path=os.path.abspath('.'))]
+]
+database = None
 
 SOURCE_EXTENSIONS = ['.cpp', '.cxx', '.cc', '.c', '.m', '.mm']
 
@@ -69,14 +74,15 @@ HEADER_EXTENSIONS = ['.h', '.hxx', '.hpp', '.hh']
 #   set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # to your CMakeLists.txt file.
 #
-# Most projects will NOT need to set this to anything; you can just change the
-# 'flags' list of compilation flags. Notice that YCM itself uses that approach.
-compilation_database_folder = ''
+# Most projects will NOT need to set this to anything; you can just change
+# the 'flags' list of compilation flags. Notice that YCM itself uses that
+# approach.
+compilation_database_folder = '.'
 
-if os.path.exists(compilation_database_folder):
+if not find('compile_commands.json', os.path.curdir, n=1):
+    flags += [f'-I{x}' for x in find_cxx_header_files_dir()]
+elif os.path.exists(compilation_database_folder):
     database = ycm_core.CompilationDatabase(compilation_database_folder)
-else:
-    database = None
 
 
 def DirectoryOfThisScript():
@@ -106,13 +112,11 @@ def FlagsForFile(filename, **kwargs):
     # makes it possible to jump from a declaration in the header file to its
     # definition in the corresponding source file.
     filename = FindCorrespondingSourceFile(filename)
-    with open('/tmp/1.txt', 'a') as fd:
-        fd.write(str(find_cxx_header_files_dir()))
 
     if not database:
         return {
             'flags': flags,
-            'include_paths_relative_to_dir': DirectoryOfThisScript(),
+            'include_paths_relative_to_dir': os.path.abspath('.'),
             'override_filename': filename
         }
 
@@ -125,8 +129,8 @@ def FlagsForFile(filename, **kwargs):
     final_flags = list(compilation_info.compiler_flags_)
 
     # NOTE: This is just for YouCompleteMe; it's highly likely that your
-    # project does NOT need to remove the stdlib flag. DO NOT USE THIS IN YOUR
-    # ycm_extra_conf IF YOU'RE NOT 100% SURE YOU NEED IT.
+    # project does NOT need to remove the stdlib flag. DO NOT USE THIS IN
+    # YOUR ycm_extra_conf IF YOU'RE NOT 100% SURE YOU NEED IT.
     # try:
     #     final_flags.remove('-stdlib=libc++')
     # except ValueError:

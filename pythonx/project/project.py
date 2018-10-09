@@ -12,12 +12,14 @@ import os
 cxx_headers_ext = {'.h', '.hh', '.hpp', '.hxx'}
 
 
-def find(pattern, path):
+def find(pattern, path, n=0):
     result = []
     for root, dirs, files in os.walk(path):
         for name in files:
             if fnmatch.fnmatch(name, pattern):
                 result.append(os.path.join(root, name))
+                if n > 0 and len(result) == n:
+                    return result
     return result
 
 

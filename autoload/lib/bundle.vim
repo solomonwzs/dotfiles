@@ -58,10 +58,12 @@ function! s:priority_comp(i1, i2)
 endfunc
 
 
-function! lib#bundle#ycm()
-    unlet g:loaded_youcompleteme
-    exec 'so '.g:vimhome.'/ycm/ycm.vim'
-endfunc
+" function! lib#bundle#ycm()
+"     if exists('g:loaded_youcompleteme')
+"         unlet g:loaded_youcompleteme
+"     endif
+"     exec 'so '.g:vimhome.'/ycm/ycm.vim'
+" endfunc
 
 
 function! lib#bundle#load()

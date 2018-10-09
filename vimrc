@@ -97,7 +97,7 @@ let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
 
-let g:loaded_youcompleteme = 1
+" let g:loaded_youcompleteme = 1
 
 if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_ycm_load = 1

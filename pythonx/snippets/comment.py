@@ -10,6 +10,7 @@ import re
 
 COMMENT_SYMBOL = {
     'c':            ('// ', '', '/*', '*/'),
+    'cmake':        ('# ', '', None, None),
     'conf':         ('# ', '', None, None),
     'cpp':          ('// ', '', '/*', '*/'),
     'dockerfile':   ('# ', '', None, None),
