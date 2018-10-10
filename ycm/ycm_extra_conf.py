@@ -35,10 +35,7 @@ vimhome = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(vimhome, 'pythonx'))
 
 from distutils.sysconfig import get_python_inc
-from project.project import (
-    find,
-    find_cxx_header_files_dir,
-)
+from project.project import find
 import ycm_core
 
 
@@ -59,6 +56,7 @@ flags = [
     '-isystem', get_python_inc(),
     '-I.',
 ]
+
 database = None
 
 SOURCE_EXTENSIONS = ['.cpp', '.cxx', '.cc', '.c', '.m', '.mm']
@@ -79,9 +77,8 @@ HEADER_EXTENSIONS = ['.h', '.hxx', '.hpp', '.hh']
 # approach.
 compilation_database_folder = '.'
 
-if not find('compile_commands.json', os.path.curdir, n=1):
-    flags += [f'-I{x}' for x in find_cxx_header_files_dir()]
-elif os.path.exists(compilation_database_folder):
+if find('compile_commands.json', os.path.curdir, n=1) and \
+        os.path.exists(compilation_database_folder):
     database = ycm_core.CompilationDatabase(compilation_database_folder)
 
 

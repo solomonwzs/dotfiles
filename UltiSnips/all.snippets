@@ -1,20 +1,32 @@
 global !p
 from snippets.comment import (
 	comment_line,
+	header_comment,
 	vi_set_filetype,
 )
 endglobal
 
 
-snippet comment_line "toggle comment single line"
+snippet comment_line "toggle comment single line" bm
 `!p
-snip.rv = comment_line(snip)
-`
+snip.rv = comment_line(snip)`
 endsnippet
 
 
 snippet file_type "vi set filetype" b
 `!p
-snip.rv = vi_set_filetype(snip)
-`
+snip.rv = vi_set_filetype(snip)`
 endsnippet
+
+
+snippet hh "header" b
+`!p
+snip.rv = header_comment(snip)`
+endsnippet
+
+
+# snippet dd "debug" b
+# `!p
+# with open('/tmp/1.txt', 'a') as fd:
+# 	fd.write('1\n')`DD
+# endsnippet

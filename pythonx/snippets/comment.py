@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# @author    Solomon Ng <solomon.wzs@gmail.com>
-# @date      2018-09-30
-# @version   1.0
-# @copyright MIT
+# @author   Solomon Ng <solomon.wzs@gmail.com>
+# @date     2018-10-10
+# @version  1.0
+# @license  MIT
 
+from snippets.common import strtoday
 import re
 
 COMMENT_SYMBOL = {
@@ -35,28 +36,38 @@ COMMENT_SYMBOL = {
 }
 
 
+def get_line_comment_symbol(filetype):
+    symbol = COMMENT_SYMBOL.get(filetype)
+    if symbol is None:
+        START = '# '
+        END = ''
+    else:
+        START, END, _, _ = symbol
+    return START, END
+
+
+def header_comment(snip):
+    START, END = get_line_comment_symbol(snip.ft)
+    now = strtoday()
+    return f"""{START}@author     Solomon Ng <solomon.wzs@gmail.com>{END}
+{START}@version    1.0{END}
+{START}@date       {now}{END}
+{START}@license    MIT{END}"""
+
+
 def vi_set_filetype(snip):
     lines = snip.v.text.split('\n')[:-1]
     if len(lines) != 1:
         return snip.v.text
 
     filetype = lines[0].strip()
-    symbol = COMMENT_SYMBOL.get(filetype)
-    if symbol is None:
-        START = '#'
-        END = ''
-    else:
-        START, END, _, _ = symbol
+    START, END = get_line_comment_symbol(snip.ft)
 
     return f'{START} vi: set filetype={filetype}{END} :'
 
 
 def comment_line(snip):
-    symbol = COMMENT_SYMBOL.get(snip.ft)
-    if symbol is None:
-        return snip.v.text
-    else:
-        START, END, _, _ = symbol
+    START, END = get_line_comment_symbol(snip.ft)
 
     lines = snip.v.text.split('\n')[:-1]
     first_line = lines[0]

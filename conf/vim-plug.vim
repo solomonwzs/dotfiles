@@ -48,7 +48,7 @@ Plug 'https://github.com/w0rp/ale.git'
 Plug 'https://github.com/airblade/vim-gitgutter.git', {'commit': '7b81a8a'}
 
 " Commentary.vim: comment stuff out
-" Plug 'https://github.com/tpope/vim-commentary'
+Plug 'https://github.com/tpope/vim-commentary'
 
 " An asynchronous fuzzy finder which is used to quickly
 " locate files, buffers, mrus, tags, etc. in large project.
