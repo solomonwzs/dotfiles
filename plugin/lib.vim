@@ -23,4 +23,4 @@ command! -nargs=0 GenTernProject
             \ call lib#javascript#tern_project()
 
 command! -nargs=0 MyDebug
-            \ call lib#window#new({})
+            \ call lib#window#test()
