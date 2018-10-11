@@ -75,10 +75,13 @@ HEADER_EXTENSIONS = ['.h', '.hxx', '.hpp', '.hh']
 # Most projects will NOT need to set this to anything; you can just change
 # the 'flags' list of compilation flags. Notice that YCM itself uses that
 # approach.
-compilation_database_folder = '.'
+compilation_database_folder = ''
 
-if find('compile_commands.json', os.path.curdir, n=1) and \
-        os.path.exists(compilation_database_folder):
+ccjson_files = find('compile_commands.json', os.path.curdir, n=1)
+if len(ccjson_files) > 0:
+    compilation_database_folder = os.path.dirname(ccjson_files[0])
+
+if os.path.exists(compilation_database_folder):
     database = ycm_core.CompilationDatabase(compilation_database_folder)
 
 

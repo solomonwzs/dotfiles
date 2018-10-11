@@ -63,7 +63,7 @@ def vi_set_filetype(snip):
     filetype = lines[0].strip()
     START, END = get_line_comment_symbol(snip.ft)
 
-    return f'{START} vi: set filetype={filetype}{END} :'
+    return f'{START}vi: set filetype={filetype} :{END}'
 
 
 def comment_line(snip):
