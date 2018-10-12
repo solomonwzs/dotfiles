@@ -4,6 +4,16 @@
 " @license    MIT
 
 
+function! s:setStatusLine(stl)
+    let a:bufnr = bufnr('%')
+    for a:n in range(1, winnr('$'))
+        if winbufnr(a:n) == a:bufnr
+            call setwinvar(a:n, '&statusline', a:stl)
+        endif
+    endfor
+endfunc
+
+
 function! lib#window#new(argv)
     let a:position = get(a:argv, 'position', 'bottom')
     let a:size = get(a:argv, 'size', 0.3)
@@ -18,9 +28,9 @@ function! lib#window#new(argv)
         return
     endif
 
-    silent! exec 'noa keepa keepj '.a:position.' sp '.a:bufname
-    silent! exec 'resize '.float2nr(a:lines)
-    silent! exec 'setlocal filetype='.a:winname
+    silent! exec printf('noa keepa keepj %s sp %s', a:position, a:bufname)
+    silent! exec printf('resize %s', a:lines)
+    silent! exec printf('setlocal filetype=%s', a:winname)
 
     setlocal bufhidden=hide
     setlocal buftype=nofile
@@ -39,6 +49,12 @@ function! lib#window#new(argv)
     setlocal wrap
 
     redrawstatus
+
+    let a:stl = printf('%!airline#statusline(%s)', winnr())
+    exec printf('augroup Lib_win_%s_Colorscheme', a:bufname)
+    exec printf('au ColorScheme * call s:setStatusLine(%s)', a:stl)
+    exec printf('au WinEnter,FileType * call s:setStatusLine(%s)', a:stl)
+    exec printf('augroup END')
 endfunc
 
 
