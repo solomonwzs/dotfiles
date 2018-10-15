@@ -17,7 +17,7 @@ set -euo pipefail
 
 # CURRENT_FILENAME=$(readlink -f "${BASH_SOURCE[0]}")
 # EXECUTE_FILENAME=$(readlink -f "\$0")
-# EXECUTE_DIRNAME=$(dirname "$CURRENT_FILENAME")
+# EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 endsnippet
 
 
@@ -28,4 +28,11 @@ endsnippet
 
 snippet efn "execute filename" b
 ${1:EXECUTE_FILENAME}=$(readlink -f "\$0")
+endsnippet
+
+
+snippet ifm "if main" b
+if [ "$(readlink -f "\$0")" == "$(readlink -f "${BASH_SOURCE[0]}")" ]; then
+    ${1:true}
+fi
 endsnippet
