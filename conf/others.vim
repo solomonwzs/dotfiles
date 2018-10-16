@@ -29,5 +29,6 @@ let g:SignatureMarkTextHL = 'VimSignatureMarkLine'
 " Setting for vim-commentary
 augroup commentary_group
     autocmd FileType nginx setlocal commentstring=#\ %s
+    autocmd FileType logstash setlocal commentstring=#\ %s
     autocmd FileType c,cpp setlocal commentstring=//\ %s
 augroup END

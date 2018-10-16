@@ -25,7 +25,7 @@ let g:ale_sign_warning = '⚠'
 " let g:ale_python_pylint_executable = 'pylint'
 " let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
 
-let g:ale_python_flake8_options = '--ignore=E402,E241'
+let g:ale_python_flake8_options = '--ignore=E402,E241,E501'
 
 let g:ale_rust_cargo_use_check = 1
 let g:ale_rust_cargo_check_tests = 1
