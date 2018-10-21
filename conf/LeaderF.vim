@@ -6,6 +6,14 @@ noremap <A-m> :LeaderfMru<CR>
 noremap <A-f> :LeaderfFunction<CR>
 noremap <A-b> :LeaderfBuffer<CR>
 noremap <A-a> :LeaderfTag<CR>
+
+let g:Lf_CommandMap = {
+            \ '<C-K>': ['<Up>'],
+            \ '<C-J>': ['<Down>'],
+            \ '<Up>': ['<C-K>'],
+            \ '<Down>': ['<C-J>']
+            \ }
+
 " let g:Lf_StlSeparator = {'left': '', 'right': '', 'font': ''}
 let g:Lf_StlSeparator = { 'left': '', 'right': '' }
 
