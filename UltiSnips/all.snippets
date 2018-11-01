@@ -3,8 +3,15 @@ from snippets.comment import (
 	comment_line,
 	header_comment,
 	vi_set_filetype,
+	exec_comment,
 )
 endglobal
+
+
+# snippet #! "exec comment" b
+# `!p
+# snip.rv = exec_comment(snip)`
+# endsnippet
 
 
 snippet comment_line "toggle comment single line" bm

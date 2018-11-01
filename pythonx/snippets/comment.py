@@ -9,50 +9,79 @@
 from snippets.common import strtoday
 import re
 
-COMMENT_SYMBOL = {
-    'c':            ('// ', '', '/*', '*/'),
-    'cmake':        ('# ', '', None, None),
-    'conf':         ('# ', '', None, None),
-    'cpp':          ('// ', '', '/*', '*/'),
-    'dockerfile':   ('# ', '', None, None),
-    'erlang':       ('%% ', '', None, None),
-    'gitcommit':    ('#', '', None, None),
-    'go':           ('// ', '', '/*', '*/'),
-    'html':         ('<!-- ', ' -->', '<!--', '-->'),
-    'java':         ('// ', '', '/*', '*/'),
-    'javascript':   ('// ', '', '/*', '*/'),
-    'json':         ('"#\\', '', None, None),
-    'lua':          ('-- ', '', None, None),
-    'make':         ('# ', '', None, None),
-    'nginx':        ('# ', '', None, None),
-    'python':       ('# ', '', '"""', '"""'),
-    'ruby':         ('# ', '', None, None),
-    'rust':         ('// ', '', '/*', '*/'),
-    'scheme':       ('; ', '', None, None),
-    'sh':           ('# ', '', None, None),
-    'vim':          ('" ', '', None, None),
-    'xml':          ('<!-- ', ' -->', '<!--', '-->'),
-    'yaml':         ('# ', '', None, None),
+c_style_comment_symbol = {
+    'left': '//',
+    'right': '',
+    'start': '/*',
+    'end': '*/',
+}
+
+sh_style_comment_symbol = {
+    'left': '#',
+    'right': '',
+}
+
+xml_style_comment_symbol = {
+    'left': '<!--',
+    'right': '-->',
+}
+
+lang_symbol_info = {
+    'c': {'comment': c_style_comment_symbol},
+    'cpp': {'comment': c_style_comment_symbol},
+    'go': {'comment': c_style_comment_symbol},
+    'rust': {'comment': c_style_comment_symbol},
+    'java': {'comment': c_style_comment_symbol},
+    'javascript': {'comment': c_style_comment_symbol},
+    'erlang': {
+        'comment': {
+            'left': '%%',
+            'right': '',
+        }
+    },
+    'lua': {
+        'exec': '#!/usr/bin/lua',
+        'comment': {
+            'left': '--',
+            'right': '',
+        }
+    },
+    'scheme': {
+        'comment': {
+            'left': ';',
+            'right': '',
+        }
+    },
+    'vim': {
+        'comment': {
+            'left': '"',
+            'right': '',
+        }
+    },
+    'python': {'exec': '#!/usr/bin/python3'},
+    'ruby': {'exec': '#!/usr/bin/ruby'},
+    'sh': {'exec': '#!/usr/bin/bash'},
+    'awk': {'exec': '#!/usr/bin/awk -f'},
 }
 
 
+def exec_comment(filetype):
+    return lang_symbol_info.get(filetype, {}).get('exec', '#!')
+
+
 def get_line_comment_symbol(filetype):
-    symbol = COMMENT_SYMBOL.get(filetype)
-    if symbol is None:
-        START = '# '
-        END = ''
-    else:
-        START, END, _, _ = symbol
-    return START, END
+    comment = lang_symbol_info.get(filetype, {}).get(
+        'comment', sh_style_comment_symbol)
+    return comment.get('left', ''), comment.get('right', '')
 
 
 def header_comment(snip):
     START, END = get_line_comment_symbol(snip.ft)
     now = strtoday()
-    return f"""{START}@author     Solomon Ng <solomon.wzs@gmail.com>{END}
-{START}@version    1.0{END}
-{START}@date       {now}{END}
-{START}@license    MIT{END}"""
+    return f"""{START} @author     Solomon Ng <solomon.wzs@gmail.com>{END}
+{START} @version    1.0{END}
+{START} @date       {now}{END}
+{START} @license    MIT{END}"""
 
 
 def vi_set_filetype(snip):
@@ -63,7 +92,7 @@ def vi_set_filetype(snip):
     filetype = lines[0].strip()
     START, END = get_line_comment_symbol(snip.ft)
 
-    return f'{START}vi: set filetype={filetype} :{END}'
+    return f'{START} vi: set filetype={filetype} :{END}'
 
 
 def comment_line(snip):
