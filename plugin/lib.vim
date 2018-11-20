@@ -22,5 +22,19 @@ command! -nargs=0 YcmCursorMovedAutoCmdsToggle
 command! -nargs=0 GenTernProject
             \ call lib#javascript#tern_project()
 
-command! -nargs=0 MyDebug
+command! -nargs=0 GoInstallDeps
+            \ call lib#golang#comp_deps_pkgs(expand('%:p'))
+
+command! -nargs=0 GoInstallImps
+            \ call lib#golang#comp_imps_pkgs(expand('%:p'))
+
+command! -nargs=0 WindowsDebug
             \ call lib#window#test()
+
+command! -nargs=0 MyDebug
+            \ call lib#golang#foo(getline('.'))
+
+
+augroup my_plugin_lib
+    autocmd BufWritePost *.go call lib#golang#update_pkg()
+augroup END

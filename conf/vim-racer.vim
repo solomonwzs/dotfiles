@@ -2,7 +2,7 @@
 " Install racer
 let g:racer_experimental_completer = 1
 
-augroup racer_group
+augroup my_conf_vim_racer
     autocmd Filetype rust setlocal hidden
     autocmd FileType rust nmap gd <Plug>(rust-def)
     autocmd FileType rust nmap gs <Plug>(rust-def-split)

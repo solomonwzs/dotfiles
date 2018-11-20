@@ -83,7 +83,7 @@ hi clear CursorLine
 hi LineNR ctermfg=240
 hi CursorLineNR cterm=bold ctermfg=255
 hi CursorLine ctermbg=237
-augroup CursorLine
+augroup my_colors_candy
     au!
     au VimEnter,WinEnter,BufWinEnter * setlocal cursorline
     au WinLeave * setlocal nocursorline

@@ -55,18 +55,16 @@ if has('cscope')
     set cscopequickfix=s-,d-,c-,t-,e-,f-,i-
 endif
 
-augroup cursor_group
+set grepprg=grep\ -nH\ $*
+let g:tex_flavor='latex'
+
+augroup my_vimrc
     autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
     autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 
     " Restore cursor position
     au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
-augroup END
 
-set grepprg=grep\ -nH\ $*
-let g:tex_flavor='latex'
-
-augroup fileType_group
     autocmd FileType java       setlocal omnifunc=javacomplete#Complete
     autocmd Filetype c          setlocal omnifunc=ccomplete#Complete
     autocmd Filetype html       setlocal omnifunc=htmlcomplete#CompleteTags
