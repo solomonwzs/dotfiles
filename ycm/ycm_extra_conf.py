@@ -55,6 +55,7 @@ flags = [
     '-isystem', '/usr/include',
     '-isystem', get_python_inc(),
     '-I.',
+    '-I./include',
 ]
 
 database = None
