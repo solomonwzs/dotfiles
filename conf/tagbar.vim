@@ -9,5 +9,6 @@ let g:tagbar_type_rust = {
             \   'c:consts,static constants',
             \   't:traits',
             \   'i:impls,trait implementations',
+            \   'P:-',
             \ ],
             \ }
