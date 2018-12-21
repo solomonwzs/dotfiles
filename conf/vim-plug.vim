@@ -131,7 +131,19 @@ Plug 'https://github.com/pangloss/vim-javascript.git'
 Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
 " Language Server Protocol (LSP) support for vim and neovim.
-" Plug 'https://github.com/autozimu/LanguageClient-neovim.git'
+Plug 'https://github.com/autozimu/LanguageClient-neovim.git', {
+            \ 'branch': 'next',
+            \ 'do': 'bash install.sh',
+            \ }
+
+" Dark powered asynchronous completion framework for neovim/Vim8.
+Plug 'https://github.com/Shougo/deoplete.nvim.git'
+
+" Yet Another Remote Plugin Framework for Neovim.
+Plug 'https://github.com/roxma/nvim-yarp.git'
+
+" EXPERIMENTAL
+Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
 
 " async language server protocol plugin for vim and neovim.
 " Plug 'https://github.com/prabirshrestha/vim-lsp.git'

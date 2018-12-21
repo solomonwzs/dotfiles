@@ -1,4 +1,4 @@
-let s:all_valid_bundles = [
+let s:basic_valid_bundles = [
             \ 'DrawIt',
             \ 'LeaderF',
             \ 'ack.vim',
@@ -10,8 +10,6 @@ let s:all_valid_bundles = [
             \ 'nord-vim',
             \ 'rainbow',
             \ 'rust.vim',
-            \ 'supertab',
-            \ 'syntastic',
             \ 'tabular',
             \ 'tagbar',
             \ 'twitvim',
@@ -20,8 +18,6 @@ let s:all_valid_bundles = [
             \ 'vim-commentary',
             \ 'vim-dirdiff',
             \ 'vim-dirvish',
-            \ 'vim-erlang-omnicomplete',
-            \ 'vim-erlang-tags',
             \ 'vim-fugitive',
             \ 'vim-gitgutter',
             \ 'vim-go',
@@ -34,6 +30,7 @@ let s:all_valid_bundles = [
             \ 'vim-toml',
             \ 'vim-startify',
             \ 'vim-vue',
+            \ 'ycm',
             \ ]
 
 let s:bundle_priority = {
@@ -43,6 +40,7 @@ let s:bundle_priority = {
             \ }
 
 let s:loaded_bundles = {}
+let s:group_bundle_list = []
 
 
 function! s:priority_comp(i1, i2)
@@ -59,6 +57,17 @@ function! s:priority_comp(i1, i2)
 endfunc
 
 
+function! s:update_bundle_group()
+    let s:group_bundle_list = []
+
+    if !exists('g:lib_code_completion') || g:lib_code_completion ==? 'ycm'
+        call add(s:group_bundle_list, 'ycm')
+    elseif g:lib_code_completion ==? 'supertab'
+        call add(s:group_bundle_list, 'supertab')
+    endif
+endfunc
+
+
 " function! lib#bundle#ycm()
 "     if exists('g:loaded_youcompleteme')
 "         unlet g:loaded_youcompleteme
@@ -68,15 +77,9 @@ endfunc
 
 
 function! lib#bundle#load()
+    let a:tmp_bundle_list = s:basic_valid_bundles
     if exists('g:lib_bundle_whitelist')
-        let a:wlist = g:lib_bundle_whitelist
-    else
-        let a:wlist = s:all_valid_bundles
-        " let a:wlist = []
-        " for a:i in split(glob(g:vimhome.'/bundle/*'), '\n')
-        "     let a:name=split(a:i, '/')[-1]
-        "     call add(a:wlist, a:name)
-        " endfor
+        let a:tmp_bundle_list += g:lib_bundle_whitelist
     endif
     let a:bdict = {}
     if exists('g:lib_bundle_blacklist')
@@ -85,17 +88,24 @@ function! lib#bundle#load()
         endfor
     endif
     let a:lib_bundle_list = []
-    for a:i in a:wlist
+    for a:i in a:tmp_bundle_list
         if !has_key(a:bdict, a:i)
             call add(a:lib_bundle_list, a:i)
         endif
     endfor
     let a:lib_bundle_list = sort(a:lib_bundle_list, 's:priority_comp')
 
+    let g:loaded_youcompleteme = 1
     let a:dir = g:vimhome.'/bundle'
     call plug#begin(a:dir)
     for a:i in a:lib_bundle_list
-        Plug a:dir.'/'.a:i
+        if a:i ==? 'ycm'
+            if exists('g:loaded_youcompleteme')
+                unlet g:loaded_youcompleteme
+            endif
+        else
+            Plug a:dir.'/'.a:i
+        endif
     endfor
     call plug#end()
 

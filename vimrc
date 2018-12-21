@@ -95,36 +95,22 @@ let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
 
-" let g:loaded_youcompleteme = 1
-
 if $VIM_GROUP ==? 'erl'
-    let g:lib_bundle_ycm_load = 1
+    let g:lib_bundle_whitelist = [
+                \ 'syntastic',
+                \ 'vim-erlang-tags',
+                \ 'vim-erlang-omnicomplete',
+                \ ]
     let g:lib_bundle_blacklist = [
                 \ 'ale',
-                \ 'supertab',
                 \ 'vim-gutentags',
                 \ ]
 elseif $VIM_GROUP ==? 'scheme'
-    let g:lib_bundle_blacklist = [
-                \ 'ale',
-                \ 'vim-erlang-tags',
-                \ 'vim-erlang-omnicomplete',
-                \ ]
+    let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'non_ale'
-    let g:lib_bundle_ycm_load = 1
-    let g:lib_bundle_blacklist = [
-                \ 'ale',
-                \ 'supertab',
-                \ 'vim-erlang-tags',
-                \ 'vim-erlang-omnicomplete',
-                \ ]
-else
-    let g:lib_bundle_ycm_load = 1
-    let g:lib_bundle_blacklist = [
-                \ 'syntastic',
-                \ 'supertab',
-                \ 'vim-erlang-tags',
-                \ 'vim-erlang-omnicomplete',
-                \ ]
+    let g:lib_bundle_blacklist = ['ale']
+elseif $VIM_GROUP ==? 'rust'
+    let g:lib_bundle_whitelist = ['syntastic']
+    let g:lib_bundle_blacklist = ['ale']
 endif
 call lib#bundle#load()

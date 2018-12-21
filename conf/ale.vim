@@ -21,7 +21,9 @@ let g:ale_c_parse_compile_commands = 1
 let g:ale_sign_error = '✖'
 let g:ale_sign_warning = '⚠'
 
-" pylint --generate-rcfile > ~/.pylintrc
+" genrate rc-file:
+"   pylint --generate-rcfile > ~/.pylintrc
+"
 " let g:ale_python_pylint_executable = 'pylint'
 " let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
 
