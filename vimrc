@@ -107,10 +107,18 @@ if $VIM_GROUP ==? 'erl'
                 \ ]
 elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = ['ale']
-elseif $VIM_GROUP ==? 'non_ale'
+elseif $VIM_GROUP ==? 'no_ale'
     let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'rust'
     let g:lib_bundle_whitelist = ['syntastic']
     let g:lib_bundle_blacklist = ['ale']
+elseif $VIM_GROUP ==? 'debug'
+    let g:lib_bundle_whitelist = [
+                \ 'LanguageClient-neovim',
+                \ 'deoplete.nvim',
+                \ 'nvim-yarp',
+                \ 'vim-hug-neovim-rpc',
+                \ ]
+    let g:lib_bundle_blacklist = ['ycm', 'ale']
 endif
 call lib#bundle#load()

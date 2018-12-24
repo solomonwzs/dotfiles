@@ -1,8 +1,8 @@
 " Setting for ocamlmerlin (ocaml)
-set runtimepath+=/usr/share/ocamlmerlin/vim
+" set runtimepath+=/usr/share/ocamlmerlin/vim
 
 " Setting for cabal (haskell)
-let $PATH=$PATH.':'.expand($HOME.'/.cabal/bin')
+" let $PATH=$PATH.':'.expand($HOME.'/.cabal/bin')
 
 " Setting for ack.vim
 if executable('ag')
@@ -21,7 +21,7 @@ let g:jedi#force_py_version = 3
 let g:signify_sign_change = '~'
 
 " Setting for twitvim
-let twitvim_proxy = 'http://127.0.0.1:8118'
+" let twitvim_proxy = 'http://127.0.0.1:8118'
 
 " Setting for vim-signature
 let g:SignatureMarkTextHL = 'VimSignatureMarkLine'

@@ -12,7 +12,6 @@ let s:basic_valid_bundles = [
             \ 'rust.vim',
             \ 'tabular',
             \ 'tagbar',
-            \ 'twitvim',
             \ 'ultisnips',
             \ 'vim-airline',
             \ 'vim-commentary',
