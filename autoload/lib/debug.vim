@@ -1,6 +1,6 @@
-function! lib#debug#foo()
-python << EOF
-from project.project import find_cxx_header_files_dir, find
+function! lib#debug#foo(arg)
+python3 << EOF
+from project.project import get_makefile_variable
 import vim
 
 # print(vim.current.line)
@@ -8,7 +8,10 @@ import vim
 # print(find('compile_commands.json', '.'))
 # d = vim.bindeval("g:ycm_semantic_triggers")
 # d.update({'foo': 'bar'})
+
+d = vim.vars
+d['foo'] = 'xx'
 EOF
 
-" echo g:ycm_semantic_triggers
+echo g:foo
 endfunction

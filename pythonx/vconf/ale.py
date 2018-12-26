@@ -6,19 +6,17 @@
 # @version   1.0
 # @copyright MIT
 
-from project.project import (
-    find_cxx_header_files_dir,
-    find,
-)
+from project.project import get_makefile_variable
 import os
 import vim
 
 
 def set_cxx_gcc_options():
-    if not find('compile_commands.json', os.path.curdir, n=1):
-        inc = [f"-I{x}" for x in find_cxx_header_files_dir()]
-        flags = ' ' + ' '.join(inc)
-
-        for opt in ["g:ale_c_gcc_options", "g:ale_cpp_gcc_options"]:
-            val = vim.eval(opt)
-            vim.command(f"let {opt} = '{val} {flags}'")
+    makefile = os.path.join(os.getcwd(), 'Makefile')
+    if not os.path.exists(makefile):
+        return
+    flags = get_makefile_variable([makefile], 'CFLAGS')
+    if flags != '':
+        b = vim.vars
+        b['ale_c_gcc_options'] = flags
+        b['ale_cpp_gcc_options'] = flags

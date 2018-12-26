@@ -36,6 +36,7 @@ sys.path.append(os.path.join(vimhome, 'pythonx'))
 
 from distutils.sysconfig import get_python_inc
 from project.project import find
+from project.project import get_makefile_variable
 import ycm_core
 
 
@@ -43,7 +44,7 @@ import ycm_core
 # compilation database set (by default, one is not set).
 # CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING
 # FOR.
-flags = [
+flags_set = set([
     '-Wall',
     '-Wextra',
     '-Werror',
@@ -56,7 +57,16 @@ flags = [
     '-isystem', get_python_inc(),
     '-I.',
     '-I./include',
-]
+])
+
+
+makefile = os.path.join(os.getcwd(), 'Makefile')
+if os.path.exists(makefile):
+    fs = get_makefile_variable([makefile], 'CFLAGS')
+    for f in fs.split(' '):
+        if f != '':
+            flags_set.add(f)
+flags = list(flags_set)
 
 database = None
 

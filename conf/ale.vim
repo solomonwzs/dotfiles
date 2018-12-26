@@ -51,7 +51,7 @@ let g:ale_pattern_options = {
             \ }
 
 
-" python3 << EOF
-" from vconf.ale import set_cxx_gcc_options
-" set_cxx_gcc_options()
-" EOF
+python3 << EOF
+from vconf.ale import set_cxx_gcc_options
+set_cxx_gcc_options()
+EOF

@@ -32,7 +32,7 @@ command! -nargs=0 WindowsDebug
             \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-            \ call lib#golang#foo(getline('.'))
+            \ call lib#debug#foo(getline('.'))
 
 
 augroup my_plugin_lib
