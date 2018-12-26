@@ -52,9 +52,6 @@ flags_set = set([
     '-Wno-variadic-macros',
     '-fexceptions',
     '-DNDEBUG',
-    '-x', 'c++',
-    '-isystem', '/usr/include',
-    '-isystem', get_python_inc(),
     '-I.',
     '-I./include',
 ])
@@ -67,6 +64,11 @@ if os.path.exists(makefile):
         if f != '':
             flags_set.add(f)
 flags = list(flags_set)
+flags += [
+    '-x', 'c++',
+    '-isystem', '/usr/include',
+    '-isystem', get_python_inc(),
+]
 
 database = None
 
@@ -88,9 +90,9 @@ HEADER_EXTENSIONS = ['.h', '.hxx', '.hpp', '.hh']
 # approach.
 compilation_database_folder = ''
 
-ccjson_files = find('compile_commands.json', os.path.curdir, n=1)
-if len(ccjson_files) > 0:
-    compilation_database_folder = os.path.dirname(ccjson_files[0])
+# ccjson_files = find('compile_commands.json', os.path.curdir, n=1)
+# if len(ccjson_files) > 0:
+#     compilation_database_folder = os.path.dirname(ccjson_files[0])
 
 if os.path.exists(compilation_database_folder):
     database = ycm_core.CompilationDatabase(compilation_database_folder)
