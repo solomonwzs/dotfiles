@@ -44,7 +44,7 @@ import ycm_core
 # compilation database set (by default, one is not set).
 # CHANGE THIS LIST OF FLAGS. YES, THIS IS THE DROID YOU HAVE BEEN LOOKING
 # FOR.
-flags_set = set([
+flags = [
     '-Wall',
     '-Wextra',
     '-Werror',
@@ -52,9 +52,12 @@ flags_set = set([
     '-Wno-variadic-macros',
     '-fexceptions',
     '-DNDEBUG',
+    '-x', 'c++',
+    '-isystem', '/usr/include',
+    '-isystem', get_python_inc(),
     '-I.',
     '-I./include',
-])
+]
 
 
 makefile = os.path.join(os.getcwd(), 'Makefile')
@@ -62,13 +65,7 @@ if os.path.exists(makefile):
     fs = get_makefile_variable([makefile], 'CFLAGS')
     for f in fs.split(' '):
         if f != '':
-            flags_set.add(f)
-flags = list(flags_set)
-flags += [
-    '-x', 'c++',
-    '-isystem', '/usr/include',
-    '-isystem', get_python_inc(),
-]
+            flags.append(f)
 
 database = None
 
