@@ -27,7 +27,6 @@ let s:basic_valid_bundles = [
             \ 'vim-racer',
             \ 'vim-signature',
             \ 'vim-toml',
-            \ 'vim-startify',
             \ 'vim-vue',
             \ 'ycm',
             \ ]
