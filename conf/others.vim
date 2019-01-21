@@ -33,6 +33,3 @@ augroup my_conf_other
     autocmd FileType logstash setlocal commentstring=#\ %s
     autocmd FileType c,cpp setlocal commentstring=//\ %s
 augroup END
-
-" Setting for rust.vim
-let g:rustfmt_autosave = 1
