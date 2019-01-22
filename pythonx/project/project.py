@@ -40,7 +40,7 @@ def find_cxx_header_files_dir(path='.'):
 
 
 def get_makefile_variable(makefiles, var):
-    var_mk = os.path.join(VIM_HOME, 'template/makefile/variable.mk')
+    var_mk = os.path.join(VIM_HOME, 'other/makefile/variable.mk')
     cmd = ['make']
     for f in makefiles:
         cmd += ['-f', f]

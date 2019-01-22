@@ -1,6 +1,6 @@
 function! lib#javascript#tern_project()
     let a:wp = getcwd()
-    let a:tmpl_file = g:vimhome.'/template/ycm/tern-project.json'
+    let a:tmpl_file = g:vimhome.'/other/ycm/tern-project.json'
     silent exec '!cp '.a:tmpl_file.' '.a:wp.'/.tern-project'
     redraw!
 

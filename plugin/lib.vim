@@ -38,6 +38,4 @@ command! -nargs=0 MyDebug
 augroup my_plugin_lib
     autocmd FileType go
                 \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
-    autocmd FileType rust
-                \ autocmd! BufWritePost <buffer> call rustfmt#Format()
 augroup END
