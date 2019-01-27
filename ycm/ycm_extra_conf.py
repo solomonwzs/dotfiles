@@ -29,13 +29,13 @@
 # For more information, please refer to <http://unlicense.org/>
 
 import os
+import re
 import sys
 
 vimhome = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(vimhome, 'pythonx'))
 
 from distutils.sysconfig import get_python_inc
-from project.project import find
 from project.project import get_makefile_variable
 import ycm_core
 
@@ -53,11 +53,19 @@ flags = [
     '-fexceptions',
     '-DNDEBUG',
     '-x', 'c++',
-    '-isystem', '/usr/include',
     '-isystem', get_python_inc(),
+
+    '-I/usr/include',
     '-I.',
     '-I./include',
 ]
+
+
+groups = re.findall(r'\[GCC (.*) .*\]', sys.version)
+if len(groups) == 1:
+    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0])]
+    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0], 'x86_64-pc-linux-gnu')]
+    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0], 'backward')]
 
 
 makefile = os.path.join(os.getcwd(), 'Makefile')
