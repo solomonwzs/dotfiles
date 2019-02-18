@@ -1,0 +1,31 @@
+global !p
+from snippets.common import strtoday
+endglobal
+
+snippet hdr "header" b
+/**
+ * @author  Solomon Ng <solomon.wzs@gmail.com>
+ * @version 1.0
+ * @date    `!p
+snip.rv = strtoday()
+`
+ * @license MIT
+ */
+
+package ${1:main}
+endsnippet
+
+
+# snippet test "Testing" b
+# func Test${1:Xxx}(t *testing.T) {
+# }
+# endsnippet
+
+
+# snippet ben "Benchmarks" b
+# func Benchmark${1:Xxx}(b *testing.B) {
+# 	for i := 0; i < b.N; i++ {
+# 		${0:${VISUAL}}
+# 	}
+# }
+# endsnippet
