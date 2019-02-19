@@ -22,10 +22,10 @@ endsnippet
 # endsnippet
 
 
-# snippet ben "Benchmarks" b
-# func Benchmark${1:Xxx}(b *testing.B) {
-# 	for i := 0; i < b.N; i++ {
-# 		${0:${VISUAL}}
-# 	}
-# }
-# endsnippet
+snippet ben "Benchmarks" b
+func Benchmark${1:Method}(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		${0:${VISUAL}}
+	}
+}
+endsnippet
