@@ -49,9 +49,9 @@ function! s:priority_comp(i1, i2)
             return 0
         endif
     endfunc
-    let a:p1 = s:get_priority(a:i1)
-    let a:p2 = s:get_priority(a:i2)
-    return a:p1 == a:p2 ? 0 : a:p1 < a:p2 ? 1 : -1
+    let p1 = s:get_priority(a:i1)
+    let p2 = s:get_priority(a:i2)
+    return p1 == p2 ? 0 : p1 < p2 ? 1 : -1
 endfunc
 
 
@@ -75,44 +75,44 @@ endfunc
 
 
 function! lib#bundle#load()
-    let a:tmp_bundle_list = s:basic_valid_bundles
+    let tmp_bundle_list = s:basic_valid_bundles
     if exists('g:lib_bundle_whitelist')
-        let a:tmp_bundle_list += g:lib_bundle_whitelist
+        let tmp_bundle_list += g:lib_bundle_whitelist
     endif
-    let a:bdict = {}
+    let bdict = {}
     if exists('g:lib_bundle_blacklist')
-        for a:i in g:lib_bundle_blacklist
-            let a:bdict[a:i] = 1
+        for i in g:lib_bundle_blacklist
+            let bdict[i] = 1
         endfor
     endif
-    let a:lib_bundle_list = []
-    for a:i in a:tmp_bundle_list
-        if !has_key(a:bdict, a:i)
-            call add(a:lib_bundle_list, a:i)
+    let lib_bundle_list = []
+    for i in tmp_bundle_list
+        if !has_key(bdict, i)
+            call add(lib_bundle_list, i)
         endif
     endfor
-    let a:lib_bundle_list = sort(a:lib_bundle_list, 's:priority_comp')
+    let lib_bundle_list = sort(lib_bundle_list, 's:priority_comp')
 
     let g:loaded_youcompleteme = 1
-    let a:dir = g:vimhome.'/bundle'
-    call plug#begin(a:dir)
-    for a:i in a:lib_bundle_list
-        if a:i ==? 'ycm'
+    let dir = g:vimhome.'/bundle'
+    call plug#begin(dir)
+    for i in lib_bundle_list
+        if i ==? 'ycm'
             if exists('g:loaded_youcompleteme')
                 unlet g:loaded_youcompleteme
             endif
         else
-            Plug a:dir.'/'.a:i
+            Plug dir.'/'.i
         endif
     endfor
     call plug#end()
 
     let s:loaded_bundles = {}
-    for a:i in a:lib_bundle_list
-        let s:loaded_bundles[a:i] = 1
-        let a:cfile=g:vimhome.'/conf/'.a:i.'.vim'
-        if filereadable(a:cfile)
-            exec 'so '.a:cfile
+    for i in lib_bundle_list
+        let s:loaded_bundles[i] = 1
+        let cfile=g:vimhome.'/conf/'.i.'.vim'
+        if filereadable(cfile)
+            exec 'so '.cfile
         endif
     endfor
     exec 'so '.g:vimhome.'/conf/others.vim'

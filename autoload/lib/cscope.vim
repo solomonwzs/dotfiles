@@ -29,8 +29,8 @@ endfunc
 
 
 function! s:Basename()
-    let a:cwd = getcwd()
-    return join(split(a:cwd, '/'), '-')
+    let cwd = getcwd()
+    return join(split(cwd, '/'), '-')
 endfunc
 
 
@@ -54,32 +54,32 @@ endfunc
 function! lib#cscope#gen_tags()
     call s:Mkdir_Workspace()
 
-    let a:basename = s:Basename()
-    let a:file_list = s:out_dir.'/'.a:basename.'.files'
-    let a:names = []
-    for a:ext in s:code_ext
-        call add(a:names, '-iname "*.'.a:ext.'"')
+    let basename = s:Basename()
+    let file_list = s:out_dir.'/'.basename.'.files'
+    let names = []
+    for ext in s:code_ext
+        call add(names, '-iname "*.'.ext.'"')
     endfor
-    let a:cmd_1 = 'find . '.join(a:names, ' -o ').' > '.a:file_list
+    let cmd_1 = 'find . '.join(names, ' -o ').' > '.file_list
 
-    let a:cscope_out = s:out_dir.'/'.a:basename.'.out'
-    let a:cmd_2 = 'cscope '.join(s:build_opts, ' ').
-                \' -i '.a:file_list.
-                \' -f '.a:cscope_out
+    let cscope_out = s:out_dir.'/'.basename.'.out'
+    let cmd_2 = 'cscope '.join(s:build_opts, ' ').
+                \' -i '.file_list.
+                \' -f '.cscope_out
 
-    let a:cmd = a:cmd_1.' && '.a:cmd_2.' && echo '.a:cscope_out
+    let cmd = cmd_1.' && '.cmd_2.' && echo '.cscope_out
     if has('channel') && has('job')
-        call job_start(['/bin/sh', '-c', a:cmd], {
+        call job_start(['/bin/sh', '-c', cmd], {
                     \ 'callback': function('s:Gen_Tags_OnCallback'),
                     \ 'err_cb': function('s:Gen_Tags_OnError'),
                     \ })
     else
-        silent exec '!'.a:cmd
+        silent exec '!'.cmd
         redraw!
         if v:shell_error
             call s:Gen_Tags_OnError(0, 'set cscope db/conn failure')
         else
-            call s:Gen_Tags_OnCallback(0, a:cscope_out)
+            call s:Gen_Tags_OnCallback(0, cscope_out)
         endif
     end
 endfunc

@@ -5,32 +5,32 @@
 
 
 function! s:setStatusLine(stl)
-    let a:bufnr = bufnr('%')
-    for a:n in range(1, winnr('$'))
-        if winbufnr(a:n) == a:bufnr
-            call setwinvar(a:n, '&statusline', a:stl)
+    let bufnr = bufnr('%')
+    for n in range(1, winnr('$'))
+        if winbufnr(n) == bufnr
+            call setwinvar(n, '&statusline', a:stl)
         endif
     endfor
 endfunc
 
 
 function! lib#window#new(argv)
-    let a:position = get(a:argv, 'position', 'bottom')
-    let a:size = get(a:argv, 'size', 0.3)
-    let a:bufname = get(a:argv, 'bufname', 'undefined')
-    let a:winname = get(a:argv, 'winname', 'undefined')
+    let position = get(a:argv, 'position', 'bottom')
+    let size = get(a:argv, 'size', 0.3)
+    let bufname = get(a:argv, 'bufname', 'undefined')
+    let winname = get(a:argv, 'winname', 'undefined')
 
-    if a:size >= 1
-        let a:lines = a:size
-    elseif a:size > 0
-        let a:lines = &lines * a:size
+    if size >= 1
+        let lines = size
+    elseif size > 0
+        let lines = &lines * size
     else
         return
     endif
 
-    silent! exec printf('noa keepa keepj %s sp %s', a:position, a:bufname)
-    silent! exec printf('resize %s', a:lines)
-    silent! exec printf('setlocal filetype=%s', a:winname)
+    silent! exec printf('noa keepa keepj %s sp %s', position, bufname)
+    silent! exec printf('resize %s', lines)
+    silent! exec printf('setlocal filetype=%s', winname)
 
     setlocal bufhidden=hide
     setlocal buftype=nofile
@@ -50,10 +50,10 @@ function! lib#window#new(argv)
 
     redrawstatus
 
-    let a:stl = printf('%!airline#statusline(%s)', winnr())
-    exec printf('augroup Lib_win_%s_Colorscheme', a:bufname)
-    exec printf('au ColorScheme * call s:setStatusLine(%s)', a:stl)
-    exec printf('au WinEnter,FileType * call s:setStatusLine(%s)', a:stl)
+    let stl = printf('%!airline#statusline(%s)', winnr())
+    exec printf('augroup Lib_win_%s_Colorscheme', bufname)
+    exec printf('au ColorScheme * call s:setStatusLine(%s)', stl)
+    exec printf('au WinEnter,FileType * call s:setStatusLine(%s)', stl)
     exec printf('augroup END')
 endfunc
 
