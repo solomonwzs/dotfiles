@@ -163,6 +163,15 @@ Plug 'https://github.com/mhinz/vim-startify.git'
 " The ultimate snippet solution for Vim.
 Plug 'https://github.com/SirVer/ultisnips.git'
 
+" Dark powered shell interface for NeoVim and Vim8.
+Plug 'https://github.com/Shougo/deol.nvim.git'
+
+" Interactive command execution in Vim.
+Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
+
+" Neovim / Vim integration for Delve. (for Golang)
+Plug 'https://github.com/sebdah/vim-delve.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

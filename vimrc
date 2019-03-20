@@ -1,5 +1,8 @@
 " Encrypt
-set cryptmethod=blowfish2
+if has('vim')
+    set cryptmethod=blowfish2
+endif
+
 " set viminfo=
 set nobackup
 set nowritebackup
@@ -114,11 +117,9 @@ elseif $VIM_GROUP ==? 'rust'
     let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'debug'
     let g:lib_bundle_whitelist = [
-                \ 'LanguageClient-neovim',
-                \ 'deoplete.nvim',
-                \ 'nvim-yarp',
-                \ 'vim-hug-neovim-rpc',
+                \ 'deol.nvim',
+                \ 'vimproc.vim',
+                \ 'vim-delve',
                 \ ]
-    let g:lib_bundle_blacklist = ['ycm', 'ale']
 endif
 call lib#bundle#load()

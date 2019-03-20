@@ -4,6 +4,7 @@ let s:basic_valid_bundles = [
             \ 'ack.vim',
             \ 'ale',
             \ 'asyncrun.vim',
+            \ 'deol.nvim',
             \ 'gruvbox',
             \ 'jedi-vim',
             \ 'nerdtree',
@@ -15,6 +16,7 @@ let s:basic_valid_bundles = [
             \ 'ultisnips',
             \ 'vim-airline',
             \ 'vim-commentary',
+            \ 'vim-delve',
             \ 'vim-dirdiff',
             \ 'vim-dirvish',
             \ 'vim-fugitive',
@@ -28,6 +30,7 @@ let s:basic_valid_bundles = [
             \ 'vim-signature',
             \ 'vim-toml',
             \ 'vim-vue',
+            \ 'vimproc.vim',
             \ 'ycm',
             \ ]
 

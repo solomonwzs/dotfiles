@@ -4,3 +4,4 @@ view/
 tags
 __pycache__/
 *.pyc
+init.vim
