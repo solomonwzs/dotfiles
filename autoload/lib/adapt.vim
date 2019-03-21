@@ -17,6 +17,7 @@ function! lib#adapt#job_start(cmd, ...)
     endif
 endfunc
 
+let s:msg = ''
 
 function! s:fooa(ch, data, ...)
     let s = '['.a:0.']'
@@ -34,9 +35,39 @@ function! s:foob(ch, data)
 endfunc
 
 
+function! s:bara(id, data, event)
+    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
+    let s:msg = s:msg.join(a:data, ',').'>>'
+    echo s:msg
+endfunc
+
+
+function! s:barb(id, data, event)
+    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
+    let s:msg = s:msg.a:data.'>>'
+    echo s:msg
+endfunc
+
+
+function! s:barc(id, data, event)
+    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
+    let s:msg = s:msg.join(a:data, ',').'>>'
+    echo s:msg
+endfunc
+
+
 function! lib#adapt#foo()
-    call job_start(['/bin/sh', '-c', 'date'], {
-                \ 'callback': function('s:fooa', [1, 2, 3, 4, 5]),
-                \ 'err_cb': function('s:foob'),
-                \ })
+    let cmd = ['/bin/sh', '-c', 'date']
+    if has('nvim')
+        call jobstart(cmd, {
+                    \ 'on_stdout': function('s:bara'),
+                    \ 'on_exit': function('s:barb'),
+                    \ 'on_stderr': function('s:barc'),
+                    \ })
+    else
+        call job_start(cmd, {
+                    \ 'callback': function('s:fooa', [1, 2, 3, 4, 5]),
+                    \ 'err_cb': function('s:foob'),
+                    \ })
+    endif
 endfunc
