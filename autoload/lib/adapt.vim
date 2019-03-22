@@ -19,14 +19,18 @@ endfunc
 
 let s:msg = ''
 
+function! s:append_msg(msg)
+    let s:msg = s:msg.a:msg
+endfunc
+
 function! s:fooa(ch, data, ...)
-    let s = '['.a:0.']'
+    call s:append_msg('['.a:0.']')
     let index = 1
     while index <= a:0
-        let s = s.'['.a:{index}.']'
+        call s:append_msg('['.a:{index}.']')
         let index = index + 1
     endwhile
-    echo s
+    echo s:msg
 endfunc
 
 
@@ -36,22 +40,22 @@ endfunc
 
 
 function! s:bara(id, data, event)
-    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
-    let s:msg = s:msg.join(a:data, ',').'>>'
+    call s:append_msg('<<'.a:id.'::'.a:event.'::')
+    call s:append_msg(join(a:data, ',').'>>')
     echo s:msg
 endfunc
 
 
-function! s:barb(id, data, event)
-    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
-    let s:msg = s:msg.a:data.'>>'
+function! s:barb(id, exit_code, event)
+    call s:append_msg('<<'.a:id.'::'.a:event.'::')
+    call s:append_msg(a:exit_code.'>>')
     echo s:msg
 endfunc
 
 
 function! s:barc(id, data, event)
-    let s:msg = s:msg.'<<'.a:id.'::'.a:event.'::'
-    let s:msg = s:msg.join(a:data, ',').'>>'
+    call s:append_msg('<<'.a:id.'::'.a:event.'::')
+    call s:append_msg(join(a:data, ',').'>>')
     echo s:msg
 endfunc
 

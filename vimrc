@@ -116,10 +116,10 @@ elseif $VIM_GROUP ==? 'rust'
     let g:lib_bundle_whitelist = ['syntastic']
     let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'debug'
-    let g:lib_bundle_whitelist = [
-                \ 'deol.nvim',
-                \ 'vimproc.vim',
-                \ 'vim-delve',
-                \ ]
+    " let g:lib_bundle_whitelist = [
+    "             \ 'deol.nvim',
+    "             \ 'vimproc.vim',
+    "             \ 'vim-delve',
+    "             \ ]
 endif
 call lib#bundle#load()
