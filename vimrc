@@ -8,7 +8,7 @@ set nobackup
 set nowritebackup
 
 set t_Co=256
-colorscheme candy
+set background=dark
 
 syntax enable
 
