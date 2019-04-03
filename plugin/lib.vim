@@ -32,8 +32,11 @@ command! -nargs=0 WindowsDebug
             \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-            \ call lib#adapt#foo()
+            \ call lib#translate#google('return')
             " \ call lib#debug#foo(getline('.'))
+
+nmap <leader>t :call lib#translate#google(expand("<cword>"))
+" vnoremap <leader>t :call lib#translate#google()
 
 
 augroup my_plugin_lib

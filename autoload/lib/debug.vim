@@ -1,3 +1,5 @@
+let kk = 321
+
 function! lib#debug#foo(arg)
 python3 << EOF
 from project.project import get_makefile_variable
@@ -11,6 +13,7 @@ import vim
 
 d = vim.vars
 d['foo'] = 'xx'
+vim.command("let kk = 123")
 EOF
 
 echo g:foo
