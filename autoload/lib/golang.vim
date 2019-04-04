@@ -20,8 +20,8 @@ function! lib#golang#update_pkg()
     let pkg = split(out)[0]
     let cmd = 'go install '.pkg.' && echo ok'
     call job_start(['/bin/sh', '-c', cmd], {
-                \ 'err_cb': function('s:Msg_OnError'),
-                \ })
+            \ 'err_cb': function('s:Msg_OnError'),
+            \ })
 endfunc
 
 
@@ -31,33 +31,33 @@ function! lib#golang#comp_pkg(pkg)
     let cmd = 'go install '.a:pkg.' && echo '.a:pkg
 
     call job_start(['/bin/sh', '-c', cmd], {
-                \ 'callback': function('s:Msg_OnCb'),
-                \ 'err_cb': function('s:Msg_OnError'),
-                \ })
+            \ 'callback': function('s:Msg_OnCb'),
+            \ 'err_cb': function('s:Msg_OnError'),
+            \ })
 endfunc
 
 
 function! lib#golang#comp_deps_pkgs(file)
     let cmd = 'go list -f '
-                \.shellescape('{{ join .Deps "\n" }}').' '
-                \.a:file
-                \.'| xargs -i{} go install {} '
-                \.'&& echo compiled depend packages'
+            \.shellescape('{{ join .Deps "\n" }}').' '
+            \.a:file
+            \.'| xargs -i{} go install {} '
+            \.'&& echo compiled depend packages'
     call job_start(['/bin/sh', '-c', cmd], {
-                \ 'callback': function('s:Msg_OnCb'),
-                \ 'err_cb': function('s:Msg_OnError'),
-                \ })
+            \ 'callback': function('s:Msg_OnCb'),
+            \ 'err_cb': function('s:Msg_OnError'),
+            \ })
 endfunc
 
 
 function! lib#golang#comp_imps_pkgs(file)
     let cmd = 'go list -f '
-                \.shellescape('{{ join .Imports "\n" }}').' '
-                \.a:file
-                \.'| xargs -i{} go install {} '
-                \.'&& echo compiled import packages'
+            \.shellescape('{{ join .Imports "\n" }}').' '
+            \.a:file
+            \.'| xargs -i{} go install {} '
+            \.'&& echo compiled import packages'
     call job_start(['/bin/sh', '-c', cmd], {
-                \ 'callback': function('s:Msg_OnCb'),
-                \ 'err_cb': function('s:Msg_OnError'),
-                \ })
+            \ 'callback': function('s:Msg_OnCb'),
+            \ 'err_cb': function('s:Msg_OnError'),
+            \ })
 endfunc

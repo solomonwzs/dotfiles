@@ -1,3 +1,44 @@
+" @author     Solomon Ng <solomon.wzs@gmail.com>
+" @version    1.0
+" @date       2019-04-04
+" @license    MIT
+
+let g:lib_translate_target_lang = get(g:, 'lib_translate_target_lang', 'zh-CN')
+
+
+function! lib#translate#google(text)
+    if a:text ==# ''
+        return
+    endif
+
+python3 << EOF
+from translate import google
+import urllib
+import vim
+
+text = vim.eval("a:text")
+v = vim.vars
+
+res = google.translate(text, v["lib_translate_target_lang"], 2)
+if isinstance(res, str):
+    print(res)
+else:
+    lines = []
+    d = res.get("dict")
+    if d is not None:
+        for i in res.get("dict", []):
+            pos = i.get("pos", "")
+            term = ','.join(i.get("terms", []))
+            lines.append(f"{pos}: {term}")
+    else:
+        for i in res.get("sentences", []):
+            lines.append(i.get("trans"))
+    trans = '\n'.join(lines)
+    print(trans)
+EOF
+endfunc
+
+
 function! s:Msg_OnError(channel, msg)
     echohl ErrorMsg
     echo 'ERROR: '.a:msg
@@ -10,24 +51,17 @@ function! s:Msg_OnCb(channel, msg)
 endfunc
 
 
-function lib#translate#google(text)
-    let qtext = ''
+function! lib#translate#google_async(text)
+    echo 'translate ...'
     if a:text ==# ''
         return
     endif
 
-python3 << EOF
-import urllib
-import vim
-
-text = vim.eval("a:text")
-text = urllib.parse.quote_plus(text)
-vim.command(f"let qtext = \"{text}\"")
-EOF
-    
     let pys = g:vimhome.'/pythonx/translate/google.py'
-    call job_start(['/usr/bin/python3', pys, qtext], {
-                \ 'callback': function('s:Msg_OnCb'),
-                \ 'err_cb': function('s:Msg_OnError'),
-                \ })
+    let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
+            \ a:text]
+    call job_start(cmd, {
+            \ 'callback': function('s:Msg_OnCb'),
+            \ 'err_cb': function('s:Msg_OnError'),
+            \ })
 endfunc

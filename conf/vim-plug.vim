@@ -132,9 +132,9 @@ Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
 " Language Server Protocol (LSP) support for vim and neovim.
 Plug 'https://github.com/autozimu/LanguageClient-neovim.git', {
-            \ 'branch': 'next',
-            \ 'do': 'bash install.sh',
-            \ }
+        \ 'branch': 'next',
+        \ 'do': 'bash install.sh',
+        \ }
 
 " Dark powered asynchronous completion framework for neovim/Vim8.
 Plug 'https://github.com/Shougo/deoplete.nvim.git'

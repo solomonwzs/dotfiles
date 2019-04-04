@@ -8,11 +8,11 @@ noremap <A-b> :LeaderfBuffer<CR>
 noremap <A-a> :LeaderfTag<CR>
 
 let g:Lf_CommandMap = {
-            \ '<C-K>': ['<Up>'],
-            \ '<C-J>': ['<Down>'],
-            \ '<Up>': ['<C-K>'],
-            \ '<Down>': ['<C-J>']
-            \ }
+        \ '<C-K>': ['<Up>'],
+        \ '<C-J>': ['<Down>'],
+        \ '<Up>': ['<C-K>'],
+        \ '<Down>': ['<C-J>']
+        \ }
 
 " let g:Lf_StlSeparator = {'left': '', 'right': '', 'font': ''}
 let g:Lf_StlSeparator = { 'left': '', 'right': '' }
@@ -27,5 +27,5 @@ let g:Lf_HideHelp = 1
 let g:Lf_PreviewResult = {'Function': 0, 'BufTag': 0}
 
 let g:Lf_CtagsFuncOpts = {
-            \ 'rust': '--rust-kinds=f',
-            \ }
+        \ 'rust': '--rust-kinds=f',
+        \ }

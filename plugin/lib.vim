@@ -17,29 +17,29 @@ if has('cscope')
 endif
 
 command! -nargs=0 YcmCursorMovedAutoCmdsToggle
-            \ call lib#ycm#cursor_move_autocmds_toggle()
+        \ call lib#ycm#cursor_move_autocmds_toggle()
 
 command! -nargs=0 GenTernProject
-            \ call lib#javascript#tern_project()
+        \ call lib#javascript#tern_project()
 
 command! -nargs=0 GoInstallDeps
-            \ call lib#golang#comp_deps_pkgs(expand('%:p'))
+        \ call lib#golang#comp_deps_pkgs(expand('%:p'))
 
 command! -nargs=0 GoInstallImps
-            \ call lib#golang#comp_imps_pkgs(expand('%:p'))
+        \ call lib#golang#comp_imps_pkgs(expand('%:p'))
 
 command! -nargs=0 WindowsDebug
-            \ call lib#window#test()
+        \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-            \ call lib#translate#google('return')
-            " \ call lib#debug#foo(getline('.'))
+        \ call ui#instance#test()
 
-nmap <leader>t :call lib#translate#google(expand("<cword>"))
-" vnoremap <leader>t :call lib#translate#google()
+nmap <silent> <leader>t :call lib#translate#google(expand("<cword>"))<CR>
+vnoremap <leader>t :<C-U>call lib#translate#google(
+        \ lib#common#visual_selection())<CR>
 
 
 augroup my_plugin_lib
     autocmd FileType go
-                \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
+            \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
 augroup END

@@ -11,7 +11,6 @@ import ctypes
 import json
 import requests
 import sys
-import urllib
 
 
 def RL(a: int, b: str):
@@ -68,14 +67,18 @@ def TL(a: str):
     return f"{a}{jd}{a ^ b}"
 
 
-def parse_response(res):
-    if res.status_code == 200:
-        return json.loads(res.text)
-    else:
-        return f"Error: {res.status_code}"
+def try_get(url, params, timeout):
+    try:
+        res = requests.get(url, params=params, timeout=timeout)
+        if res.status_code == 200:
+            return json.loads(res.text)
+        else:
+            return f"Error: {res.status_code}"
+    except Exception:
+        return "Error: connection error"
 
 
-def translate_with_tk(text: str, tl="zh-CN"):
+def translate_with_tk(text: str, tl="zh-CN", timeout=10):
     url = "https://translate.google.cn/translate_a/single"
     params = [
         ("client", "t"),
@@ -102,11 +105,10 @@ def translate_with_tk(text: str, tl="zh-CN"):
         ("tk", TL(text)),
         ("q", text),
     ]
-    res = requests.get(url, params=params)
-    return parse_response(res)
+    return try_get(url, params, timeout)
 
 
-def translate(text: str, tl="zh-CN"):
+def translate(text: str, tl="zh-CN", timeout=10):
     url = "https://translate.googleapis.com/translate_a/single"
     params = [
         ("client", "gtx"),
@@ -117,8 +119,7 @@ def translate(text: str, tl="zh-CN"):
         ("dj", 1),
         ("q", text),
     ]
-    res = requests.get(url, params=params)
-    return parse_response(res)
+    return try_get(url, params, timeout)
 
 
 if __name__ == "__main__":
@@ -128,16 +129,21 @@ if __name__ == "__main__":
                         help="target language")
     args = parser.parse_args()
 
-    text = urllib.parse.unquote_plus(args.text)
+    text = args.text
     res = translate(text)
     if isinstance(res, str):
         sys.stderr.write(res)
         sys.exit(1)
 
     lines = []
-    for i in res.get("dict", []):
-        pos = i.get("pos", "")
-        term = ','.join(i.get("terms", []))
-        lines.append(f"{pos}: {term}")
+    d = res.get("dict")
+    if d is not None:
+        for i in res.get("dict", []):
+            pos = i.get("pos", "")
+            term = ','.join(i.get("terms", []))
+            lines.append(f"{pos}: {term}")
+    else:
+        for i in res.get("sentences", []):
+            lines.append(i.get("trans"))
     sys.stdout.write('; '.join(lines))
     sys.exit(0)

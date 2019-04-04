@@ -14,7 +14,7 @@ function! s:setStatusLine(stl)
 endfunc
 
 
-function! lib#window#new(argv)
+function! ui#window#new(argv)
     let position = get(a:argv, 'position', 'bottom')
     let size = get(a:argv, 'size', 0.3)
     let bufname = get(a:argv, 'bufname', 'undefined')
@@ -58,9 +58,9 @@ function! lib#window#new(argv)
 endfunc
 
 
-function! lib#window#test()
+function! ui#window#test()
 python3 << EOF
 argv = {'position': 'top'}
-vim.command(f"call lib#window#new({argv})")
+vim.command(f"call ui#window#new({argv})")
 EOF
 endfunc

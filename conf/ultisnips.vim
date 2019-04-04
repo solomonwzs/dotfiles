@@ -6,4 +6,4 @@ let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
 "             \comment_line<C-r>=UltiSnips#ExpandSnippet()<CR>
 
 vnoremap <silent> ft :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-            \file_type<C-r>=UltiSnips#ExpandSnippet()<CR>
+        \file_type<C-r>=UltiSnips#ExpandSnippet()<CR>

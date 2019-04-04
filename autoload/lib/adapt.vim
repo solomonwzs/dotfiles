@@ -64,14 +64,14 @@ function! lib#adapt#foo()
     let cmd = ['/bin/sh', '-c', 'date']
     if has('nvim')
         call jobstart(cmd, {
-                    \ 'on_stdout': function('s:bara'),
-                    \ 'on_exit': function('s:barb'),
-                    \ 'on_stderr': function('s:barc'),
-                    \ })
+                \ 'on_stdout': function('s:bara'),
+                \ 'on_exit': function('s:barb'),
+                \ 'on_stderr': function('s:barc'),
+                \ })
     else
         call job_start(cmd, {
-                    \ 'callback': function('s:fooa', [1, 2, 3, 4, 5]),
-                    \ 'err_cb': function('s:foob'),
-                    \ })
+                \ 'callback': function('s:fooa', [1, 2, 3, 4, 5]),
+                \ 'err_cb': function('s:foob'),
+                \ })
     endif
 endfunc

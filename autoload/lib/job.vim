@@ -14,9 +14,9 @@ function! s:Job_Node(cmd, next)
     let node = {'cmd': a:cmd, 'next': a:next}
     function node.jrun(channel, msg)
         call job_start(self.cmd, {
-                    \ 'callback': self.next.jrun,
-                    \ 'err_cb': function('s:Output_Msg_OnError'),
-                    \ })
+                \ 'callback': self.next.jrun,
+                \ 'err_cb': function('s:Output_Msg_OnError'),
+                \ })
     endfunc
     return node
 endfunc

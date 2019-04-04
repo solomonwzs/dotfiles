@@ -27,28 +27,28 @@ let g:ale_sign_warning = '⚠'
 " let g:ale_python_pylint_executable = 'pylint'
 " let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
 
-let g:ale_python_flake8_options = '--ignore=E402,E241,E501'
+let g:ale_python_flake8_options = '--ignore=E402,E241,E501,E302,E265'
 
 let g:ale_rust_cargo_use_check = 1
 let g:ale_rust_cargo_check_tests = 1
 
 let g:ale_fixers = {
-            \ '*':          ['remove_trailing_lines', 'trim_whitespace'],
-            \ 'javascript': ['eslint'],
-            \ 'rust':       ['rustfmt'],
-            \ }
+        \ '*':          ['remove_trailing_lines', 'trim_whitespace'],
+        \ 'javascript': ['eslint'],
+        \ 'rust':       ['rustfmt'],
+        \ }
 
 let g:ale_linters = {
-            \ 'c':      ['gcc'],
-            \ 'python': ['flake8'],
-            \ 'rust':   ['cargo'],
-            \ 'sh':     ['shellcheck'],
-            \ 'vim':    ['vint'],
-            \ }
+        \ 'c':      ['gcc'],
+        \ 'python': ['flake8'],
+        \ 'rust':   ['cargo'],
+        \ 'sh':     ['shellcheck'],
+        \ 'vim':    ['vint'],
+        \ }
 
 let g:ale_pattern_options = {
-            \ '.*\.erl$': {'ale_enabled': 0},
-            \ }
+        \ '.*\.erl$': {'ale_enabled': 0},
+        \ }
 
 
 python3 << EOF

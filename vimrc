@@ -3,6 +3,8 @@ if has('vim')
     set cryptmethod=blowfish2
 endif
 
+set keywordprg=man\ -s
+
 " set viminfo=
 set nobackup
 set nowritebackup
@@ -85,7 +87,7 @@ augroup my_vimrc
     autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
 
     autocmd FileType html,xml,yaml,vue.javascript,javascript
-                \ setlocal sw=2 tabstop=2 softtabstop=2
+            \ setlocal sw=2 tabstop=2 softtabstop=2
     autocmd FileType make setlocal noet
 augroup END
 
@@ -100,14 +102,14 @@ vmap <C-c> "+y
 
 if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_whitelist = [
-                \ 'syntastic',
-                \ 'vim-erlang-tags',
-                \ 'vim-erlang-omnicomplete',
-                \ ]
+            \ 'syntastic',
+            \ 'vim-erlang-tags',
+            \ 'vim-erlang-omnicomplete',
+            \ ]
     let g:lib_bundle_blacklist = [
-                \ 'ale',
-                \ 'vim-gutentags',
-                \ ]
+            \ 'ale',
+            \ 'vim-gutentags',
+            \ ]
 elseif $VIM_GROUP ==? 'scheme'
     let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'no_ale'
@@ -117,9 +119,9 @@ elseif $VIM_GROUP ==? 'rust'
     let g:lib_bundle_blacklist = ['ale']
 elseif $VIM_GROUP ==? 'debug'
     " let g:lib_bundle_whitelist = [
-    "             \ 'deol.nvim',
-    "             \ 'vimproc.vim',
-    "             \ 'vim-delve',
-    "             \ ]
+    "         \ 'deol.nvim',
+    "         \ 'vimproc.vim',
+    "         \ 'vim-delve',
+    "         \ ]
 endif
 call lib#bundle#load()

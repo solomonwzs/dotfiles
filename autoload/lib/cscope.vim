@@ -64,15 +64,15 @@ function! lib#cscope#gen_tags()
 
     let cscope_out = s:out_dir.'/'.basename.'.out'
     let cmd_2 = 'cscope '.join(s:build_opts, ' ').
-                \' -i '.file_list.
-                \' -f '.cscope_out
+            \' -i '.file_list.
+            \' -f '.cscope_out
 
     let cmd = cmd_1.' && '.cmd_2.' && echo '.cscope_out
     if has('channel') && has('job')
         call job_start(['/bin/sh', '-c', cmd], {
-                    \ 'callback': function('s:Gen_Tags_OnCallback'),
-                    \ 'err_cb': function('s:Gen_Tags_OnError'),
-                    \ })
+                \ 'callback': function('s:Gen_Tags_OnCallback'),
+                \ 'err_cb': function('s:Gen_Tags_OnError'),
+                \ })
     else
         silent exec '!'.cmd
         redraw!
