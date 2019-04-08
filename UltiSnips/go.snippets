@@ -1,5 +1,5 @@
 global !p
-from snippets.common import strtoday
+from snippets.common import strtoday, document_name
 endglobal
 
 snippet hdr "header" b
@@ -12,7 +12,9 @@ snip.rv = strtoday()
  * @license MIT
  */
 
-package ${1:main}
+package ${1:`!p
+snip.rv = document_name(path)
+`}
 endsnippet
 
 

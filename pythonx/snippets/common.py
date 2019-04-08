@@ -7,7 +7,14 @@
 # @license  MIT
 
 from datetime import datetime
+import os
 
 
 def strtoday():
     return datetime.today().strftime("%Y-%m-%d")
+
+
+def document_name(path):
+    d = os.path.dirname(path)
+    (_, name) = os.path.split(d)
+    return name

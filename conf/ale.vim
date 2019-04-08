@@ -40,6 +40,7 @@ let g:ale_fixers = {
 
 let g:ale_linters = {
         \ 'c':      ['gcc'],
+        \ 'cpp':    ['g++'],
         \ 'python': ['flake8'],
         \ 'rust':   ['cargo'],
         \ 'sh':     ['shellcheck'],
