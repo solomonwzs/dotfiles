@@ -91,10 +91,11 @@ augroup my_vimrc
     autocmd FileType make setlocal noet
 augroup END
 
-let g:html_indent_inctags='li,body,head'
+let g:html_indent_inctags = 'li,body,head'
+let g:asmsyntax = 'nasm'
 
-let mapleader="\\"
-let maplocalleader=','
+let mapleader = "\\"
+let maplocalleader = ','
 let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
