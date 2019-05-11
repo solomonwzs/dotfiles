@@ -52,7 +52,6 @@ set wrap
 
 " Setting for cscope
 if has('cscope')
-    set cscopeprg=/usr/bin/cscope
     set cscopetagorder=0
     set cscopetag
     set nocscopeverbose

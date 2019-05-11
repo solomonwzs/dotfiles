@@ -31,7 +31,7 @@ let s:basic_valid_bundles = [
         \ 'vim-toml',
         \ 'vim-vue',
         \ 'vimproc.vim',
-        \ 'ycm',
+        \ 'YouCompleteMe',
         \ ]
 
 let s:bundle_priority = {
@@ -61,8 +61,8 @@ endfunc
 function! s:update_bundle_group()
     let s:group_bundle_list = []
 
-    if !exists('g:lib_code_completion') || g:lib_code_completion ==? 'ycm'
-        call add(s:group_bundle_list, 'ycm')
+    if !exists('g:lib_code_completion') || g:lib_code_completion ==? 'YouCompleteMe'
+        call add(s:group_bundle_list, 'YouCompleteMe')
     elseif g:lib_code_completion ==? 'supertab'
         call add(s:group_bundle_list, 'supertab')
     endif
@@ -96,17 +96,10 @@ function! lib#bundle#load()
     endfor
     let lib_bundle_list = sort(lib_bundle_list, 's:priority_comp')
 
-    let g:loaded_youcompleteme = 1
     let dir = g:vimhome.'/bundle'
     call plug#begin(dir)
     for i in lib_bundle_list
-        if i ==? 'ycm'
-            if exists('g:loaded_youcompleteme')
-                unlet g:loaded_youcompleteme
-            endif
-        else
-            Plug dir.'/'.i
-        endif
+        Plug dir.'/'.i
     endfor
     call plug#end()
 

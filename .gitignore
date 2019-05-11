@@ -5,3 +5,5 @@ tags
 __pycache__/
 *.pyc
 /init.vim
+ycm/ycmd_build
+*.swp

@@ -172,6 +172,9 @@ Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
 " Neovim / Vim integration for Delve. (for Golang)
 Plug 'https://github.com/sebdah/vim-delve.git'
 
+" A code-completion engine for Vim http://valloric.github.io/YouCompleteMe/
+Plug 'https://github.com/Valloric/YouCompleteMe.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
