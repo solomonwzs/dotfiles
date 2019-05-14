@@ -6,17 +6,26 @@
 # @version   1.0
 # @copyright MIT
 
-from project.project import get_makefile_variable
+from project.project import get_makefile_variable, get_cflags
 import os
 import vim
 
 
 def set_cxx_gcc_options():
+    flags = ''
+
     makefile = os.path.join(os.getcwd(), 'Makefile')
-    if not os.path.exists(makefile):
-        return
-    flags = get_makefile_variable([makefile], 'CFLAGS')
+    if os.path.exists(makefile):
+        flags = get_makefile_variable([makefile], 'CFLAGS')
+
+    cflags_file = os.path.join(os.getcwd(), '.cflags')
+    if os.path.exists(cflags_file):
+        fs = get_cflags(cflags_file)
+        flags += ' ' + ' '.join(fs) 
+
+    flags = flags.strip()
     if flags != '':
         b = vim.vars
         b['ale_c_gcc_options'] = flags
         b['ale_cpp_gcc_options'] = flags
+

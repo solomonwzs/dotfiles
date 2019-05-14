@@ -52,3 +52,13 @@ def get_makefile_variable(makefiles, var):
         return ''
     else:
         return output.decode('utf8')
+
+
+def get_cflags(cflags_file):
+    flags = []
+    with open(cflags_file, 'r') as fd:
+        line = fd.readline()
+        while line:
+            flags.append(line.strip())
+            line = fd.readline()
+    return flags
