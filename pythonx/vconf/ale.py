@@ -18,10 +18,10 @@ def set_cxx_gcc_options():
     if os.path.exists(makefile):
         flags = get_makefile_variable([makefile], 'CFLAGS')
 
-    cflags_file = os.path.join(os.getcwd(), '.cflags')
+    cflags_file = os.path.join(os.getcwd(), '.mycflags')
     if os.path.exists(cflags_file):
         fs = get_cflags(cflags_file)
-        flags += ' ' + ' '.join(fs) 
+        flags += ' ' + ' '.join(fs)
 
     flags = flags.strip()
     if flags != '':

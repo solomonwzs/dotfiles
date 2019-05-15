@@ -75,7 +75,7 @@ if os.path.exists(makefile):
         if f != '':
             flags.append(f)
 
-cflags_file = os.path.join(os.getcwd(), '.cflags')
+cflags_file = os.path.join(os.getcwd(), '.mycflags')
 if os.path.exists(cflags_file):
     flags += get_cflags(cflags_file)
 
