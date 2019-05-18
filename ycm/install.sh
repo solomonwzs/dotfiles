@@ -42,7 +42,8 @@ python3 install.py --go-completer --rust-completer --clang-completer --ts-comple
 # cd "$build_path" || exit
 
 # cmake -G "Unix Makefiles" \
-#     -DUSE_PYTHON2=off \
+#     -DUSE_CLANG_COMPLETER=ON \
+#     -DUSE_PYTHON2=OFF \
 #     -DPYTHON_INCLUDE_DIR="/usr/local/Frameworks/Python.framework/Versions/3.7/include/python3.7m" \
 #     -DPYTHON_LIBRARY="/usr/local/Frameworks/Python.framework/Versions/3.7/lib/libpython3.7.dylib" \
 #     . "$ycm_dir/third_party/ycmd/cpp"

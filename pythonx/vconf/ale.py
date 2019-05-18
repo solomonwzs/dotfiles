@@ -6,7 +6,11 @@
 # @version   1.0
 # @copyright MIT
 
-from project.project import get_makefile_variable, get_cflags
+from project.project import (
+    get_makefile_variable,
+    get_cflags,
+    CXX_FLAGS_FILE_NAME,
+)
 import os
 import vim
 
@@ -18,7 +22,7 @@ def set_cxx_gcc_options():
     if os.path.exists(makefile):
         flags = get_makefile_variable([makefile], 'CFLAGS')
 
-    cflags_file = os.path.join(os.getcwd(), '.mycflags')
+    cflags_file = os.path.join(os.getcwd(), CXX_FLAGS_FILE_NAME)
     if os.path.exists(cflags_file):
         fs = get_cflags(cflags_file)
         flags += ' ' + ' '.join(fs)

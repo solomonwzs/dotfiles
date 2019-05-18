@@ -15,6 +15,7 @@ from subprocess import Popen
 cxx_headers_ext = {'.h', '.hh', '.hpp', '.hxx'}
 VIM_HOME = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.realpath(__file__))))
+CXX_FLAGS_FILE_NAME = '.mycflags.txt'
 
 
 def find(pattern, path, n=0):

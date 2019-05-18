@@ -1,18 +1,11 @@
 scriptencoding utf-8
 
-if !has('gui_macvim')
-    let g:Lf_ShortcutF = '<C-p>'
-    noremap <A-m> :LeaderfMru<CR>
-    noremap <A-f> :LeaderfFunction<CR>
-    noremap <A-b> :LeaderfBuffer<CR>
-    noremap <A-a> :LeaderfTag<CR>
-else
-    let g:Lf_ShortcutF = '<C-p>p'
-    noremap <C-p>m :LeaderfMru<CR>
-    noremap <C-p>f :LeaderfFunction<CR>
-    noremap <C-p>b :LeaderfBuffer<CR>
-    noremap <C-p>a :LeaderfTag<CR>
-endif
+let g:Lf_ShortcutF = '<C-p>p'
+noremap <C-p>P :LeaderfFile .<CR>
+noremap <C-p>m :LeaderfMru<CR>
+noremap <C-p>f :LeaderfFunction<CR>
+noremap <C-p>b :LeaderfBuffer<CR>
+noremap <C-p>a :LeaderfTag<CR>
 
 let g:Lf_CommandMap = {
         \ '<C-K>': ['<Up>'],

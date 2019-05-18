@@ -36,7 +36,11 @@ vimhome = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(os.path.join(vimhome, 'pythonx'))
 
 from distutils.sysconfig import get_python_inc
-from project.project import get_makefile_variable, get_cflags
+from project.project import (
+    get_makefile_variable,
+    get_cflags,
+    CXX_FLAGS_FILE_NAME,
+)
 import ycm_core
 
 
@@ -75,7 +79,7 @@ if os.path.exists(makefile):
         if f != '':
             flags.append(f)
 
-cflags_file = os.path.join(os.getcwd(), '.mycflags')
+cflags_file = os.path.join(os.getcwd(), CXX_FLAGS_FILE_NAME)
 if os.path.exists(cflags_file):
     flags += get_cflags(cflags_file)
 
