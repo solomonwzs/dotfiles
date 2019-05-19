@@ -7,9 +7,9 @@ let g:ycm_min_num_identifier_candidate_chars = 2
 let g:ycm_add_preview_to_completeopt = 0
 let g:ycm_show_diagnostics_ui = 0
 
-" let g:ycm_clangd_uses_ycmd_caching = 0
-" let g:ycm_clangd_binary_path = exepath('clangd')
-" let g:ycm_clangd_args = ['-background-index']
+let g:ycm_clangd_uses_ycmd_caching = 0
+let g:ycm_clangd_binary_path = exepath('clangd')
+let g:ycm_clangd_args = ['-background-index']
 
 if executable('python3')
     let g:ycm_python_binary_path = 'python3'
