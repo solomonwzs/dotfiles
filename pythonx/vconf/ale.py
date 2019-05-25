@@ -8,7 +8,9 @@
 
 from project.project import (
     get_makefile_variable,
-    get_cflags,
+    get_file_lines,
+)
+from project.cxx import (
     CXX_FLAGS_FILE_NAME,
 )
 import os
@@ -24,7 +26,7 @@ def set_cxx_gcc_options():
 
     cflags_file = os.path.join(os.getcwd(), CXX_FLAGS_FILE_NAME)
     if os.path.exists(cflags_file):
-        fs = get_cflags(cflags_file)
+        fs = get_file_lines(cflags_file)
         flags += ' ' + ' '.join(fs)
 
     flags = flags.strip()
@@ -32,4 +34,3 @@ def set_cxx_gcc_options():
         b = vim.vars
         b['ale_c_gcc_options'] = flags
         b['ale_cpp_gcc_options'] = flags
-

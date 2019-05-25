@@ -38,8 +38,11 @@ sys.path.append(os.path.join(vimhome, 'pythonx'))
 from distutils.sysconfig import get_python_inc
 from project.project import (
     get_makefile_variable,
-    get_cflags,
+    get_file_lines,
+)
+from project.cxx import (
     CXX_FLAGS_FILE_NAME,
+    get_system_cxx_header_paths,
 )
 import ycm_core
 
@@ -64,24 +67,20 @@ flags = [
     '-I./include',
 ]
 
-
-groups = re.findall(r'\[GCC (.*) .*\]', sys.version)
-if len(groups) == 1:
-    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0])]
-    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0], 'x86_64-pc-linux-gnu')]
-    flags += ['-isystem', os.path.join('/usr/include/c++', groups[0], 'backward')]
-
+for p in get_system_cxx_header_paths():
+    flags += ["-isystem", p]
 
 makefile = os.path.join(os.getcwd(), 'Makefile')
 if os.path.exists(makefile):
-    fs = get_makefile_variable([makefile], 'CFLAGS')
-    for f in fs.split(' '):
-        if f != '':
-            flags.append(f)
+    for var in ["CFLAGS", "CXXFLAGS"]:
+        fs = get_makefile_variable([makefile], var)
+        for f in fs.split(' '):
+            if f != '':
+                flags.append(f)
 
 cflags_file = os.path.join(os.getcwd(), CXX_FLAGS_FILE_NAME)
 if os.path.exists(cflags_file):
-    flags += get_cflags(cflags_file)
+    flags += get_file_lines(cflags_file)
 
 database = None
 

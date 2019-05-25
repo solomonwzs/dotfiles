@@ -12,10 +12,8 @@ from subprocess import PIPE
 from subprocess import Popen
 
 
-cxx_headers_ext = {'.h', '.hh', '.hpp', '.hxx'}
 VIM_HOME = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.realpath(__file__))))
-CXX_FLAGS_FILE_NAME = '.mycflags.txt'
 
 
 def find(pattern, path, n=0):
@@ -26,17 +24,6 @@ def find(pattern, path, n=0):
                 result.append(os.path.join(root, name))
                 if n > 0 and len(result) == n:
                     return result
-    return result
-
-
-def find_cxx_header_files_dir(path='.'):
-    result = []
-    for root, dirs, files in os.walk(path):
-        for name in files:
-            extension = os.path.splitext(name)[1]
-            if extension in cxx_headers_ext:
-                result.append(root)
-                break
     return result
 
 
@@ -55,9 +42,9 @@ def get_makefile_variable(makefiles, var):
         return output.decode('utf8')
 
 
-def get_cflags(cflags_file):
+def get_file_lines(filename):
     flags = []
-    with open(cflags_file, 'r') as fd:
+    with open(filename, 'r') as fd:
         line = fd.readline()
         while line:
             flags.append(line.strip())

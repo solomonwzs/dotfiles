@@ -7,16 +7,17 @@
 # @license  MIT
 
 import os
-from subprocess import PIPE
-from subprocess import Popen
+import sys
+
+vimpy = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(vimpy)
+
+from common import system_command
 
 
 def get_go_env():
-    p = Popen("go env", shell=True, stdout=PIPE, stderr=PIPE)
-    output, _ = p.communicate()
-    if p.returncode != 0:
-        return None
-    kvlist = output.decode("utf8").split('\n')
+    output = system_command("go env").strip()
+    kvlist = output.split('\n')
     env = {}
     for kv in kvlist:
         arr = kv.split('=', 1)

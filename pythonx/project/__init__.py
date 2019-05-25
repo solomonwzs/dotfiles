@@ -5,3 +5,6 @@
 # @date     2018-10-10
 # @version  1.0
 # @license  MIT
+
+def foo():
+    print("bar")
