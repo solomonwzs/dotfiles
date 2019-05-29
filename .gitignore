@@ -7,3 +7,4 @@ __pycache__/
 /init.vim
 ycm/ycmd_build
 *.swp
+.netrwhist
