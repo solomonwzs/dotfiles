@@ -100,6 +100,11 @@ let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 vmap <C-c> "+y
 
+if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
+    map <esc>[1;5D <C-Left>
+    map <esc>[1;5C <C-Right>
+endif
+
 if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_whitelist = [
             \ 'syntastic',
