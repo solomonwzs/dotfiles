@@ -34,11 +34,6 @@ command! -nargs=0 WindowsDebug
 command! -nargs=0 MyDebug
         \ call ui#instance#test()
 
-nmap <silent> <leader>t :call lib#translate#google(expand("<cword>"))<CR>
-vnoremap <leader>t :<C-U>call lib#translate#google(
-        \ lib#common#visual_selection())<CR>
-
-
 augroup my_plugin_lib
     autocmd FileType go
             \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()

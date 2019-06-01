@@ -3,9 +3,13 @@ if has('vim')
     set cryptmethod=blowfish2
 endif
 
+let mapleader = "\\"
+let maplocalleader = ','
+let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
+
 set keywordprg=man\ -s
 
-" set viminfo=
+" set viminfo
 set nobackup
 set nowritebackup
 
@@ -93,18 +97,36 @@ augroup END
 let g:html_indent_inctags = 'li,body,head'
 let g:asmsyntax = 'nasm'
 
-let mapleader = "\\"
-let maplocalleader = ','
-let g:vimhome = fnameescape(fnamemodify(resolve(expand('<sfile>:p')), ':h'))
 
+"================ MAP KEY ================
 nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
-vmap <C-c> "+y
 
+imap <C-q> <esc>
+
+nmap <silent> <leader>t :call lib#translate#google(expand("<cword>"))<CR>
+vnoremap <leader>t :<C-U>call lib#translate#google(
+        \ lib#common#visual_selection())<CR>
+
+" Setting for tmux && screen
 if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
     map <esc>[1;5D <C-Left>
     map <esc>[1;5C <C-Right>
 endif
 
+" Setting for C-c copy text
+vmap <C-c> "+y
+if $SSH_CLIENT !=? ''
+    " install `xclip` and set `X11Forwarding yes` in sshd_config"<CR>
+    if executable('xclip')
+        vmap <silent> "+y :call system('xclip -i -sel clip',
+                \ lib#common#visual_selection())<CR>
+        " map "+p :r!xclip -o -sel clip<CR>
+    endif
+endif
+"================ MAP KEY ================
+
+
+"================ Load Plugin ================
 if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_whitelist = [
             \ 'syntastic',
@@ -130,3 +152,4 @@ elseif $VIM_GROUP ==? 'debug'
     "         \ ]
 endif
 call lib#bundle#load()
+"================ Load Plugin ================
