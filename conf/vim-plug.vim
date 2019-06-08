@@ -173,7 +173,11 @@ Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
 Plug 'https://github.com/sebdah/vim-delve.git'
 
 " A code-completion engine for Vim http://valloric.github.io/YouCompleteMe/
-Plug 'https://github.com/Valloric/YouCompleteMe.git'
+" Plug 'https://github.com/Valloric/YouCompleteMe.git'
+
+" Intellisense engine for vim8 & neovim, full language server protocol support
+" as VSCode.
+Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
 
 call plug#end()
 

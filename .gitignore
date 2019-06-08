@@ -8,3 +8,5 @@ __pycache__/
 ycm/ycmd_build
 *.swp
 .netrwhist
+
+language_servers/

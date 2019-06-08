@@ -82,6 +82,7 @@ augroup my_vimrc
     autocmd FileType python     setlocal completeopt-=preview
     autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
     autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
+    autocmd FileType json       syntax match Comment +\/\/.\+$+
 
     if executable('ghc-mod')
         autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
@@ -127,29 +128,34 @@ endif
 
 
 "================ Load Plugin ================
+let g:lib_bundle_whitelist = []
+let g:lib_bundle_blacklist = []
+
 if $VIM_GROUP ==? 'erl'
-    let g:lib_bundle_whitelist = [
+    let g:lib_bundle_whitelist += [
             \ 'syntastic',
             \ 'vim-erlang-tags',
             \ 'vim-erlang-omnicomplete',
+            \ 'YouCompleteMe',
             \ ]
-    let g:lib_bundle_blacklist = [
+    let g:lib_bundle_blacklist += [
             \ 'ale',
             \ 'vim-gutentags',
+            \ 'coc.nvim',
             \ ]
 elseif $VIM_GROUP ==? 'scheme'
-    let g:lib_bundle_blacklist = ['ale']
-elseif $VIM_GROUP ==? 'no_ale'
-    let g:lib_bundle_blacklist = ['ale']
+    let g:lib_bundle_blacklist += ['ale']
+elseif $VIM_GROUP ==? 'python'
+    let g:lib_bundle_whitelist += [
+            \ 'YouCompleteMe',
+            \ 'jedi-vim',
+            \ ]
+    let g:lib_bundle_blacklist += ['coc.nvim']
 elseif $VIM_GROUP ==? 'rust'
-    let g:lib_bundle_whitelist = ['syntastic']
-    let g:lib_bundle_blacklist = ['ale']
+    let g:lib_bundle_whitelist += ['syntastic']
+    let g:lib_bundle_blacklist += ['ale']
 elseif $VIM_GROUP ==? 'debug'
-    " let g:lib_bundle_whitelist = [
-    "         \ 'deol.nvim',
-    "         \ 'vimproc.vim',
-    "         \ 'vim-delve',
-    "         \ ]
 endif
+
 call lib#bundle#load()
 "================ Load Plugin ================

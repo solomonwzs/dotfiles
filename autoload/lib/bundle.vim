@@ -4,6 +4,7 @@ let s:basic_valid_bundles = [
         \ 'ack.vim',
         \ 'ale',
         \ 'asyncrun.vim',
+        \ 'coc.nvim',
         \ 'deol.nvim',
         \ 'gruvbox',
         \ 'jedi-vim',
@@ -31,7 +32,6 @@ let s:basic_valid_bundles = [
         \ 'vim-toml',
         \ 'vim-vue',
         \ 'vimproc.vim',
-        \ 'YouCompleteMe',
         \ ]
 
 let s:bundle_priority = {
@@ -41,7 +41,6 @@ let s:bundle_priority = {
         \ }
 
 let s:loaded_bundles = {}
-let s:group_bundle_list = []
 
 
 function! s:priority_comp(i1, i2)
@@ -56,25 +55,6 @@ function! s:priority_comp(i1, i2)
     let p2 = s:get_priority(a:i2)
     return p1 == p2 ? 0 : p1 < p2 ? 1 : -1
 endfunc
-
-
-function! s:update_bundle_group()
-    let s:group_bundle_list = []
-
-    if !exists('g:lib_code_completion') || g:lib_code_completion ==? 'YouCompleteMe'
-        call add(s:group_bundle_list, 'YouCompleteMe')
-    elseif g:lib_code_completion ==? 'supertab'
-        call add(s:group_bundle_list, 'supertab')
-    endif
-endfunc
-
-
-" function! lib#bundle#ycm()
-"     if exists('g:loaded_youcompleteme')
-"         unlet g:loaded_youcompleteme
-"     endif
-"     exec 'so '.g:vimhome.'/ycm/ycm.vim'
-" endfunc
 
 
 function! lib#bundle#load()
@@ -111,7 +91,6 @@ function! lib#bundle#load()
             exec 'so '.cfile
         endif
     endfor
-    exec 'so '.g:vimhome.'/conf/others.vim'
 endfunc
 
 
