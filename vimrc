@@ -154,6 +154,9 @@ elseif $VIM_GROUP ==? 'python'
 elseif $VIM_GROUP ==? 'rust'
     let g:lib_bundle_whitelist += ['syntastic']
     let g:lib_bundle_blacklist += ['ale']
+elseif $VIM_GROUP ==? 'ycm'
+    let g:lib_bundle_whitelist += ['YouCompleteMe']
+    let g:lib_bundle_blacklist += ['coc.nvim']
 elseif $VIM_GROUP ==? 'debug'
 endif
 
