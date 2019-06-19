@@ -28,3 +28,13 @@ if g:colors_name ==# 'gruvbox'
     " highlight SyntasticWarningSign ctermbg=208 ctermfg=223
     " highlight SyntasticErrorSign ctermbg=167 ctermfg=223
 endif
+
+set cursorline
+highlight clear CursorLine
+highlight CursorLine ctermbg=237
+highlight LineNR ctermfg=240
+highlight CursorLineNR cterm=bold ctermfg=255
+augroup my_conf_gruvbox
+    autocmd VimEnter,WinEnter,BufWinEnter * setlocal cursorline
+    autocmd WinLeave * setlocal nocursorline
+augroup END
