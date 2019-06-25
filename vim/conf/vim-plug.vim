@@ -177,7 +177,13 @@ Plug 'https://github.com/sebdah/vim-delve.git'
 
 " Intellisense engine for vim8 & neovim, full language server protocol support
 " as VSCode.
-Plug 'neoclide/coc.nvim', {'tag': '*', 'do': './install.sh'}
+Plug 'https://github.com/neoclide/coc.nvim.git', {
+        \ 'tag': '*',
+        \ 'do': './install.sh'
+        \ }
+
+" Viewer & Finder for LSP symbols and tags in Vim.
+" Plug 'https://github.com/liuchengxu/vista.vim.git'
 
 call plug#end()
 

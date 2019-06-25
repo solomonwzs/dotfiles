@@ -158,6 +158,7 @@ elseif $VIM_GROUP ==? 'ycm'
     let g:lib_bundle_whitelist += ['YouCompleteMe']
     let g:lib_bundle_blacklist += ['coc.nvim']
 elseif $VIM_GROUP ==? 'debug'
+    let g:lib_bundle_whitelist += ['vista.vim']
 endif
 
 call lib#bundle#load()
