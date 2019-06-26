@@ -17,7 +17,7 @@ else
 end
 
 
-function! s:Mkdir_Workspace()
+function! s:mkdir_workspace()
     if !isdirectory(s:out_dir)
         if exists('*mkdir')
             call mkdir(s:out_dir)
@@ -28,33 +28,26 @@ function! s:Mkdir_Workspace()
 endfunc
 
 
-function! s:Basename()
+function! s:basename()
     let cwd = getcwd()
     return join(split(cwd, '/'), '-')
 endfunc
 
 
-function! s:Gen_Tags_OnCallback(channel, cscope_out)
+function! s:gen_tags_oncallback(cscope_out)
     if !exists('g:lib_cscope_added')
-        silent exec ':cs add '.a:cscope_out
+        silent exec ':cs add '.a:cscope_out[0]
         let g:lib_cscope_added = 1
     end
     silent cs reset
-    echo 'reset cscope, file: '.a:cscope_out
-endfunc
-
-
-function! s:Gen_Tags_OnError(channel, msg)
-    echohl ErrorMsg
-    echo 'ERROR: '.a:msg
-    echohl None
+    echo 'reset cscope, file: '.a:cscope_out[0]
 endfunc
 
 
 function! lib#cscope#gen_tags()
-    call s:Mkdir_Workspace()
+    call s:mkdir_workspace()
 
-    let basename = s:Basename()
+    let basename = s:basename()
     let file_list = s:out_dir.'/'.basename.'.files'
     let names = []
     for ext in s:code_ext
@@ -68,18 +61,8 @@ function! lib#cscope#gen_tags()
             \' -f '.cscope_out
 
     let cmd = cmd_1.' && '.cmd_2.' && echo '.cscope_out
-    if has('channel') && has('job')
-        call job_start(['/bin/sh', '-c', cmd], {
-                \ 'callback': function('s:Gen_Tags_OnCallback'),
-                \ 'err_cb': function('s:Gen_Tags_OnError'),
-                \ })
-    else
-        silent exec '!'.cmd
-        redraw!
-        if v:shell_error
-            call s:Gen_Tags_OnError(0, 'set cscope db/conn failure')
-        else
-            call s:Gen_Tags_OnCallback(0, cscope_out)
-        endif
-    end
+    call lib#adapt#job_start(['/bin/sh', '-c', cmd], {
+            \ 'ok_cb': function('s:gen_tags_oncallback'),
+            \ 'err_cb': '_msg',
+            \ })
 endfunc

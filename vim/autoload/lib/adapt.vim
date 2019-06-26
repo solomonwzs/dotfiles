@@ -1,77 +1,156 @@
-function! lib#adapt#job_start(cmd, ...)
-    let opts = {}
-    if a:0 > 0
-        let opts = a:1
-    endif
-    if has('nvim')
-        let nopts = {}
-        for [k, v] in items(opts)
-            if k ==# 'callback'
-            elseif k ==# 'err_cb'
-            else
-                let nopts[k] = v
-            endif
+function s:default_ok_cb(data, ...)
+    echo 'OK: '.join(a:data, ' ')
+endfunc
+
+
+function s:default_err_cb(data, ...)
+    echohl ErrorMsg
+    echo 'ERR: '.join(a:data, ' ')
+    echohl None
+endfunc
+
+
+function s:ok_callback_vim(cb, ch, data)
+    let lines = [a:data]
+    while ch_info(a:ch)['out_status'] !=# 'closed'
+        let line = ch_read(a:ch)
+        call add(lines, line)
+    endwhile
+    call a:cb(lines)
+endfunc
+
+
+function s:err_callback_vim(cb, ch, data)
+    let lines = [a:data]
+    while ch_info(a:ch)['err_status'] !=# 'closed'
+        let line = ch_read(a:ch, {'part': 'err'})
+        call add(lines, line)
+    endwhile
+    call a:cb(lines)
+endfunc
+
+
+function s:ok_callback_nvim(ldata, id, data, event)
+    if a:event ==# 'stdout' && len(a:data) > 0
+        for i in a:data
+            call add(a:ldata, i)
         endfor
-    else
-        " call job_start(a:cmd, opts)
     endif
 endfunc
 
-let s:msg = ''
 
+function s:err_callback_nvim(ldata, id, data, event)
+    if a:event ==# 'stderr' && len(a:data) > 0
+        for i in a:data
+            call add(a:ldata, i)
+        endfor
+    endif
+endfunc
+
+
+function s:exit_callback_nvim(ok_cb, err_cb, ldata, id, exit_code, event)
+    if a:exit_code == 0
+        if a:ok_cb != 0
+            call a:ok_cb(a:ldata)
+        endif
+    else
+        if a:err_cb != 0
+            call a:err_cb(a:ldata)
+        endif
+    endif
+endfunc
+
+
+function s:parse_nvim_args(opts)
+    let nvim_opts = {}
+    let ldata = []
+    let Ok_cb = 0
+    let Err_cb = 0
+    if has_key(a:opts, 'ok_cb')
+        let Ok_cb = a:opts.ok_cb
+        if a:opts.ok_cb ==# '_msg'
+            let Ok_cb = function('s:default_ok_cb')
+        endif
+        let nvim_opts.on_stdout = function('s:ok_callback_nvim', [ldata])
+    endif
+    if has_key(a:opts, 'err_cb')
+        let Err_cb = a:opts.err_cb
+        if a:opts.err_cb ==# '_msg'
+            let Err_cb = function('s:default_err_cb')
+        endif
+        let nvim_opts.on_stderr = function('s:err_callback_nvim', [ldata])
+    endif
+    let nvim_opts.on_exit = function('s:exit_callback_nvim', [Ok_cb, Err_cb, ldata])
+    return nvim_opts
+endfunc
+
+
+function s:parse_vim_args(opts)
+    let vim_opts = {}
+    if has_key(a:opts, 'ok_cb')
+        let args = [a:opts.ok_cb]
+        if a:opts.ok_cb ==# '_msg'
+            let args = [function('s:default_ok_cb')]
+        endif
+        let vim_opts.out_cb = function('s:ok_callback_vim', args)
+    endif
+    if has_key(a:opts, 'err_cb')
+        let args = [a:opts.err_cb]
+        if a:opts.err_cb ==# '_msg'
+            let args = [function('s:default_err_cb')]
+        endif
+        let vim_opts.err_cb = function('s:err_callback_vim', args)
+    endif
+    return vim_opts
+endfunc
+
+
+function! lib#adapt#job_start(cmd, ...)
+    let opts = {}
+    if a:0 >= 1
+        let opts = a:1
+    endif
+
+    if has('nvim')
+        call jobstart(a:cmd, s:parse_nvim_args(opts))
+    elseif has('channel') && has('job')
+        call job_start(a:cmd, s:parse_vim_args(opts))
+        " call job_start(a:cmd, {
+        "         \ 'callback': function('s:fooa'),
+        "         \ })
+    else
+        silent exec '!'.join(a:cmd, ' ')
+        redraw!
+        if v:shell_error
+            if has_key(opts, 'ok_cb')
+                call s:default_ok_cb(a:cmd)
+            endif
+        else
+            if has_key(opts, 'ok_cb')
+                call s:default_err_cb(a:cmd)
+            endif
+        endif
+    endif
+endfunc
+
+
+let s:msg = ''
 function! s:append_msg(msg)
     let s:msg = s:msg.a:msg
 endfunc
-
-function! s:fooa(ch, data, ...)
+function! s:foo(...)
     call s:append_msg('['.a:0.']')
+    call s:append_msg('['.ch_info(a:1)['err_status'].']')
     let index = 1
     while index <= a:0
-        call s:append_msg('['.a:{index}.']')
+        call s:append_msg('<'.a:{index}.'>')
         let index = index + 1
     endwhile
     echo s:msg
 endfunc
 
 
-function! s:foob(ch, data)
-    echo 'b: '.a:data
-endfunc
-
-
-function! s:bara(id, data, event)
-    call s:append_msg('<<'.a:id.'::'.a:event.'::')
-    call s:append_msg(join(a:data, ',').'>>')
-    echo s:msg
-endfunc
-
-
-function! s:barb(id, exit_code, event)
-    call s:append_msg('<<'.a:id.'::'.a:event.'::')
-    call s:append_msg(a:exit_code.'>>')
-    echo s:msg
-endfunc
-
-
-function! s:barc(id, data, event)
-    call s:append_msg('<<'.a:id.'::'.a:event.'::')
-    call s:append_msg(join(a:data, ',').'>>')
-    echo s:msg
-endfunc
-
-
-function! lib#adapt#foo()
-    let cmd = ['/bin/sh', '-c', 'date']
-    if has('nvim')
-        call jobstart(cmd, {
-                \ 'on_stdout': function('s:bara'),
-                \ 'on_exit': function('s:barb'),
-                \ 'on_stderr': function('s:barc'),
-                \ })
-    else
-        call job_start(cmd, {
-                \ 'callback': function('s:fooa', [1, 2, 3, 4, 5]),
-                \ 'err_cb': function('s:foob'),
-                \ })
-    endif
+function! lib#adapt#debug()
+    let cmd = ['/bin/sh', '-c', 'ls -l']
+    call lib#adapt#job_start(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
 endfunc

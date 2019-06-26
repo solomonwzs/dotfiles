@@ -45,7 +45,7 @@ Plug 'https://github.com/w0rp/ale.git'
 
 " A Vim plugin which shows a git diff in the gutter
 " (sign column) and stages/undoes hunks.
-Plug 'https://github.com/airblade/vim-gitgutter.git', {'commit': '7b81a8a'}
+" Plug 'https://github.com/airblade/vim-gitgutter.git', {'commit': '7b81a8a'}
 
 " Commentary.vim: comment stuff out
 Plug 'https://github.com/tpope/vim-commentary'
@@ -64,16 +64,16 @@ Plug 'https://github.com/mileszs/ack.vim.git'
 Plug 'https://github.com/ludovicchabant/vim-gutentags.git'
 
 " Directory viewer for Vim
-Plug 'https://github.com/justinmk/vim-dirvish.git'
+" Plug 'https://github.com/justinmk/vim-dirvish.git'
 
 " Awesome Python autocompletion
-Plug 'https://github.com/davidhalter/jedi-vim.git'
+" Plug 'https://github.com/davidhalter/jedi-vim.git'
 
 " Syntax checking hacks for vim
 Plug 'https://github.com/vim-syntastic/syntastic.git'
 
 " Updated javacomplete plugin for vim
-Plug 'https://github.com/artur-shaik/vim-javacomplete2.git'
+" Plug 'https://github.com/artur-shaik/vim-javacomplete2.git'
 
 " Plugin to toggle, display and navigate marks
 Plug 'https://github.com/kshenoy/vim-signature.git'
@@ -104,7 +104,7 @@ Plug 'https://github.com/arcticicestudio/nord-vim.git'
 Plug 'https://github.com/luochen1990/rainbow.git'
 
 " Vim configuration for Rust.
-Plug 'https://github.com/rust-lang/rust.vim.git'
+" Plug 'https://github.com/rust-lang/rust.vim.git'
 
 " Preview colours in source code while editing
 Plug 'https://github.com/ap/vim-css-color.git'
@@ -149,7 +149,7 @@ Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
 " Plug 'https://github.com/prabirshrestha/vim-lsp.git'
 
 " Racer support for Vim.
-Plug 'https://github.com/racer-rust/vim-racer.git'
+" Plug 'https://github.com/racer-rust/vim-racer.git'
 
 " fzf heart vim.
 " Plug 'https://github.com/junegunn/fzf.vim.git'

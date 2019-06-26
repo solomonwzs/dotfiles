@@ -2,7 +2,6 @@ global !p
 from snippets.common import strtoday
 endglobal
 
-
 snippet hdr "header" b
 /**
  * @author  Solomon Ng <solomon.wzs@gmail.com>
@@ -14,7 +13,6 @@ snip.rv = strtoday()
  */
 endsnippet
 
-
 snippet ifn "ifndef" b
 #ifndef ${1:NAME}
 #define $1
@@ -22,10 +20,15 @@ snippet ifn "ifndef" b
 #endif
 endsnippet
 
-
 snippet main "main" b
 int main(int argc, char **argv) {
   ${1}
   return 0;
 }
+endsnippet
+
+snippet fmtlog "macro log" b
+#define ${1:xlog}(_fmt_, ...) \
+    printf("\033[0;33m[%s:%s:%d]\033[0m " _fmt_ "\n", \
+    __FILE__, __func__, __LINE__, ## __VA_ARGS__)
 endsnippet

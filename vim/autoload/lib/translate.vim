@@ -39,18 +39,6 @@ EOF
 endfunc
 
 
-function! s:Msg_OnError(channel, msg)
-    echohl ErrorMsg
-    echo 'ERROR: '.a:msg
-    echohl None
-endfunc
-
-
-function! s:Msg_OnCb(channel, msg)
-    echo a:msg
-endfunc
-
-
 function! lib#translate#google_async(text)
     echo 'translate ...'
     if a:text ==# ''
@@ -60,8 +48,5 @@ function! lib#translate#google_async(text)
     let pys = g:vimhome.'/pythonx/translate/google.py'
     let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
             \ a:text]
-    call job_start(cmd, {
-            \ 'callback': function('s:Msg_OnCb'),
-            \ 'err_cb': function('s:Msg_OnError'),
-            \ })
+    call lib#adapt#job_start(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
 endfunc

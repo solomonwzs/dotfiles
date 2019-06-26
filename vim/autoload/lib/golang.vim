@@ -1,13 +1,4 @@
-function! s:Msg_OnError(channel, msg)
-    echohl ErrorMsg
-    echo 'ERROR: '.a:msg
-    echohl None
-endfunc
-
-
-function! s:Msg_OnCb(channel, msg)
-    echo 'OK: '.a:msg
-endfunc
+let s:default_cb = {'ok_cb': '_msg', 'err_cb': '_msg'}
 
 
 function! lib#golang#update_pkg()
@@ -19,9 +10,7 @@ function! lib#golang#update_pkg()
 
     let pkg = split(out)[0]
     let cmd = 'go install '.pkg.' && echo ok'
-    call job_start(['/bin/sh', '-c', cmd], {
-            \ 'err_cb': function('s:Msg_OnError'),
-            \ })
+    call lib#adapt#job_start(['/bin/sh', '-c', cmd], {'err_cb': '_msg'})
 endfunc
 
 
@@ -30,10 +19,7 @@ function! lib#golang#comp_pkg(pkg)
     let a:pkg = shellescape(a:pkg)
     let cmd = 'go install '.a:pkg.' && echo '.a:pkg
 
-    call job_start(['/bin/sh', '-c', cmd], {
-            \ 'callback': function('s:Msg_OnCb'),
-            \ 'err_cb': function('s:Msg_OnError'),
-            \ })
+    call lib#adapt#job_start(['/bin/sh', '-c', cmd], s:default_cb)
 endfunc
 
 
@@ -43,10 +29,7 @@ function! lib#golang#comp_deps_pkgs(file)
             \.a:file
             \.'| xargs -i{} go install {} '
             \.'&& echo compiled depend packages'
-    call job_start(['/bin/sh', '-c', cmd], {
-            \ 'callback': function('s:Msg_OnCb'),
-            \ 'err_cb': function('s:Msg_OnError'),
-            \ })
+    call lib#adapt#job_start(['/bin/sh', '-c', cmd], s:default_cb)
 endfunc
 
 
@@ -56,8 +39,5 @@ function! lib#golang#comp_imps_pkgs(file)
             \.a:file
             \.'| xargs -i{} go install {} '
             \.'&& echo compiled import packages'
-    call job_start(['/bin/sh', '-c', cmd], {
-            \ 'callback': function('s:Msg_OnCb'),
-            \ 'err_cb': function('s:Msg_OnError'),
-            \ })
+    call job_start(['/bin/sh', '-c', cmd], s:default_cb)
 endfunc

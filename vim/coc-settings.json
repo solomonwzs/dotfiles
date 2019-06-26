@@ -1,4 +1,6 @@
 {
+    "coc.preferences.jumpCommand": "split",
+
     "languageserver": {
         // pacman -S bash-language-server
         "bash": {
