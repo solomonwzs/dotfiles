@@ -61,7 +61,7 @@ function! lib#cscope#gen_tags()
             \' -f '.cscope_out
 
     let cmd = cmd_1.' && '.cmd_2.' && echo '.cscope_out
-    call lib#adapt#job_start(['/bin/sh', '-c', cmd], {
+    call lib#adapt#async_call(['/bin/sh', '-c', cmd], {
             \ 'ok_cb': function('s:gen_tags_oncallback'),
             \ 'err_cb': '_msg',
             \ })

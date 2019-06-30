@@ -48,5 +48,5 @@ function! lib#translate#google_async(text)
     let pys = g:vimhome.'/pythonx/translate/google.py'
     let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
             \ a:text]
-    call lib#adapt#job_start(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
+    call lib#adapt#async_call(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
 endfunc

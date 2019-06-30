@@ -100,7 +100,7 @@ let g:asmsyntax = 'nasm'
 
 
 "================ MAP KEY ================
-nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
+" nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 
 imap <C-q> <esc>
 
@@ -109,15 +109,15 @@ vnoremap <leader>t :<C-U>call lib#translate#google_async(
         \ lib#common#visual_selection())<CR>
 
 " Setting for tmux && screen
-if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
-    " map <esc>[1;5D <C-Left>
-    " map <esc>[1;5C <C-Right>
-endif
+" if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
+"     map <esc>[1;5D <C-Left>
+"     map <esc>[1;5C <C-Right>
+" endif
 
 " Setting for C-c copy text
 vmap <C-c> "+y
 if $SSH_CLIENT !=? ''
-    " install `xclip` and set `X11Forwarding yes` in sshd_config"<CR>
+    " install `xclip` and set `X11Forwarding yes` in sshd_config"
     if executable('xclip')
         vmap <silent> "+y :call system('xclip -i -sel clip',
                 \ lib#common#visual_selection())<CR>

@@ -105,7 +105,7 @@ function s:parse_vim_args(opts)
 endfunc
 
 
-function! lib#adapt#job_start(cmd, ...)
+function! lib#adapt#async_call(cmd, ...)
     let opts = {}
     if a:0 >= 1
         let opts = a:1
@@ -152,5 +152,5 @@ endfunc
 
 function! lib#adapt#debug()
     let cmd = ['/bin/sh', '-c', 'ls -l']
-    call lib#adapt#job_start(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
+    call lib#adapt#async_call(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
 endfunc

@@ -1,8 +1,19 @@
 " Extensions: 
+" - coc-git
 " - coc-json
 " - coc-python
 " - coc-rls
 " - coc-snippets
+" - coc-tsserver
+" - coc-vetur
+" - coc-vimlsp
+
+set updatetime=500
+
+let g:markdown_fenced_languages = [
+        \ 'vim',
+        \ 'help'
+        \ ]
 
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)

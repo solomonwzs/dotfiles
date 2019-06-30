@@ -10,7 +10,7 @@ function! lib#golang#update_pkg()
 
     let pkg = split(out)[0]
     let cmd = 'go install '.pkg.' && echo ok'
-    call lib#adapt#job_start(['/bin/sh', '-c', cmd], {'err_cb': '_msg'})
+    call lib#adapt#async_call(['/bin/sh', '-c', cmd], {'err_cb': '_msg'})
 endfunc
 
 
@@ -19,7 +19,7 @@ function! lib#golang#comp_pkg(pkg)
     let a:pkg = shellescape(a:pkg)
     let cmd = 'go install '.a:pkg.' && echo '.a:pkg
 
-    call lib#adapt#job_start(['/bin/sh', '-c', cmd], s:default_cb)
+    call lib#adapt#async_call(['/bin/sh', '-c', cmd], s:default_cb)
 endfunc
 
 
@@ -29,7 +29,7 @@ function! lib#golang#comp_deps_pkgs(file)
             \.a:file
             \.'| xargs -i{} go install {} '
             \.'&& echo compiled depend packages'
-    call lib#adapt#job_start(['/bin/sh', '-c', cmd], s:default_cb)
+    call lib#adapt#async_call(['/bin/sh', '-c', cmd], s:default_cb)
 endfunc
 
 

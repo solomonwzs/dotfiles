@@ -182,6 +182,9 @@ Plug 'https://github.com/neoclide/coc.nvim.git', {
         \ 'do': './install.sh'
         \ }
 
+" A light and configurable statusline/tabline plugin for Vim.
+Plug 'https://github.com/itchyny/lightline.vim.git'
+
 " Viewer & Finder for LSP symbols and tags in Vim.
 " Plug 'https://github.com/liuchengxu/vista.vim.git'
 
