@@ -1,9 +1,8 @@
 let g:airline#extensions#tabline#enabled=1
 let g:airline_powerline_fonts=1
+
 set laststatus=2
 " let g:airline_theme="bubblegum"
-
-let g:airline#extensions#coc#enabled = 1
 
 " let g:airline_theme_patch_func = 'AirlineThemePatch'
 " function! AirlineThemePatch(palette)

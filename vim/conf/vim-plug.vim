@@ -31,7 +31,7 @@ Plug 'https://github.com/fatih/vim-go'
 Plug 'https://github.com/will133/vim-dirdiff'
 
 " Perform all your vim insert mode completions with Tab
-Plug 'https://github.com/ervandew/supertab'
+" Plug 'https://github.com/ervandew/supertab'
 
 " Run Async Shell Commands in Vim 8.0 / NeoVim and Output
 " to Quickfix Window
@@ -45,7 +45,7 @@ Plug 'https://github.com/w0rp/ale.git'
 
 " A Vim plugin which shows a git diff in the gutter
 " (sign column) and stages/undoes hunks.
-" Plug 'https://github.com/airblade/vim-gitgutter.git', {'commit': '7b81a8a'}
+Plug 'https://github.com/airblade/vim-gitgutter.git'
 
 " Commentary.vim: comment stuff out
 Plug 'https://github.com/tpope/vim-commentary'

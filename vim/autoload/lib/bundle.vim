@@ -14,6 +14,7 @@ let s:basic_valid_bundles = [
         \ 'tagbar',
         \ 'ultisnips',
         \ 'vim-airline',
+        \ 'X:lightline.vim',
         \ 'vim-commentary',
         \ 'vim-delve',
         \ 'vim-dirdiff',
@@ -36,6 +37,7 @@ let s:bundle_priority = {
         \ }
 
 let s:loaded_bundles = {}
+let s:loaded_bundles_list = []
 
 
 function! s:priority_comp(i1, i2)
@@ -72,15 +74,19 @@ function! lib#bundle#load()
     let lib_bundle_list = sort(lib_bundle_list, 's:priority_comp')
 
     let dir = g:vimhome.'/bundle'
+    let s:loaded_bundles = {}
     call plug#begin(dir)
     for i in lib_bundle_list
-        Plug dir.'/'.i
+        let plug = dir.'/'.i
+        if !empty(glob(plug))
+            call add(s:loaded_bundles_list, i)
+            Plug plug
+            let s:loaded_bundles[i] = 1
+        endif
     endfor
     call plug#end()
 
-    let s:loaded_bundles = {}
-    for i in lib_bundle_list
-        let s:loaded_bundles[i] = 1
+    for i in s:loaded_bundles_list
         let cfile=g:vimhome.'/conf/'.i.'.vim'
         if filereadable(cfile)
             exec 'so '.cfile

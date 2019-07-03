@@ -103,6 +103,7 @@ let g:asmsyntax = 'nasm'
 " nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 
 imap <C-q> <esc>
+vmap <C-q> <esc>
 
 nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
 vnoremap <leader>t :<C-U>call lib#translate#google_async(
