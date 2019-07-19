@@ -29,23 +29,23 @@
             }
         },
 
-        // "clangd": {
-        //     "command": "clangd",
-        //     "rootPatterns": ["compile_flags.txt", "compile_commands.json",
-        //         ".vim/", ".git/", ".hg/"],
-        //     "filetypes": ["c", "cpp", "objc", "objcpp"]
-        // },
-
-        "ccls": {
-            "command": "ccls",
-            "filetypes": ["c", "cpp", "cuda", "objc", "objcpp"],
-            "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
-            "initializationOptions": {
-                "cache": {
-                    "directory": "/tmp/ccls-cache"
-                }
-            }
+        "clangd": {
+            "command": "clangd",
+            "rootPatterns": ["compile_flags.txt", "compile_commands.json",
+                ".vim/", ".git/", ".hg/"],
+            "filetypes": ["c", "cpp", "objc", "objcpp"]
         },
+
+        // "ccls": {
+        //     "command": "ccls",
+        //     "filetypes": ["c", "cpp", "cuda", "objc", "objcpp"],
+        //     "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
+        //     "initializationOptions": {
+        //         "cache": {
+        //             "directory": "/tmp/ccls-cache"
+        //         }
+        //     }
+        // },
 
         "elixirLS": {
             "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",

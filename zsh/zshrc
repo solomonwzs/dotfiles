@@ -108,7 +108,7 @@ export GOPATH=$HOME/workspace/go/lib
 [ -d "$HOME/bin" ] && export PATH=$PATH:"$HOME/bin"
 [ -d "$HOME/.cargo/bin" ] && export PATH=$PATH:"$HOME/.cargo/bin"
 [ -d "$HOME/workspace/go/lib/bin" ] && export PATH=$PATH:"$HOME/workspace/go/lib/bin"
-[ -d "$HOME/.yarn/bin" ] && export PATH=$PATH:"$HOME/.yarn/bin"
+# [ -d "$HOME/.yarn/bin" ] && export PATH=$PATH:"$HOME/.yarn/bin"
 [ -d "$HOME/.gem/ruby/2.6.0/bin" ] && export PATH=$PATH:"$HOME/.gem/ruby/2.6.0/bin"
 
 PROMPT=$'%B%F{63}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
@@ -143,8 +143,8 @@ no_web_proxy() {
     export http_proxy=''
 }
 
-svn_() {
-	svn --username "$SVN_USER" --password "$SVN_PASS" $@
+svn() {
+	command svn --username "$SVN_USER" --password "$SVN_PASS" $@
 }
 
 
@@ -152,8 +152,8 @@ svn_() {
 # Setting for fzf
 #####################
 
-fzf_() {
-    fzf --preview '[[ $(file --mime {}) =~ binary ]] &&
+pfzf() {
+    command fzf --preview '[[ $(file --mime {}) =~ binary ]] &&
         echo {} is a binary file ||
         (bat --style=numbers --color=always {} ||
         highlight -O ansi -l {} ||

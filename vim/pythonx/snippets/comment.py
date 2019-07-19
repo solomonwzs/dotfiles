@@ -91,8 +91,15 @@ def vi_set_filetype(snip):
 
     filetype = lines[0].strip()
     START, END = get_line_comment_symbol(snip.ft)
-
     return f'{START} vi: set filetype={filetype} :{END}'
+
+
+def encode_bytes_str(snip, enc):
+    bs = snip.v.text.encode(enc)
+    s = ''
+    for byte in bs:
+        s += "\\x%02x" % byte
+    return s
 
 
 def comment_line(snip):

@@ -33,7 +33,9 @@ set mouse=a
 set number
 set ruler
 
-set encoding=utf-8 fileencodings=ucs-bom,utf-8,cp936
+set encoding=utf-8
+set fileencodings=ucs-bom,utf-8,cp936,gbk
+set termencoding=utf-8
 
 set foldmethod=indent
 set nofoldenable

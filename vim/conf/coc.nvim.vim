@@ -1,12 +1,13 @@
-" Extensions: 
-" - coc-git
-" - coc-json
-" - coc-python
-" - coc-rls
-" - coc-snippets
-" - coc-tsserver
-" - coc-vetur
-" - coc-vimlsp
+let g:coc_global_extensions = [
+        \ 'coc-git',
+        \ 'coc-json',
+        \ 'coc-python',
+        \ 'coc-rls',
+        \ 'coc-snippets',
+        \ 'coc-tsserver',
+        \ 'coc-vetur',
+        \ 'coc-vimlsp',
+        \ ]
 
 set updatetime=500
 
