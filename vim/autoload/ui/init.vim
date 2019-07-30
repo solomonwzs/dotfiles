@@ -3,6 +3,7 @@
 " @date       2019-04-09
 " @license    MIT
 
+scriptencoding utf-8
 
 let g:ui_stl_category = {}
 let g:ui_stl_mode = {}

@@ -179,7 +179,7 @@ Plug 'https://github.com/sebdah/vim-delve.git'
 " as VSCode.
 Plug 'https://github.com/neoclide/coc.nvim.git', {
         \ 'tag': '*',
-        \ 'do': './install.sh'
+        \ 'branch': 'release'
         \ }
 
 " A light and configurable statusline/tabline plugin for Vim.
