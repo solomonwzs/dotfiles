@@ -153,7 +153,7 @@ no_web_proxy() {
 }
 
 svn() {
-	command svn --username "$SVN_USER" --password "$SVN_PASS" $@
+    command svn --username "$SVN_USER" --password "$SVN_PASS" $@
 }
 
 if ! type "pbcopy" > /dev/null; then
