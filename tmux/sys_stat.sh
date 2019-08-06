@@ -57,7 +57,7 @@ if [ -n "$netdev_ok" ]; then
 fi
 
 mem=$(free | awk '$1 == "Mem:" {printf("%2d%%", ($2 - $7) / $2 * 100)}')
-load=$(uptime | awk -F'[, ]' '{print $(NF - 4), $(NF-2), $(NF)}')
+load=$(uptime | awk -F'[, ]' '{print $(NF-4), $(NF-2), $(NF)}')
 
 if [ -n "$netdev_ok" ]; then
     echo "$cpu | $mem | $load | ${rbps}${ru}/s ${tbps}${tu}/s"
