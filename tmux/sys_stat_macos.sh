@@ -13,6 +13,8 @@ set -euo pipefail
 
 size_unit=("" "KB" "MB" "GB" "TB")
 
+cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+
 netdev=""
 while getopts "i:" opt; do
     case "$opt" in
@@ -55,5 +57,9 @@ while [ ${#tbps} -gt 3 ]; do
     ti=$((ti + 1))
 done
 tu=${size_unit[$ti]}
+
+cpu=${cpu%.*}
+mem=${mem%.*}
+cpu=$((cpu / cpu_cores))
     
-echo "$cpu% | $mem% | $load | ${rbps}${ru}/s ${tbps}${tu}/s"
+printf "%d%s/s %d%s/s | %2d%% | %2d%% | %s [%d]\n" "$rbps" "$ru" "$tbps" "$tu" "$cpu" "$mem" "$load" "$cpu_cores"
