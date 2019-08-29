@@ -32,7 +32,8 @@ if [ -n "$netdev_ok" ]; then
     t0=$(cat "/sys/class/net/${netdev}/statistics/tx_bytes")
 fi
 
-cpu=$(vmstat -n 1 2 | tail -n 1 | awk '{printf("%2d%%", 100 - $15)}')
+cpu_cores=$(nproc)
+cpu=$(vmstat -n 1 2 | tail -n 1 | awk '{print 100 - $15}')
 
 if [ -n "$netdev_ok" ]; then
     r1=$(cat "/sys/class/net/${netdev}/statistics/rx_bytes")
@@ -56,11 +57,11 @@ if [ -n "$netdev_ok" ]; then
     tu=${size_unit[$ti]}
 fi
 
-mem=$(free | awk '$1 == "Mem:" {printf("%2d%%", ($2 - $7) / $2 * 100)}')
+mem=$(free | awk '$1 == "Mem:" {print ($2 - $7) / $2 * 100}')
 load=$(uptime | awk -F'[, ]' '{print $(NF-4), $(NF-2), $(NF)}')
 
 if [ -n "$netdev_ok" ]; then
-    echo "$cpu | $mem | $load | ${rbps}${ru}/s ${tbps}${tu}/s"
+    printf "%d%s/s %d%s/s | %2d%% | %2d%% | %s [%d]\n" "$rbps" "$ru" "$tbps" "$tu" "$cpu" "$mem" "$load" "$cpu_cores"
 else
-    echo "$cpu | $mem | $load"
+    printf "%2d%% | %2d%% | %s (%d)\n" "$cpu" "$mem" "$load" "$cpu_cores"
 fi
