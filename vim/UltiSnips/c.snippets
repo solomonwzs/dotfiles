@@ -27,8 +27,25 @@ int main(int argc, char **argv) {
 }
 endsnippet
 
-snippet fmtlog "macro log" b
-#define ${1:xlog}(_fmt_, ...) \
+snippet #log "macro log" b
+#define xlog(_fmt_, ...) \
     printf("\033[0;33m[%s:%s:%d]\033[0m " _fmt_ "\n", \
-    __FILE__, __func__, __LINE__, ## __VA_ARGS__)
+           __FILE__, __func__, __LINE__, ## __VA_ARGS__)
+endsnippet
+
+snippet #off "macro offsetof" b
+#ifndef offsetof
+# ifdef __GNUC__
+#   define offsetof(_st_, _m_) __builtin_offsetof(_st_, _m_)
+# else
+#   define offsetof(_st_, _m_) ((size_t)&(((_st_ *)0)->_m_))
+# endif
+#endif
+endsnippet
+
+snippet #con "macro container_of" b
+#define container_of(_ptr_, _type_, _member_) ({ \
+  const typeof(((_type_ *)0)->_member_)*__mptr = (_ptr_); \
+  (_type_ *)((char *)__mptr - offsetof(_type_, _member_)); \
+})
 endsnippet

@@ -8,6 +8,8 @@ if filereadable(s:local_racer_cmd)
 endif
 
 augroup my_conf_vim_racer
+    autocmd!
+
     autocmd Filetype rust setlocal hidden
     autocmd FileType rust nmap gd <Plug>(rust-def)
     autocmd FileType rust nmap gs <Plug>(rust-def-split)

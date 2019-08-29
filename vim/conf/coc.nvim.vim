@@ -1,13 +1,13 @@
-let g:coc_global_extensions = [
-        \ 'coc-git',
-        \ 'coc-json',
-        \ 'coc-python',
-        \ 'coc-rls',
-        \ 'coc-snippets',
-        \ 'coc-tsserver',
-        \ 'coc-vetur',
-        \ 'coc-vimlsp',
-        \ ]
+" let g:coc_global_extensions = [
+"         \ 'coc-git',
+"         \ 'coc-json',
+"         \ 'coc-python',
+"         \ 'coc-rls',
+"         \ 'coc-snippets',
+"         \ 'coc-tsserver',
+"         \ 'coc-vetur',
+"         \ 'coc-vimlsp',
+"         \ ]
 
 set updatetime=500
 
@@ -16,19 +16,21 @@ let g:markdown_fenced_languages = [
         \ 'help'
         \ ]
 
-nnoremap <silent> <space>g : <C-u>CocList --normal gstatus<CR>
-
 function! s:show_documentation()
-  if (index(['vim','help'], &filetype) >= 0)
-    execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
-  endif
+    if (index(['vim', 'help'], &filetype) >= 0)
+        execute 'h '.expand('<cword>')
+    else
+        call CocAction('doHover')
+    endif
 endfunction
 
 if !lib#bundle#has_loaded('ultisnips')
     imap <C-a> <Plug>(coc-snippets-expand)
 endif
+
+nnoremap <silent> <space>g :<C-u>CocList --normal gstatus<CR>
+nnoremap <silent> <space>e :<C-u>CocList extensions<CR>
+nnoremap <silent> <space>r :<C-u>CocRestart<CR>
 
 inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"

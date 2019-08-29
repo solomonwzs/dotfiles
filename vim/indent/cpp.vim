@@ -15,7 +15,7 @@
 "
 "}}}
 
-if exists("b:did_indent")
+if exists('b:did_indent')
     finish
 endif
 let b:did_indent = 1
@@ -47,13 +47,15 @@ function! GoogleCppIndent()
     let l:in_comment = 0
     let l:pline_num = prevnonblank(l:cline_num - 1)
     while l:pline_num > -1
+        let tmp_pline = l:pline_num
+
         let l:pline = getline(l:pline_num)
         let l:pline_indent = indent(l:pline_num)
 
-        if l:in_comment == 0 && l:pline =~ '^.\{-}\(/\*.\{-}\)\@<!\*/'
+        if l:in_comment == 0 && l:pline =~# '^.\{-}\(/\*.\{-}\)\@<!\*/'
             let l:in_comment = 1
         elseif l:in_comment == 1
-            if l:pline =~ '/\*\(.\{-}\*/\)\@!'
+            if l:pline =~# '/\*\(.\{-}\*/\)\@!'
                 let l:in_comment = 0
             endif
         elseif l:pline_indent == 0
@@ -71,6 +73,10 @@ function! GoogleCppIndent()
         endif
 
         let l:pline_num = prevnonblank(l:pline_num - 1)
+
+        if l:pline_num == tmp_pline
+            break
+        endif
     endwhile
 
     return l:orig_indent
@@ -84,9 +90,8 @@ setlocal textwidth=80
 setlocal wrap
 
 setlocal cindent
-setlocal cinoptions=h1,l1,g1,t0,i4,+4,(0,w1,W4
+setlocal cinoptions=h1,l1,g1,t0,i4,+4,j1,(0,w1,W4
 
 setlocal indentexpr=GoogleCppIndent()
 
-let b:undo_indent = "setl sw< ts< sts< et< tw< wrap< cin< cino< inde<"
-
+let b:undo_indent = 'setl sw< ts< sts< et< tw< wrap< cin< cino< inde<'

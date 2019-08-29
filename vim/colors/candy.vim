@@ -6,11 +6,11 @@
 
 set background=dark
 hi clear
-if exists("syntax_on")
+if exists('syntax_on')
    syntax reset
 endif
 
-let colors_name = "candy"
+let colors_name = 'candy'
 
 hi Normal       guifg=#f0f0f8 guibg=#000000
 
@@ -84,9 +84,9 @@ hi LineNR ctermfg=240
 hi CursorLineNR cterm=bold ctermfg=255
 hi CursorLine ctermbg=237
 augroup my_colors_candy
-    au!
-    au VimEnter,WinEnter,BufWinEnter * setlocal cursorline
-    au WinLeave * setlocal nocursorline
+    autocmd!
+    autocmd VimEnter,WinEnter,BufWinEnter * setlocal cursorline
+    autocmd WinLeave * setlocal nocursorline
 augroup END
 
 hi DiffAdd ctermbg=24

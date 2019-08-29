@@ -35,6 +35,8 @@ highlight CursorLine ctermbg=237
 highlight LineNR ctermfg=240
 highlight CursorLineNR cterm=bold ctermfg=255
 augroup my_conf_gruvbox
+    autocmd!
+
     autocmd VimEnter,WinEnter,BufWinEnter * setlocal cursorline
     autocmd WinLeave * setlocal nocursorline
 augroup END

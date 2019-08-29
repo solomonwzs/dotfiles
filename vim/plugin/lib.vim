@@ -35,6 +35,8 @@ command! -nargs=0 MyDebug
         \ call ui#floatingw#test()
 
 augroup my_plugin_lib
+    autocmd!
+
     autocmd FileType go
             \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
 augroup END
