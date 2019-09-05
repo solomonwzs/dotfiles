@@ -12,6 +12,38 @@ set -euo pipefail
 # EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 
 size_unit=("" "KB" "MB" "GB" "TB")
+size_symbol=("." "-"  "="  "*"  "#")
+
+function flow_digital() {
+    bps=$1
+    i=0
+    while [ ${#bps} -gt 3 ]; do
+        bps=$((bps / 1024))
+        i=$((i + 1))
+    done
+    u=${size_unit[$i]}
+    echo "${bps}${u}/s"
+}
+
+function flow_symbol() {
+    bps=$1
+    i=0
+    while [ "$bps" -gt 1024 ]; do
+        bps=$((bps / 1024))
+        i=$((i + 1))
+    done
+    u=${size_symbol[$i]}
+
+    if [ $bps -eq 0 ]; then
+        echo "[   ]"
+    elif [ $bps -lt 341 ]; then
+        echo "[  ${u}]"
+    elif [ $bps -lt 683 ]; then
+        echo "[ ${u}${u}]"
+    else
+        echo "[${u}${u}${u}]"
+    fi
+}
 
 netdev=""
 while getopts "i:" opt; do
@@ -42,26 +74,15 @@ if [ -n "$netdev_ok" ]; then
     rbps=$((r1 - r0))
     tbps=$((t1 - t0))
 
-    ri=0
-    while [ ${#rbps} -gt 3 ]; do
-        rbps=$((rbps / 1024))
-        ri=$((ri + 1))
-    done
-    ru=${size_unit[$ri]}
-
-    ti=0
-    while [ ${#tbps} -gt 3 ]; do
-        tbps=$((tbps / 1024))
-        ti=$((ti + 1))
-    done
-    tu=${size_unit[$ti]}
+    rs=$(flow_symbol $rbps)
+    ts=$(flow_symbol $tbps)
 fi
 
 mem=$(free | awk '$1 == "Mem:" {print ($2 - $7) / $2 * 100}')
 load=$(uptime | awk -F'[, ]' '{print $(NF-4), $(NF-2), $(NF)}')
 
 if [ -n "$netdev_ok" ]; then
-    printf "%d%s/s %d%s/s | %2d%% | %2d%% | %s [%d]\n" "$rbps" "$ru" "$tbps" "$tu" "$cpu" "$mem" "$load" "$cpu_cores"
+    printf "%s%s| %2d%% | %2d%% | %s (%d)\n" "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores"
 else
     printf "%2d%% | %2d%% | %s (%d)\n" "$cpu" "$mem" "$load" "$cpu_cores"
 fi
