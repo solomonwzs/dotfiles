@@ -76,11 +76,11 @@ t1="${rt[1]}"
 rbps=$((r1 - r0))
 tbps=$((t1 - t0))
 
-rs=$(flow_symbol $rbps)
-ts=$(flow_symbol $tbps)
+rs=$(flow_digital $rbps)
+ts=$(flow_digital $tbps)
 
 cpu=${cpu%.*}
 mem=${mem%.*}
 cpu=$((cpu / cpu_cores))
 
-printf " %2d%% | %2d%% | %s |%s%s \n" "$cpu" "$mem" "$load" "$rs" "$ts"
+printf " %s %s | %2d%% | %2d%% | %s [%d] \n" "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores"
