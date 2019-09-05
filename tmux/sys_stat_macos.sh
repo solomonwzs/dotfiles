@@ -45,7 +45,7 @@ function flow_symbol() {
     fi
 }
 
-# cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
 
 netdev=""
 while getopts "i:" opt; do
