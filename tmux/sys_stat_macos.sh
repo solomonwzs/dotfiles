@@ -45,7 +45,7 @@ function flow_symbol() {
     fi
 }
 
-cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+# cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
 
 netdev=""
 while getopts "i:" opt; do
@@ -82,5 +82,5 @@ ts=$(flow_symbol $tbps)
 cpu=${cpu%.*}
 mem=${mem%.*}
 cpu=$((cpu / cpu_cores))
-    
-printf "%s%s| %2d%% | %2d%% | %s (%d)\n" "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores"
+
+printf " %2d%% | %2d%% | %s |%s%s \n" "$cpu" "$mem" "$load" "$rs" "$ts"

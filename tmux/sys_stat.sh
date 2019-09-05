@@ -64,7 +64,7 @@ if [ -n "$netdev_ok" ]; then
     t0=$(cat "/sys/class/net/${netdev}/statistics/tx_bytes")
 fi
 
-cpu_cores=$(nproc)
+# cpu_cores=$(nproc)
 cpu=$(vmstat -n 1 2 | tail -n 1 | awk '{print 100 - $15}')
 
 if [ -n "$netdev_ok" ]; then
@@ -82,7 +82,7 @@ mem=$(free | awk '$1 == "Mem:" {print ($2 - $7) / $2 * 100}')
 load=$(uptime | awk -F'[, ]' '{print $(NF-4), $(NF-2), $(NF)}')
 
 if [ -n "$netdev_ok" ]; then
-    printf "%s%s| %2d%% | %2d%% | %s (%d)\n" "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores"
+    printf " %2d%% | %2d%% | %s |%s%s \n" "$cpu" "$mem" "$load" "$rs" "$ts"
 else
-    printf "%2d%% | %2d%% | %s (%d)\n" "$cpu" "$mem" "$load" "$cpu_cores"
+    printf " %2d%% | %2d%% | %s \n" "$cpu" "$mem" "$load"
 fi
