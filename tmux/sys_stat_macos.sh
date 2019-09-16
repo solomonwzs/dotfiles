@@ -83,4 +83,10 @@ cpu=${cpu%.*}
 mem=${mem%.*}
 cpu=$((cpu / cpu_cores))
 
-printf " %s %s | %2d%% | %2d%% | %s [%d] \n" "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores"
+temp="Nan"
+if type "osx-cpu-temp" > /dev/null; then
+    temp=$(osx-cpu-temp)
+fi
+
+printf " %s %s | %2d%% | %2d%% | %s [%d] | %s \n" \
+    "$rs" "$ts" "$cpu" "$mem" "$load" "$cpu_cores" "$temp"
