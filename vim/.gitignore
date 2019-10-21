@@ -8,5 +8,5 @@ __pycache__/
 ycm/ycmd_build
 *.swp
 .netrwhist
-
+autoload/plug.vim.old
 language_servers/
