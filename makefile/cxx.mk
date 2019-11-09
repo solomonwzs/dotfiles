@@ -2,17 +2,17 @@
 
 NAME	= a
 
-CXX			= g++
-CXXFLAGS	= -Wall -fpic -g -c -std=gnu++11
-CXXSRC		= $(wildcard ./*.cpp)
-CXXOBJ		= $(CXXSRC:%.cpp=%.o)
-CXXDEP		= $(CXXOBJ:%.o=%.d)
+CPP			= g++
+CPPFLAGS	= -Wall -fpic -g -c -std=gnu++11
+CPPSRC		= $(wildcard ./*.cpp)
+CPPOBJ		= $(CPPSRC:%.cpp=%-cpp.o)
+CPPDEP		= $(CPPOBJ:%-cpp.o=%-cpp.d)
 
 C		= gcc
 CFLAGS	= -Wall -fpic -g -c
 CSRC	= $(wildcard ./*.c)
-COBJ	= $(CSRC:%.c=%.o)
-CDEP	= $(COBJ:%.o=%.d)
+COBJ	= $(CSRC:%.c=%-c.o)
+CDEP	= $(COBJ:%-c.o=%-c.d)
 
 LIBS	=
 
@@ -22,29 +22,29 @@ RANLIB	= ranlib
 
 VALGRIND = valgrind
 
-$(NAME).out: $(CXXOBJ) $(COBJ)
+$(NAME).out: $(CPPOBJ) $(COBJ)
 	@echo -e "\033[0;33m>>>\033[0m $@"
-	@$(CXX) $(CXXOBJ) $(COBJ) $(LIBS) -o $@
+	@$(CPP) $(CPPOBJ) $(COBJ) $(LIBS) -o $@
 
-lib$(NAME).so: $(CXXOBJ) $(COBJ)
+lib$(NAME).so: $(CPPOBJ) $(COBJ)
 	@echo -e "\033[0;33m>>>\033[0m $@"
-	@$(CXX) -shared -Wl,-soname,lib$(NAME).so $(CXXOBJ) $(COBJ) -o $@
+	@$(CPP) -shared -Wl,-soname,lib$(NAME).so $(CPPOBJ) $(COBJ) -o $@
 
-lib$(NAME).a: $(CXXOBJ) $(COBJ)
+lib$(NAME).a: $(CPPOBJ) $(COBJ)
 	@echo -e "\033[0;33m>>>\033[0m $@"
-	@$(AR) $(ARFLAGS) $@ $(CXXOBJ) $(COBJ)
+	@$(AR) $(ARFLAGS) $@ $(CPPOBJ) $(COBJ)
 	@$(RANLIB) $@
 
--include $(CXXDEP)
+-include $(CPPDEP)
 -include $(CDEP)
 
 .SECONDARY:
-%.o: %.cpp
+%-cpp.o: %.cpp
 	@echo -e "\033[0;33m*\033[0m $< -> $@"
-	@$(CXX) $(CXXFLAGS) $< -MMD -o $@
+	@$(CPP) $(CPPFLAGS) $< -MMD -o $@
 
 .SECONDARY:
-%.o: %.c
+%-c.o: %.c
 	@echo -e "\033[0;33m*\033[0m $< -> $@"
 	@$(C) $(CFLAGS) $< -MMD -o $@
 
