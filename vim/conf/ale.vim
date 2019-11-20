@@ -51,7 +51,6 @@ let g:ale_pattern_options = {
         \ '.*\.erl$': {'ale_enabled': 0},
         \ }
 
-
 python3 << EOF
 from vconf.ale import set_cxx_gcc_options
 set_cxx_gcc_options()
