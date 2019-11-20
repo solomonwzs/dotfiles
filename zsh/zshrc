@@ -153,7 +153,26 @@ no_web_proxy() {
 }
 
 svn() {
-    command svn --username "$SVN_USER" --password "$SVN_PASS" $@
+    if [ -n "${SVN_USER:+x}" ] && [ -n "${SVN_PASS:+x}" ]; then
+        command svn --username "$SVN_USER" --password "$SVN_PASS" $@
+    else
+        command svn $@
+    fi
+}
+
+svn_() {
+    if [ -n "${SVN_ACC:+x}" ]; then
+        if [ -z "${SVN_ACC[$1]:+x}" ]; then
+            echo "ERR: unknown user: \"$1\""
+        else
+            local user="$1"
+            local pass="${SVN_ACC[$1]}"
+            shift 1
+            command svn --username "$user" --password "$pass" $@
+        fi
+    else
+        command svn $@
+    fi
 }
 
 if ! type "pbcopy" > /dev/null; then
