@@ -17,7 +17,6 @@ function! lib#color#vim_cterm_fg()
     exec 'syn cluster '.cluster_name.' contains='.join(groups, ',')
 endfunc
 
-
 function! lib#color#vim_cterm_bg()
     let i = 0
     let prefix = 'xCterm_BG_'
