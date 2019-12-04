@@ -7,7 +7,8 @@ noremap <C-p>f :LeaderfFunction<CR>
 noremap <C-p>b :LeaderfBuffer<CR>
 noremap <C-p>a :LeaderfTag<CR>
 
-xnoremap <C-p>gf :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
+vnoremap <silent> <C-p>gf :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
+noremap <silent> <C-p>gf :<C-U><C-R>=printf("Leaderf rg -F -e %s", expand('<cword>'))<CR><CR>
 
 let g:Lf_CommandMap = {
         \ '<C-K>': ['<Up>'],

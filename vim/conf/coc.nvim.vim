@@ -46,6 +46,7 @@ nmap <silent> gr <Plug>(coc-references)
 nmap <silent> <space>ci <Plug>(coc-diagnostic-info)
 nmap <silent> <space>cn <Plug>(coc-diagnostic-next)
 nmap <silent> <space>cp <Plug>(coc-diagnostic-prev)
+nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))<CR><CR>
 
 let g:gitgutter_enabled = 1
 function! GitGutterGetHunkSummary()
