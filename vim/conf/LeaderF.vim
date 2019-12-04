@@ -6,6 +6,7 @@ noremap <C-p>m :LeaderfMru<CR>
 noremap <C-p>f :LeaderfFunction<CR>
 noremap <C-p>b :LeaderfBuffer<CR>
 noremap <C-p>a :LeaderfTag<CR>
+xnoremap <C-p>gf :<C-U><C-R>=printf("Leaderf! rg -F -e %s ", leaderf#Rg#visual())<CR><CR>
 
 let g:Lf_CommandMap = {
         \ '<C-K>': ['<Up>'],
@@ -25,6 +26,9 @@ let g:Lf_ShowRelativePath = 0
 let g:Lf_HideHelp = 1
 " let g:Lf_StlColorscheme = 'powerline'
 let g:Lf_PreviewResult = {'Function': 0, 'BufTag': 0}
+
+" let g:Lf_WindowPosition = 'popup'
+let g:Lf_PreviewInPopup = 1 " <C-p> to preview
 
 let g:Lf_CtagsFuncOpts = {
         \ 'rust': '--rust-kinds=f',
