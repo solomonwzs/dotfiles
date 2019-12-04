@@ -6,7 +6,8 @@ noremap <C-p>m :LeaderfMru<CR>
 noremap <C-p>f :LeaderfFunction<CR>
 noremap <C-p>b :LeaderfBuffer<CR>
 noremap <C-p>a :LeaderfTag<CR>
-xnoremap <C-p>gf :<C-U><C-R>=printf("Leaderf! rg -F -e %s ", leaderf#Rg#visual())<CR><CR>
+
+xnoremap <C-p>gf :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
 
 let g:Lf_CommandMap = {
         \ '<C-K>': ['<Up>'],
