@@ -1,3 +1,8 @@
+let s:editor = 'vim'
+if has('nvim')
+    let s:editor = 'nvim'
+endif
+
 function lib#common#visual_selection()
     if mode() ==? 'v'
         let [line_start, column_start] = getpos('v')[1:2]
@@ -25,4 +30,8 @@ endfunc
 
 function! lib#common#strtrim(str, trim)
     return substitute(a:str, printf('%s$', a:trim), '', 'g')
-endfunction
+endfunc
+
+function! lib#common#editor()
+    return s:editor
+endfunc
