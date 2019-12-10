@@ -14,6 +14,7 @@ let s:basic_valid_bundles = [
         \ 'tagbar',
         \ 'ultisnips',
         \ 'vim-airline',
+        \ 'vim-clang-format',
         \ 'vim-commentary',
         \ 'vim-delve',
         \ 'vim-dirdiff',

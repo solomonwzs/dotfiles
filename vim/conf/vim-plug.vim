@@ -198,6 +198,10 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " unite, Denite, lightline, vim-startify and many more.
 " Plug 'https://github.com/ryanoasis/vim-devicons.git'
 
+" Vim plugin for clang-format, a formatter for C, C++, Obj-C, Java,
+" JavaScript, TypeScript and ProtoBuf.
+Plug 'https://github.com/rhysd/vim-clang-format.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
