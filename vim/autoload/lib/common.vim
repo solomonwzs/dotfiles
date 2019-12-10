@@ -22,3 +22,7 @@ function lib#common#visual_selection()
     let lines[0] = lines[0][column_start - 1:]
     return join(lines, "\n")
 endfunc
+
+function! lib#common#strtrim(str, trim)
+    return substitute(a:str, printf('%s$', a:trim), '', 'g')
+endfunction

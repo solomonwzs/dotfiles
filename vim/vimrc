@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 " Encrypt
 if has('vim')
     set cryptmethod=blowfish2
@@ -94,6 +96,7 @@ augroup my_vimrc
     endif
 
     autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
+    autocmd BufEnter,BufRead compile_flags.txt set filetype=conf
 
     autocmd FileType html,xml,yaml,vue.javascript,javascript
             \ setlocal sw=2 tabstop=2 softtabstop=2
@@ -138,6 +141,16 @@ endif
 "================ Load Plugin ================
 let g:lib_bundle_whitelist = []
 let g:lib_bundle_blacklist = []
+
+if has('nvim')
+    let g:lib_bundle_whitelist += [
+            \ 'defx-icons',
+            \ 'defx.nvim',
+            \ ]
+    let g:lib_bundle_blacklist += [
+            \ 'nerdtree',
+            \ ]
+endif
 
 if $VIM_GROUP ==? 'erl'
     let g:lib_bundle_whitelist += [

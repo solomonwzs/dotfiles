@@ -55,7 +55,7 @@ Plug 'https://github.com/tpope/vim-commentary'
 Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 
 " Vim plugin that displays tags in a window, ordered by scope
-Plug 'https://github.com/majutsushi/tagbar'
+" Plug 'https://github.com/majutsushi/tagbar'
 
 " Vim plugin for the Perl module / CLI script 'ack'
 Plug 'https://github.com/mileszs/ack.vim.git'
@@ -131,10 +131,10 @@ Plug 'https://github.com/pangloss/vim-javascript.git'
 Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
 " Language Server Protocol (LSP) support for vim and neovim.
-Plug 'https://github.com/autozimu/LanguageClient-neovim.git', {
-        \ 'branch': 'next',
-        \ 'do': 'bash install.sh',
-        \ }
+" Plug 'https://github.com/autozimu/LanguageClient-neovim.git', {
+"         \ 'branch': 'next',
+"         \ 'do': 'bash install.sh',
+"         \ }
 
 " Dark powered asynchronous completion framework for neovim/Vim8.
 Plug 'https://github.com/Shougo/deoplete.nvim.git'
@@ -187,6 +187,16 @@ Plug 'https://github.com/itchyny/lightline.vim.git'
 
 " Viewer & Finder for LSP symbols and tags in Vim.
 " Plug 'https://github.com/liuchengxu/vista.vim.git'
+
+" The dark powered file explorer implementation.
+Plug 'https://github.com/Shougo/defx.nvim.git', {'do': ':UpdateRemotePlugins'}
+
+" Filetype icons for https://github.com/Shougo/defx.nvim.
+Plug 'https://github.com/kristijanhusak/defx-icons.git'
+
+" Adds file type icons to Vim plugins such as: NERDTree, vim-airline, CtrlP,
+" unite, Denite, lightline, vim-startify and many more.
+" Plug 'https://github.com/ryanoasis/vim-devicons.git'
 
 call plug#end()
 
