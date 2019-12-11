@@ -21,7 +21,6 @@ let s:basic_valid_bundles = [
         \ 'vim-dirvish',
         \ 'vim-fugitive',
         \ 'vim-go',
-        \ 'vim-gutentags',
         \ 'vim-markdown',
         \ 'vim-python-pep8-indent',
         \ 'vim-signature',

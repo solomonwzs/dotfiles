@@ -61,7 +61,7 @@ Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 Plug 'https://github.com/mileszs/ack.vim.git'
 
 " A Vim plugin that manages your tag files
-Plug 'https://github.com/ludovicchabant/vim-gutentags.git'
+" Plug 'https://github.com/ludovicchabant/vim-gutentags.git'
 
 " Directory viewer for Vim
 " Plug 'https://github.com/justinmk/vim-dirvish.git'
