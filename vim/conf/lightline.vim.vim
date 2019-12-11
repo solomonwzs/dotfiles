@@ -7,7 +7,7 @@ let g:lightline = {}
 let g:lightline.active = {
         \   'left': [
         \       [ 'mode', 'paste' ],
-        \       [ 'readonly', 'filename', 'modifiedx' ],
+        \       [ 'readonly', 'filename', 'modified' ],
         \       [ 'method' ],
         \   ],
         \   'right':[
@@ -19,7 +19,7 @@ let g:lightline.active = {
 
 let g:lightline.inactive = {
         \   'left': [
-        \       [ 'readonly', 'filename', 'modifiedx' ],
+        \       [ 'readonly', 'filename', 'modified' ],
         \   ],
         \   'right':[
         \       [ 'filetype', 'fileencoding', 'lineinfo', 'percent' ],
@@ -31,7 +31,7 @@ let g:lightline.tabline = {
         \       [ 'tabs' ],
         \   ],
         \   'right': [
-        \       [ 'close' ],
+        \       [ 'filepath', 'close' ],
         \   ],
         \ }
 
@@ -43,18 +43,23 @@ let g:lightline.tab = {
 let g:lightline.component_function = {
         \ }
 
+let g:lightline.tab_component_function = {
+        \   'modified' : 'LightlineTabModified',
+        \ }
+
 let g:lightline.component_expand = {
+        \   'bufferline'  : 'lightline#bufferline#buffers',
         \   'coc_error'   : 'LightlineCocErrors',
         \   'coc_fix'     : 'LightlineCocFixes',
         \   'coc_hint'    : 'LightlineCocHints',
         \   'coc_info'    : 'LightlineCocInfos',
         \   'coc_warning' : 'LightlineCocWarnings',
         \   'cocstatus'   : 'coc#status',
+        \   'filepath'    : 'LightLineFilePath',
         \   'gitstatus'   : 'LightlineGitStatus',
         \   'method'      : 'LightlineCocCurrentFunction',
-        \   'modifiedx'   : 'LightlineModified',
+        \   'modified'   : 'LightlineModified',
         \   'readonly'    : 'LightlineReadonly',
-        \   'bufferline'  : 'lightline#bufferline#buffers',
         \ }
 
 let g:lightline.component_type = {
@@ -68,13 +73,27 @@ let g:lightline.component_type = {
 let g:lightline.colorscheme = 'gruvbox'
 let g:lightline.separator = { 'left': '', 'right': '' }
 
-function! LightlineReadonly()
+let g:lightline.enable = {
+        \   'tabline': 1,
+        \ }
+
+function! LightLineFilePath() abort
+    return [ expand('%') ]
+endfunction
+
+function! LightlineReadonly() abort
     return &readonly && &filetype !=# 'help' ? '' : ''
 endfunction
 
-function! LightlineModified()
+function! LightlineModified() abort
     return &modified ? '' :
             \ &modifiable ? '' : '-'
+endfunction
+
+function! LightlineTabModified(n) abort
+    let winnr = tabpagewinnr(a:n)
+    return gettabwinvar(a:n, winnr, '&modified') ? '' :
+            \ gettabwinvar(a:n, winnr, '&modifiable') ? '' : '-'
 endfunction
 
 function! LightlineBufferline() abort
@@ -96,7 +115,11 @@ function! LightlineGitStatus() abort
     endif
 
     let gitcount = trim(get(b:, 'coc_git_status', ''))
-    return printf('%s [%s]', gitbranch, gitcount)
+    if empty(gitcount)
+        return printf('%s', gitbranch)
+    else
+        return printf('%s [%s]', gitbranch, gitcount)
+    endif
 endfunction
 
 function! s:lightline_coc_diagnostic(kind, sign) abort
@@ -132,15 +155,15 @@ function! LightlineCocWarnings() abort
 endfunction
 
 function! LightlineCocInfos() abort
-    let msg = s:lightline_coc_diagnostic('information', '')
+    let msg = s:lightline_coc_diagnostic('information', '')
     if empty(msg)
-        let msg = s:lightline_ale_diagnostic('info', '')
+        let msg = s:lightline_ale_diagnostic('info', '')
     endif
     return msg
 endfunction
 
 function! LightlineCocHints() abort
-    return s:lightline_coc_diagnostic('hints', '!')
+    return s:lightline_coc_diagnostic('hints', '')
 endfunction
 
 function! LightlineCocCurrentFunction()
