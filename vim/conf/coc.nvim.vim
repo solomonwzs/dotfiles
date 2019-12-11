@@ -9,8 +9,6 @@
 "         \ 'coc-vimlsp',
 "         \ ]
 
-set updatetime=500
-
 let g:markdown_fenced_languages = [
         \ 'vim',
         \ 'help'
@@ -47,9 +45,10 @@ nmap <silent> <space>ci <Plug>(coc-diagnostic-info)
 nmap <silent> <space>cn <Plug>(coc-diagnostic-next)
 nmap <silent> <space>cp <Plug>(coc-diagnostic-prev)
 nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))<CR><CR>
+nmap <silent> <space>cf :call CocAction('getCurrentFunctionSymbol')<CR>
 
-let g:gitgutter_enabled = 1
-function! GitGutterGetHunkSummary()
-    let blame = get(b:, 'coc_git_status', '')
-    return winwidth(0) > 120 ? blame : ''
-endfunction
+" let g:gitgutter_enabled = 1
+" function! GitGutterGetHunkSummary()
+"     let blame = get(b:, 'coc_git_status', '')
+"     return winwidth(0) > 120 ? blame : ''
+" endfunction

@@ -7,13 +7,13 @@ let s:basic_valid_bundles = [
         \ 'coc.nvim',
         \ 'deol.nvim',
         \ 'gruvbox',
+        \ 'lightline.vim',
         \ 'nerdtree',
         \ 'nord-vim',
         \ 'rainbow',
         \ 'tabular',
         \ 'tagbar',
         \ 'ultisnips',
-        \ 'vim-airline',
         \ 'vim-clang-format',
         \ 'vim-commentary',
         \ 'vim-delve',
@@ -34,6 +34,7 @@ let s:bundle_priority = {
         \ 'vim-maktaba': 1,
         \ 'vim-glaive': 1,
         \ 'gruvbox': -1,
+        \ 'lightline': -1,
         \ }
 
 let s:loaded_bundles = {}

@@ -1,6 +1,8 @@
 set encoding=utf-8
 scriptencoding utf-8
 
+set updatetime=500
+
 " Encrypt
 if has('vim')
     set cryptmethod=blowfish2

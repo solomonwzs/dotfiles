@@ -185,6 +185,10 @@ Plug 'https://github.com/neoclide/coc.nvim.git', {
 " A light and configurable statusline/tabline plugin for Vim.
 Plug 'https://github.com/itchyny/lightline.vim.git'
 
+" A lightweight plugin to display the list of buffers in the lightline vim
+" plugin.
+" Plug 'https://github.com/mengelbrecht/lightline-bufferline.git'
+
 " Viewer & Finder for LSP symbols and tags in Vim.
 " Plug 'https://github.com/liuchengxu/vista.vim.git'
 
