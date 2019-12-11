@@ -7,13 +7,13 @@ let g:lightline = {}
 let g:lightline.active = {
         \   'left': [
         \       [ 'mode', 'paste' ],
-        \       [ 'readonly', 'filename', 'modified' ],
+        \       [ 'readonly', 'filename', 'modifiedx' ],
         \       [ 'method' ],
         \   ],
         \   'right':[
         \       [ 'coc_error', 'coc_warning', 'coc_hint', 'coc_info' ],
         \       [ 'filetype', 'fileencoding', 'lineinfo', 'percent' ],
-        \       [ 'gitstatus' ],
+        \       [ 'vsstatus' ],
         \   ],
         \ }
 
@@ -56,9 +56,9 @@ let g:lightline.component_expand = {
         \   'coc_warning' : 'LightlineCocWarnings',
         \   'cocstatus'   : 'coc#status',
         \   'filepath'    : 'LightLineFilePath',
-        \   'gitstatus'   : 'LightlineGitStatus',
+        \   'vsstatus'    : 'LightlineVerCtrlStatus',
         \   'method'      : 'LightlineCocCurrentFunction',
-        \   'modified'   : 'LightlineModified',
+        \   'modifiedx'   : 'LightlineModified',
         \   'readonly'    : 'LightlineReadonly',
         \ }
 
@@ -105,14 +105,9 @@ function! LightlineBufferline() abort
             \ ]
 endfunction
 
-function! LightlineGitStatus() abort
-    if winwidth(0) < 120
-        return ''
-    endif
+function s:git_status()
     let gitbranch = trim(get(g:, 'coc_git_status', ''))
-    if empty(gitbranch)
-        return ''
-    endif
+    if empty(gitbranch) | return '' | endif
 
     let gitcount = trim(get(b:, 'coc_git_status', ''))
     if empty(gitcount)
@@ -120,6 +115,27 @@ function! LightlineGitStatus() abort
     else
         return printf('%s [%s]', gitbranch, gitcount)
     endif
+endfunction
+
+function s:svn_status()
+    let svnstatus = lib#svn#status()
+    if empty(svnstatus) | return '' | endif
+
+    let svncount = lib#svn#count()
+    if empty(svncount) || svncount ==# ' '
+        return printf('%s', svnstatus)
+    else
+        return printf('%s [%s]', svnstatus, svncount)
+    endif
+endfunction
+
+function! LightlineVerCtrlStatus() abort
+    if winwidth(0) < 80
+        return ''
+    endif
+    let status = s:git_status()
+    if empty(status) | let status = s:svn_status() | endif
+    return status
 endfunction
 
 function! s:lightline_coc_diagnostic(kind, sign) abort
