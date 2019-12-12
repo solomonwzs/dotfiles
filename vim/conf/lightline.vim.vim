@@ -40,6 +40,11 @@ let g:lightline.tab = {
         \ 'inactive': [ 'tabnum', 'filename', 'modified' ],
         \ }
 
+let g:lightline.component = {
+        \ 'close': '%999X  ',
+        \ 'paste': '%{&paste?"":""}',
+        \ }
+
 let g:lightline.component_function = {
         \ }
 
@@ -84,7 +89,7 @@ function! LightLineFilePath() abort
 endfunction
 
 function! LightlineReadonly() abort
-    return &readonly && &filetype !=# 'help' ? '' : ''
+    return &readonly && &filetype !=# 'help' ? '' : ''
 endfunction
 
 function! LightlineModified() abort

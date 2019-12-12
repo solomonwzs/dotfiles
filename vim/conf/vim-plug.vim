@@ -195,6 +195,9 @@ Plug 'https://github.com/itchyny/lightline.vim.git'
 " The dark powered file explorer implementation.
 Plug 'https://github.com/Shougo/defx.nvim.git', {'do': ':UpdateRemotePlugins'}
 
+" Git status implementation for https://github.com/Shougo/defx.nvim.
+Plug 'https://github.com/kristijanhusak/defx-git.git'
+
 " Filetype icons for https://github.com/Shougo/defx.nvim.
 Plug 'https://github.com/kristijanhusak/defx-icons.git'
 

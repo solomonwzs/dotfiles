@@ -1,16 +1,26 @@
 scriptencoding utf-8
 
 call defx#custom#option('_', {
-        \ 'columns': 'indent:git:icons:filename',
+        \ 'columns': 'indent:git:icon:filename',
         \ 'winwidth': 30,
         \ 'split': 'vertical',
         \ 'direction': 'topleft',
         \ 'listed': 1,
         \ 'show_ignored_files': 0,
-        \ 'root_marker': '≡ ',
         \ 'ignored_files':
         \     '.mypy_cache,.pytest_cache,.git,.hg,.svn,.stversions'
         \   . ',__pycache__,.sass-cache,*.egg-info,.DS_Store,*.pyc,*.swp'
+        \ })
+
+call defx#custom#column('mark', {
+        \ 'readonly_icon': '',
+        \ 'selected_icon': '',
+        \ })
+
+call defx#custom#column('icon', {
+        \ 'directory_icon': '',
+        \ 'opened_icon': '',
+        \ 'root_icon': '≡',
         \ })
 
 function! s:defx_mappings() abort
@@ -25,6 +35,8 @@ function! s:defx_mappings() abort
     nnoremap <silent><buffer><expr> I
             \ defx#do_action('toggle_ignored_files')
 
+    nnoremap <silent><buffer><expr> R
+            \ defx#do_action('redraw')
     nnoremap <silent><buffer><expr> c
             \ defx#do_action('copy')
     nnoremap <silent><buffer><expr> m

@@ -146,7 +146,7 @@ let g:lib_bundle_blacklist = []
 
 if has('nvim')
     let g:lib_bundle_whitelist += [
-            \ 'defx-icons',
+            \ 'defx-git',
             \ 'defx.nvim',
             \ ]
     let g:lib_bundle_blacklist += [
