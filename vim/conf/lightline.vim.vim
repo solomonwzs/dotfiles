@@ -41,7 +41,7 @@ let g:lightline.tab = {
         \ }
 
 let g:lightline.component = {
-        \ 'close': '%999X  ',
+        \ 'close': '%999X   ',
         \ 'paste': '%{&paste?"":""}',
         \ }
 
@@ -77,6 +77,7 @@ let g:lightline.component_type = {
 
 let g:lightline.colorscheme = 'gruvbox'
 let g:lightline.separator = { 'left': '', 'right': '' }
+let g:lightline.tabline_subseparator = { 'left': '', 'right': '|' }
 
 let g:lightline.enable = {
         \   'tabline': 1,
@@ -170,9 +171,9 @@ function! LightlineCocErrors() abort
 endfunction
 
 function! LightlineCocWarnings() abort
-    let msg = s:lightline_coc_diagnostic('warning', '⚠')
+    let msg = s:lightline_coc_diagnostic('warning', '')
     if empty(msg)
-        let msg = s:lightline_ale_diagnostic('warning', '⚠')
+        let msg = s:lightline_ale_diagnostic('warning', '')
     endif
     return msg
 endfunction

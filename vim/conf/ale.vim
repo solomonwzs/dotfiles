@@ -19,7 +19,7 @@ let g:ale_c_parse_compile_commands = 1
 " let g:ale_sign_error = 'X'
 " let g:ale_sign_warning = '!'
 let g:ale_sign_error = '✖'
-let g:ale_sign_warning = '⚠'
+let g:ale_sign_warning = ''
 
 " genrate rc-file:
 "   pylint --generate-rcfile > ~/.pylintrc
