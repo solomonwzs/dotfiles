@@ -209,6 +209,11 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " JavaScript, TypeScript and ProtoBuf.
 Plug 'https://github.com/rhysd/vim-clang-format.git'
 
+" A Vim plugin for visually displaying indent levels in code.
+Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
+
+Plug 'hyhugh/coc-erlang_ls', {'do': 'yarn install --frozen-lockfile'}
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

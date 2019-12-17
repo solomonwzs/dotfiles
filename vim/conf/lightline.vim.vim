@@ -7,7 +7,7 @@ let g:lightline = {}
 let g:lightline.active = {
         \   'left': [
         \       [ 'mode', 'paste' ],
-        \       [ 'readonly', 'filename', 'modifiedx' ],
+        \       [ 'readonly', 'filename', 'modified' ],
         \       [ 'method' ],
         \   ],
         \   'right':[
@@ -42,7 +42,9 @@ let g:lightline.tab = {
 
 let g:lightline.component = {
         \ 'close': '%999X   ',
+        \ 'modified': '%{&modified ? "" : &modifiable ? "" : "-"}',
         \ 'paste': '%{&paste?"":""}',
+        \ 'readonly': '%{&readonly ? "" : ""}',
         \ }
 
 let g:lightline.component_function = {
@@ -64,7 +66,7 @@ let g:lightline.component_expand = {
         \   'vsstatus'    : 'LightlineVerCtrlStatus',
         \   'method'      : 'LightlineCocCurrentFunction',
         \   'modifiedx'   : 'LightlineModified',
-        \   'readonly'    : 'LightlineReadonly',
+        \   'readonlyx'   : 'LightlineReadonly',
         \ }
 
 let g:lightline.component_type = {
@@ -92,6 +94,13 @@ endfunction
 function! LightlineReadonly() abort
     return &readonly && &filetype !=# 'help' ? '' : ''
 endfunction
+
+" function! LightlineReadonlyN() abort
+"     let t = tabnr()
+"     let w = winnr()
+"     return gettabwinvar(t, w, '&readonly') && 
+"             \ gettabwinvar(t, w, '&filetype') !=# 'help' ? '' : '~'
+" endfunction
 
 function! LightlineModified() abort
     return &modified ? '' :
@@ -190,8 +199,18 @@ function! LightlineCocHints() abort
     return s:lightline_coc_diagnostic('hints', '')
 endfunction
 
+let s:show_function = 0
+
+function s:show_function_toggle()
+    let s:show_function = xor(s:show_function, 1)
+endfunction
+
 function! LightlineCocCurrentFunction()
-    return get(b:, 'coc_current_function', '')
+    if s:show_function == 0
+        return ''
+    else
+        return get(b:, 'coc_current_function', '')
+    endif
 endfunction
 
 augroup my_conf_lightline_vim
@@ -205,3 +224,6 @@ augroup my_conf_lightline_vim
     autocmd User ALELintPost         call lightline#update()
     autocmd User ALEFixPost          call lightline#update()
 augroup END
+
+command! -nargs=0 ShowFunctionToggle
+        \ call s:show_function_toggle()
