@@ -124,6 +124,7 @@ let s:file_node_extensions = {
         \ 't'            : '',
         \ 'tar'          : '',
         \ 'tagbar'       : '',
+        \ 'tags'         : '',
         \ 'tex'          : '',
         \ 'text'         : '',
         \ 'toml'         : '',

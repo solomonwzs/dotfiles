@@ -1,5 +1,6 @@
 scriptencoding utf-8
 
+set laststatus=2
 set showtabline=2
 let s:coc_ok = 0
 
@@ -164,6 +165,9 @@ function! s:lightline_coc_diagnostic(kind, sign) abort
 endfunction
 
 function! s:lightline_ale_diagnostic(kind, sign) abort
+    if !lib#bundle#has_loaded('ale')
+        return ''
+    endif
     let info = ale#statusline#Count(bufnr(''))
     if empty(info) || get(info, a:kind, 0) == 0
         return ''
