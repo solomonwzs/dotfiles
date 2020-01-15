@@ -25,7 +25,9 @@ let g:ale_sign_warning = ''
 "   pylint --generate-rcfile > ~/.pylintrc
 "
 " let g:ale_python_pylint_executable = 'pylint'
-" let g:ale_python_pylint_options = '--rcfile ~/.pylintrc'
+" let g:ale_python_pylint_options = '--rcfile ~/.pylintrc
+
+let g:ale_cpp_cpplint_options = '--filter=-legal/copyright'
 
 let g:ale_python_flake8_options = '--ignore=E402,E241,E501,E302,E265'
 
@@ -40,7 +42,7 @@ let g:ale_fixers = {
 
 let g:ale_linters = {
         \ 'c':      ['gcc'],
-        \ 'cpp':    ['g++'],
+        \ 'cpp':    ['g++', 'cpplint'],
         \ 'python': ['flake8'],
         \ 'rust':   ['cargo'],
         \ 'sh':     ['shellcheck'],
