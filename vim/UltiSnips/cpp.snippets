@@ -5,23 +5,23 @@ std::shared_ptr<void> ${1:_defer}(nullptr, [${2:&}](...){ ${3:return;} });
 endsnippet
 
 snippet #defer "macro defer" b
-#define CONCAT_(_A, _B) _A ## _B
-#define CONCAT(_A, _B) CONCAT_(_A, _B)
+#define CONCAT_(_A, _B) _A##_B
+#define CONCAT(_A, _B)  CONCAT_(_A, _B)
 #define _defer(_fn_) \
-    std::shared_ptr<void> CONCAT(__defer, __LINE__)(nullptr, _fn_)
+  std::shared_ptr<void> CONCAT(__defer, __LINE__)(nullptr, _fn_)
 endsnippet
 
 snippet #con "macro container_of" b
-template<class P, class M>
+template <class P, class M>
 size_t _offsetof_impl(const M P::*member) {
-  return (size_t) &( reinterpret_cast<P*>(0)->*member);
+  return (size_t) & (reinterpret_cast<P *>(0)->*member);
 }
 
-template<class P, class M>
-P* _container_of_impl(M* ptr, const M P::*member) {
-  return (P*)( (char*)ptr - _offsetof_impl(member));
+template <class P, class M>
+P *_container_of_impl(M *ptr, const M P::*member) {
+  return (P *)((char *)ptr - _offsetof_impl(member));
 }
 
 #define container_of(_ptr_, _type_, _member_) \
-    _container_of_impl(_ptr_, &_type_::_member_)
+  _container_of_impl(_ptr_, &_type_::_member_)
 endsnippet

@@ -45,6 +45,7 @@ let s:file_node_extensions = {
         \ 'fsscript'     : '',
         \ 'fsx'          : '',
         \ 'gif'          : '',
+        \ 'gitcommit'    : '',
         \ 'gitconfig'    : '',
         \ 'go'           : '',
         \ 'h'            : '',
