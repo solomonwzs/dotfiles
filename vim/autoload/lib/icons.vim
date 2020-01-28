@@ -53,6 +53,7 @@ let s:file_node_extensions = {
         \ 'hex'          : '',
         \ 'hbs'          : '',
         \ 'help'         : 'ﬤ',
+        \ 'man'          : 'ﬤ',
         \ 'hh'           : '',
         \ 'hpp'          : '',
         \ 'hrl'          : '',
