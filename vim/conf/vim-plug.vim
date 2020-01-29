@@ -212,6 +212,9 @@ Plug 'https://github.com/rhysd/vim-clang-format.git'
 " A Vim plugin for visually displaying indent levels in code.
 Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 
+" Display all accessible marks and their surrounding lines in a collapsible sidebar.
+Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
