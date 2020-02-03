@@ -130,6 +130,9 @@ Plug 'https://github.com/pangloss/vim-javascript.git'
 " Erlang omnicomplete plugin for Vim.
 Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
+" coc-erlang_ls
+Plug 'https://github.com/hyhugh/coc-erlang_ls.git', {'do': 'yarn install --frozen-lockfile'}
+
 " Language Server Protocol (LSP) support for vim and neovim.
 " Plug 'https://github.com/autozimu/LanguageClient-neovim.git', {
 "         \ 'branch': 'next',
@@ -168,6 +171,9 @@ Plug 'https://github.com/Shougo/deol.nvim.git'
 
 " Interactive command execution in Vim.
 Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
+
+" Unite and create user interfaces.
+" Plug 'https://github.com/Shougo/unite.vim.git'
 
 " Neovim / Vim integration for Delve. (for Golang)
 Plug 'https://github.com/sebdah/vim-delve.git'

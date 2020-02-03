@@ -1,130 +1,133 @@
 {
-    "coc.preferences.jumpCommand": "split",
-    "coc.preferences.currentFunctionSymbolAutoUpdate": true,
+  "coc.preferences.jumpCommand": "split",
+  "coc.preferences.currentFunctionSymbolAutoUpdate": true,
 
-    "git.addedSign.hlGroup": "GitGutterAdd",
-    "git.changedSign.hlGroup": "GitGutterChange",
-    "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete",
-    "git.removedSign.hlGroup": "GitGutterDelete",
-    "git.topRemovedSign.hlGroup": "GitGutterDelete",
+  "git.addedSign.hlGroup": "GitGutterAdd",
+  "git.changedSign.hlGroup": "GitGutterChange",
+  "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete",
+  "git.removedSign.hlGroup": "GitGutterDelete",
+  "git.topRemovedSign.hlGroup": "GitGutterDelete",
 
-    "diagnostic.infoSign": ">>",
-    "diagnostic.hintSign": ">>",
-    "diagnostic.errorSign": ">>",
-    "diagnostic.warningSign": ">>",
+  "diagnostic.infoSign": ">>",
+  "diagnostic.hintSign": ">>",
+  "diagnostic.errorSign": ">>",
+  "diagnostic.warningSign": ">>",
 
-    "languageserver": {
-        // pacman -S bash-language-server
-        "bash": {
-            "command": "bash-language-server",
-            "args": ["start"],
-            "filetypes": ["sh"],
-            "ignoredRootPaths": ["~"]
-        },
+  "erlang_ls.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
+  "erlang_ls.trace.server": "off",
 
-        // :CocInstall coc-rls
-        // "rust": {},
+  "languageserver": {
+    // pacman -S bash-language-server
+    "bash": {
+      "command": "bash-language-server",
+      "args": ["start"],
+      "filetypes": ["sh"],
+      "ignoredRootPaths": ["~"]
+    },
 
-        "golang": {
-            "command": "go-langserver",
-            "filetypes": ["go"],
-            "initializationOptions": {
-                "gocodeCompletionEnabled": true,
-                "diagnosticsEnabled": true,
-                "lintTool": "golint"
+    // :CocInstall coc-rls
+    // "rust": {},
+
+    "golang": {
+      "command": "go-langserver",
+      "filetypes": ["go"],
+      "initializationOptions": {
+        "gocodeCompletionEnabled": true,
+        "diagnosticsEnabled": true,
+        "lintTool": "golint"
+      }
+    },
+
+    "clangd": {
+      "command": "clangd",
+      "rootPatterns": ["compile_flags.txt", "compile_commands.json",
+        ".vim/", ".git/", ".hg/"],
+        "filetypes": ["c", "cpp", "objc", "objcpp"]
+    },
+
+    // "ccls": {
+    //   "command": "ccls",
+    //   "filetypes": ["c", "cpp", "cuda", "objc", "objcpp"],
+    //   "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
+    //   "initializationOptions": {
+    //     "cache": {
+    //       "directory": "/tmp/ccls-cache"
+    //     }
+    //   }
+    // },
+
+    "elixirLS": {
+      "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",
+      "filetypes": ["elixir", "eelixir"]
+    },
+
+    // :CocInstall coc-python
+    "python": {
+      "command": "python",
+      "args": [
+        "-mpyls",
+        "-vv",
+        "--log-file",
+        "/tmp/lsp_python.log"
+      ],
+      "trace.server": "verbose",
+      "filetypes": [
+        "python"
+      ],
+      "settings": {
+        "pyls": {
+          "enable": true,
+          "trace": {
+            "server": "verbose"
+          },
+          "commandPath": "",
+          "configurationSources": [
+            "pycodestyle"
+          ],
+          "plugins": {
+            "jedi_completion": {
+              "enabled": true
+            },
+            "jedi_hover": {
+              "enabled": true
+            },
+            "jedi_references": {
+              "enabled": true
+            },
+            "jedi_signature_help": {
+              "enabled": true
+            },
+            "jedi_symbols": {
+              "enabled": true,
+              "all_scopes": true
+            },
+            "mccabe": {
+              "enabled": true,
+              "threshold": 15
+            },
+            "preload": {
+              "enabled": true
+            },
+            "pycodestyle": {
+              "enabled": true
+            },
+            "pydocstyle": {
+              "enabled": false,
+              "match": "(?!test_).*\\.py",
+              "matchDir": "[^\\.].*"
+            },
+            "pyflakes": {
+              "enabled": true
+            },
+            "rope_completion": {
+              "enabled": true
+            },
+            "yapf": {
+              "enabled": true
             }
-        },
-
-        "clangd": {
-            "command": "clangd",
-            "rootPatterns": ["compile_flags.txt", "compile_commands.json",
-                ".vim/", ".git/", ".hg/"],
-            "filetypes": ["c", "cpp", "objc", "objcpp"]
-        },
-
-        // "ccls": {
-        //     "command": "ccls",
-        //     "filetypes": ["c", "cpp", "cuda", "objc", "objcpp"],
-        //     "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
-        //     "initializationOptions": {
-        //         "cache": {
-        //             "directory": "/tmp/ccls-cache"
-        //         }
-        //     }
-        // },
-
-        "elixirLS": {
-            "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",
-            "filetypes": ["elixir", "eelixir"]
-        },
-
-        // :CocInstall coc-python
-        "python": {
-            "command": "python",
-            "args": [
-                "-mpyls",
-                "-vv",
-                "--log-file",
-                "/tmp/lsp_python.log"
-            ],
-            "trace.server": "verbose",
-            "filetypes": [
-                "python"
-            ],
-            "settings": {
-                "pyls": {
-                    "enable": true,
-                    "trace": {
-                        "server": "verbose"
-                    },
-                    "commandPath": "",
-                    "configurationSources": [
-                        "pycodestyle"
-                    ],
-                    "plugins": {
-                        "jedi_completion": {
-                            "enabled": true
-                        },
-                        "jedi_hover": {
-                            "enabled": true
-                        },
-                        "jedi_references": {
-                            "enabled": true
-                        },
-                        "jedi_signature_help": {
-                            "enabled": true
-                        },
-                        "jedi_symbols": {
-                            "enabled": true,
-                            "all_scopes": true
-                        },
-                        "mccabe": {
-                            "enabled": true,
-                            "threshold": 15
-                        },
-                        "preload": {
-                            "enabled": true
-                        },
-                        "pycodestyle": {
-                            "enabled": true
-                        },
-                        "pydocstyle": {
-                            "enabled": false,
-                            "match": "(?!test_).*\\.py",
-                            "matchDir": "[^\\.].*"
-                        },
-                        "pyflakes": {
-                            "enabled": true
-                        },
-                        "rope_completion": {
-                            "enabled": true
-                        },
-                        "yapf": {
-                            "enabled": true
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     }
+  }
 }

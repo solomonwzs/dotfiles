@@ -24,6 +24,11 @@ function! s:show_documentation()
     endif
 endfunction
 
+function! s:check_back_space() abort
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
 if !lib#bundle#has_loaded('ultisnips')
     imap <C-a> <Plug>(coc-snippets-expand)
 endif
@@ -32,8 +37,14 @@ nnoremap <silent> <space>cg :<C-u>CocList --normal gstatus<CR>
 nnoremap <silent> <space>ce :<C-u>CocList extensions<CR>
 nnoremap <silent> <space>cr :<C-u>CocRestart<CR>
 
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+inoremap <silent><expr> <TAB>
+        \ pumvisible() ? "\<C-n>" :
+        \ <SID>check_back_space() ? "\<TAB>" :
+        \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 

@@ -5,6 +5,7 @@ let s:basic_valid_bundles = [
         \ 'ale',
         \ 'asyncrun.vim',
         \ 'coc.nvim',
+        \ 'coc-erlang_ls',
         \ 'deol.nvim',
         \ 'gruvbox',
         \ 'lightline.vim',
