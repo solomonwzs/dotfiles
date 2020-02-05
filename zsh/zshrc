@@ -147,6 +147,14 @@ ssr_web_proxy() {
     export http_proxy="$SSR_WEB_PROXY"
 }
 
+v2ray_web_proxy() {
+    if [[ -z $V2RAY_WEB_PROXY ]]; then
+        V2RAY_WEB_PROXY='http://127.0.0.1:10809'
+    fi
+    export https_proxy="$V2RAY_WEB_PROXY"
+    export http_proxy="$V2RAY_WEB_PROXY"
+}
+
 no_web_proxy() {
     export https_proxy=''
     export http_proxy=''
