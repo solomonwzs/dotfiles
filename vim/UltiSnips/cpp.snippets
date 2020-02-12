@@ -6,7 +6,7 @@ endsnippet
 
 snippet #defer "macro defer" b
 #define CONCAT_(_A, _B) _A##_B
-#define CONCAT(_A, _B)  CONCAT_(_A, _B)
+#define CONCAT(_A, _B) CONCAT_(_A, _B)
 #define _defer(_fn_) \
   std::shared_ptr<void> CONCAT(__defer, __LINE__)(nullptr, _fn_)
 endsnippet
