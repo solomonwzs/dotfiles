@@ -32,6 +32,8 @@ function! s:defx_mappings() abort
             \ defx#do_action('drop', 'vsplit')
     nnoremap <silent><buffer><expr> i
             \ defx#do_action('drop', 'split')
+    nnoremap <silent><buffer><expr> t
+            \ defx#do_action('drop', 'tabnew')
     nnoremap <silent><buffer><expr> I
             \ defx#do_action('toggle_ignored_files')
 

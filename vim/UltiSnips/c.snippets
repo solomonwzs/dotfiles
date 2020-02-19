@@ -42,10 +42,15 @@ snippet #off "macro offsetof" b
 #endif
 endsnippet
 
-snippet #con "macro container_of" b
+snippet #container_of "macro container_of" b
 #define container_of(_ptr_, _type_, _member_)                \
   ({                                                         \
     const typeof(((_type_ *)0)->_member_) *__mptr = (_ptr_); \
     (_type_ *)((char *)__mptr - offsetof(_type_, _member_)); \
   })
+endsnippet
+
+snippet #concat "macro concat" b
+#define CONCAT_(_A, _B) _A##_B
+#define CONCAT(_A, _B) CONCAT_(_A, _B)
 endsnippet
