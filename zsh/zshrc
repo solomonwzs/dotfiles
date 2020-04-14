@@ -97,7 +97,11 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-export EDITOR=vim
+if hash nvim 2>/dev/null; then
+    export EDITOR=nvim
+else
+    export EDITOR=vim
+fi
 export GOPATH=$HOME/workspace/go/lib
 
 paths=( \
@@ -205,7 +209,8 @@ pfzf() {
         coderay {} ||
         rougify {} ||
         cat {}) 2> /dev/null | head -500' \
-        --bind 'enter:execute(vim {})'
+        --bind 'enter:execute(${EDITOR:-vim} {})' \
+        --bind 'ctrl-o:execute(open {})'
 }
 
 export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
