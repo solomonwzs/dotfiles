@@ -130,6 +130,7 @@ let s:file_node_extensions = {
         \ 'tags'         : '',
         \ 'tex'          : '',
         \ 'text'         : '',
+        \ 'tmux'         : '',
         \ 'toml'         : '',
         \ 'ts'           : '',
         \ 'typescript'   : '',

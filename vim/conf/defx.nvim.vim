@@ -55,6 +55,11 @@ function! s:defx_mappings() abort
             \ defx#do_action('call', 'DefxEchoPath')
     nnoremap <silent><buffer><expr> <2-LeftMouse>
             \ defx#do_action('call', 'DefxSmart')
+	
+    nnoremap <silent><buffer><expr> >
+            \ defx#do_action('resize', defx#get_context().winwidth + 5)
+    nnoremap <silent><buffer><expr> <
+            \ defx#do_action('resize', defx#get_context().winwidth - 5)
 endfunction
 
 function! DefxSmart(_)
