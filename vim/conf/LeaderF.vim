@@ -21,7 +21,7 @@ let g:Lf_CommandMap = {
 let g:Lf_StlSeparator = { 'left': '', 'right': '' }
 
 let g:Lf_RootMarkers = ['.project', '.root', '.svn', '.git']
-let g:Lf_WorkingDirectoryMode = 'Ac'
+let g:Lf_WorkingDirectoryMode = 'c'
 let g:Lf_WindowHeight = 0.20
 let g:Lf_CacheDirectory = expand('~/.vim/cache')
 let g:Lf_ShowRelativePath = 0
@@ -35,3 +35,5 @@ let g:Lf_PreviewInPopup = 1 " <C-p> to preview
 let g:Lf_CtagsFuncOpts = {
         \ 'rust': '--rust-kinds=f',
         \ }
+
+cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ? ('Leaderf rg') : ('Rg'))

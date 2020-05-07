@@ -1,7 +1,6 @@
 let s:basic_valid_bundles = [
         \ 'DrawIt',
         \ 'LeaderF',
-        \ 'ack.vim',
         \ 'ale',
         \ 'asyncrun.vim',
         \ 'coc.nvim',
