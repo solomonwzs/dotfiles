@@ -1,14 +1,14 @@
 scriptencoding utf-8
 
-let g:Lf_ShortcutF = '<C-p>p'
-noremap <C-p>P :LeaderfFile .<CR>
-noremap <C-p>m :LeaderfMru<CR>
-noremap <C-p>f :LeaderfFunction<CR>
-noremap <C-p>b :LeaderfBuffer<CR>
-noremap <C-p>a :LeaderfTag<CR>
+let g:Lf_ShortcutF = '<C-P>p'
+noremap <C-P>P :LeaderfFile .<CR>
+noremap <C-P>m :LeaderfMru<CR>
+noremap <C-P>f :LeaderfFunction<CR>
+noremap <C-P>b :LeaderfBuffer<CR>
+noremap <C-P>a :LeaderfTag<CR>
 
-vnoremap <silent> <C-p>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
-noremap <silent> <C-p>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", expand('<cword>'))<CR><CR>
+noremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", expand('<cword>'))<CR><CR>
+vnoremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
 
 let g:Lf_CommandMap = {
         \ '<C-K>': ['<Up>'],

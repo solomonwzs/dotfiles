@@ -155,7 +155,7 @@ Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
 " Plug 'https://github.com/racer-rust/vim-racer.git'
 
 " fzf heart vim.
-" Plug 'https://github.com/junegunn/fzf.vim.git'
+Plug 'https://github.com/junegunn/fzf.vim.git'
 
 " The fancy start screen for Vim.
 Plug 'https://github.com/mhinz/vim-startify.git'
