@@ -14,4 +14,4 @@ noremap <C-F>p :FzfFiles .<CR>
 noremap <C-F>b :FzfBuffers<CR>
 
 noremap <silent> <C-F>gs :<C-U><C-R>=printf("FzfRg %s", expand('<cword>'))<CR><CR>
-vnoremap <silent> <C-F>gs :<C-U><C-R>=printf("FzfRg %s", lib#common#visual_selection())<CR><CR>
+vnoremap <silent> <C-F>gs :<C-U><C-R>=printf("FzfRg %s", lib#common#visual_selection(1))<CR><CR>

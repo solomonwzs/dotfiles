@@ -114,7 +114,7 @@ let g:asmsyntax = 'nasm'
 
 nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
 vnoremap <leader>t :<C-U>call lib#translate#google_async(
-        \ lib#common#visual_selection())<CR>
+        \ lib#common#visual_selection(1))<CR>
 
 nnoremap <silent> <F5> :let _s=@/ <Bar>
         \ :%s/\s\+$//e <Bar>
@@ -133,7 +133,7 @@ if $SSH_CLIENT !=? ''
     " install `xclip` and set `X11Forwarding yes` in sshd_config"
     if executable('xclip')
         vmap <silent> "+y :call system('xclip -i -sel clip',
-                \ lib#common#visual_selection())<CR>
+                \ lib#common#visual_selection(0))<CR>
         " map "+p :r!xclip -o -sel clip<CR>
     endif
 endif

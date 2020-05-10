@@ -28,11 +28,11 @@ endif
 "     return join(lines, "\n")
 " endfunc
 
-function! lib#common#visual_selection()
+function! lib#common#visual_selection(e)
     try
         let x_save = @x
         norm! gv"xy
-        return escape(@x, '"')
+        return a:e == 1 ? escape(@x, '"') : @x
     finally
         let @x = x_save
     endtry
