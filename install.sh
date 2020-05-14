@@ -6,6 +6,10 @@
 # @license  MIT
 set -euo pipefail
 
+if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
+    alias readlink=greadlink
+fi
+
 # CURRENT_FILENAME=$(readlink -f "${BASH_SOURCE[0]}")
 EXECUTE_FILENAME=$(readlink -f "$0")
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
@@ -22,6 +26,12 @@ function make_link() {
         ln -s "$target" "$link_name"
 }
 
+function copy_file() {
+    message "Create '$2'"
+    ([ -e "$2" ] && message "'$2' has exists") || \
+        cp "$1" "$2"
+}
+
 function git_clone() {
     addr="$1"
     dir="$2"
@@ -34,6 +44,7 @@ make_link "$EXECUTE_DIRNAME/vim" "$HOME/.config/nvim"
 make_link "$EXECUTE_DIRNAME/vim/vimrc" "$HOME/.config/nvim/init.vim"
 
 make_link "$EXECUTE_DIRNAME/zsh/zshrc" "$HOME/.zshrc"
+copy_file "$EXECUTE_DIRNAME/zsh/my_conf.sh" "$HOME/.my_conf.sh"
 
 message "Create terminfo"
 [ -e "$HOME/.terminfo/t/tmux-256color" ] || \

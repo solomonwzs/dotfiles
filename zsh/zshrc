@@ -69,7 +69,7 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting cargo fzf)
 
 source $ZSH/oh-my-zsh.sh
 
-[ -f "$HOME/.secret_env" ] && source "$HOME/.secret_env"
+[ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 
 # User configuration
 
@@ -115,17 +115,52 @@ for p in "${paths[@]}"; do
     [ -d "$p" ] && export PATH=$PATH:"$p"
 done
 
-fortune -a | fmt -80 -s \
-    | cowsay -$(shuf -n 1 -e b d g p s t w y) -f $(shuf -n 1 -e $(cowsay -l \
-    | tail -n +2)) -n \
-    | lolcat
+if hash fortune 2>/dev/null && hash cowsay 2>/dev/null && hash lolcat 2>/dev/null; then
+    fortune -a | fmt -80 -s \
+        | cowsay -$(shuf -n 1 -e b d g p s t w y) -f $(shuf -n 1 -e $(cowsay -l \
+        | tail -n +2)) -n \
+        | lolcat
+fi
 
-PROMPT=$'%B%F{63}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
+PROMPT=$'%B%F{${ZSH_COLOR_NAME:-63}}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%F{29}["
 ZSH_THEME_GIT_PROMPT_SUFFIX="]%b%f%k"
 ZSH_THEME_GIT_PROMPT_DIRTY=" %F{167}*%F{29}"
+ZSH_THEME_GIT_PROMPT_UNKNOWN=" %F{167}?%F{29}"
 ZSH_THEME_GIT_PROMPT_CLEAN=""
+
+# Checks if working tree is dirty
+# Set not show:
+#   git config host-$(hostname).hide-dirty 1
+function parse_git_dirty() {
+    local STATUS
+    local -a FLAGS
+    FLAGS=('--porcelain')
+    if [[ "$(command git config --get host-$(hostname).hide-dirty)" != "1" ]]; then
+        if [[ "$DISABLE_UNTRACKED_FILES_DIRTY" == "true" ]]; then
+            FLAGS+='--untracked-files=no'
+        fi
+        case "$GIT_STATUS_IGNORE_SUBMODULES" in
+            git)
+                # let git decide (this respects per-repo config in .gitmodules)
+                ;;
+            *)
+                # if unset: ignore dirty submodules
+                # other values are passed to --ignore-submodules
+                FLAGS+="--ignore-submodules=${GIT_STATUS_IGNORE_SUBMODULES:-dirty}"
+                ;;
+        esac
+        STATUS=$(command git status ${FLAGS} 2> /dev/null | tail -n1)
+        if [[ -n $STATUS ]]; then
+            echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+        else
+            echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+        fi
+    else
+        echo "$ZSH_THEME_GIT_PROMPT_UNKNOWN"
+    fi
+}
 
 man() {
     env LESS_TERMCAP_mb=$'\E[01;31m' \
@@ -135,7 +170,7 @@ man() {
         LESS_TERMCAP_so=$'\E[01;07;33m' \
         LESS_TERMCAP_ue=$'\E[0m' \
         LESS_TERMCAP_us=$'\E[04;38;5;146m' \
-    man "$@"
+        man "$@"
 }
 
 office_web_proxy() {
@@ -211,7 +246,7 @@ pfzf() {
         cat {}) 2> /dev/null | head -500' \
         --bind 'enter:execute(${EDITOR:-vim} {})' \
         --bind 'ctrl-o:execute(open {})'
-}
+    }
 
 export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
 
@@ -220,12 +255,12 @@ export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat
 # - The first argument to the function ($1) is the base path to start traversal
 # - See the source code (completion.{bash,zsh}) for the details.
 _fzf_compgen_path() {
-  fd --hidden --follow --exclude ".git" . "$1"
+    fd --hidden --follow --exclude ".git" . "$1"
 }
 
 # Use fd to generate the list for directory completion
 _fzf_compgen_dir() {
-  fd --type d --hidden --follow --exclude ".git" . "$1"
+    fd --type d --hidden --follow --exclude ".git" . "$1"
 }
 
 #####################
@@ -234,7 +269,5 @@ _fzf_compgen_dir() {
 
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
     export DISPLAY=:0
-    PROMPT=$'%B%F{71}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
-
     alias readlink=greadlink
 fi

@@ -1,0 +1,9 @@
+SVN_USER=""
+SVN_PASS=""
+declare -A SVN_ACC=( \
+    ["$SVN_USER"]="$SVN_PASS" \
+)
+
+OFFICE_WEB_PROXY=""
+
+ZSH_COLOR_NAME="63"
