@@ -52,7 +52,8 @@ message "Create terminfo"
 [ -e "$HOME/.terminfo/x/xterm-256color-italic" ] || \
     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
-make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
+message "Create '$HOME/.tmux.conf'"
+cp "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
 message "Download 'oh-my-zsh'"

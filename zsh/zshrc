@@ -222,6 +222,10 @@ svn_() {
     fi
 }
 
+tmux_set_title() {
+    printf "\033k$1\033\\"
+}
+
 if ! type "pbcopy" > /dev/null; then
     if _loc="$(type -p "xclip")" && ! [[ -z $_loc ]]; then
         alias pbcopy='xclip -selection clipboard'
