@@ -7,11 +7,10 @@
 set -euo pipefail
 
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
-    alias readlink=greadlink
+    EXECUTE_FILENAME=$(greadlink -f "$0")
+else
+    EXECUTE_FILENAME=$(readlink -f "$0")
 fi
-
-# CURRENT_FILENAME=$(readlink -f "${BASH_SOURCE[0]}")
-EXECUTE_FILENAME=$(readlink -f "$0")
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 
 function message() {
