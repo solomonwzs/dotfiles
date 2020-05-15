@@ -105,24 +105,25 @@ fi
 export GOPATH=$HOME/workspace/go/lib
 
 paths=( \
-    "$HOME/bin" \
-    "$HOME/.cargo/bin" \
+    "$HOME/bin"                  \
+    "$HOME/.cargo/bin"           \
     "$HOME/workspace/go/lib/bin" \
-    "$HOME/.gem/ruby/2.6.0/bin" \
-    "/usr/local/bin" \
-    )
+    "$HOME/.gem/ruby/2.6.0/bin"  \
+    "/usr/local/bin"             \
+)
 for p in "${paths[@]}"; do
     [ -d "$p" ] && export PATH=$PATH:"$p"
 done
 
 if hash fortune 2>/dev/null && hash cowsay 2>/dev/null && hash lolcat 2>/dev/null; then
-    fortune -a | fmt -80 -s \
+    fortune -a                                                                  \
+        | fmt -80 -s                                                            \
         | cowsay -$(shuf -n 1 -e b d g p s t w y) -f $(shuf -n 1 -e $(cowsay -l \
-        | tail -n +2)) -n \
+        | tail -n +2)) -n                                                       \
         | lolcat
 fi
 
-PROMPT=$'%B%F{${ZSH_COLOR_NAME:-63}}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
+PROMPT=$'%B%F{${MY_ZSH_COLOR_NAME:-63}}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
 
 ZSH_THEME_GIT_PROMPT_PREFIX="%F{29}["
 ZSH_THEME_GIT_PROMPT_SUFFIX="]%b%f%k"
@@ -163,13 +164,13 @@ function parse_git_dirty() {
 }
 
 man() {
-    env LESS_TERMCAP_mb=$'\E[01;31m' \
-        LESS_TERMCAP_md=$'\E[01;38;5;74m' \
-        LESS_TERMCAP_me=$'\E[0m' \
-        LESS_TERMCAP_se=$'\E[0m' \
-        LESS_TERMCAP_so=$'\E[01;07;33m' \
-        LESS_TERMCAP_ue=$'\E[0m' \
-        LESS_TERMCAP_us=$'\E[04;38;5;146m' \
+    env LESS_TERMCAP_mb=$'\E[01;31m'        \
+        LESS_TERMCAP_md=$'\E[01;38;5;74m'   \
+        LESS_TERMCAP_me=$'\E[0m'            \
+        LESS_TERMCAP_se=$'\E[0m'            \
+        LESS_TERMCAP_so=$'\E[01;07;33m'     \
+        LESS_TERMCAP_ue=$'\E[0m'            \
+        LESS_TERMCAP_us=$'\E[04;38;5;146m'  \
         man "$@"
 }
 
@@ -179,19 +180,15 @@ office_web_proxy() {
 }
 
 ssr_web_proxy() {
-    if [[ -z $SSR_WEB_PROXY ]]; then
-        SSR_WEB_PROXY='http://127.0.0.1:8118'
-    fi
-    export https_proxy="$SSR_WEB_PROXY"
-    export http_proxy="$SSR_WEB_PROXY"
+    local addr="http://127.0.0.1:8118"
+    export https_proxy="${MY_SSR_WEB_PROXY:-$addr}"
+    export http_proxy="${MY_SSR_WEB_PROXY:-$addr}"
 }
 
 v2ray_web_proxy() {
-    if [[ -z $V2RAY_WEB_PROXY ]]; then
-        V2RAY_WEB_PROXY='http://127.0.0.1:10809'
-    fi
-    export https_proxy="$V2RAY_WEB_PROXY"
-    export http_proxy="$V2RAY_WEB_PROXY"
+    local addr="http://127.0.0.1:8118"
+    export https_proxy="${MY_V2RAY_WEB_PROXY:-$addr}"
+    export http_proxy="${MY_V2RAY_WEB_PROXY:-$addr}"
 }
 
 no_web_proxy() {
@@ -200,20 +197,20 @@ no_web_proxy() {
 }
 
 svn() {
-    if [ -n "${SVN_USER:+x}" ] && [ -n "${SVN_PASS:+x}" ]; then
-        command svn --username "$SVN_USER" --password "$SVN_PASS" $@
+    if [ -n "${MY_SVN_USER:+x}" ] && [ -n "${MY_SVN_PASS:+x}" ]; then
+        command svn --username "$MY_SVN_USER" --password "$MY_SVN_PASS" $@
     else
         command svn $@
     fi
 }
 
-svn_() {
-    if [ -n "${SVN_ACC:+x}" ]; then
-        if [ -z "${SVN_ACC[$1]:+x}" ]; then
+svn_acc() {
+    if [ -n "${MY_SVN_ACCOUNT:+x}" ]; then
+        if [ -z "${MY_SVN_ACCOUNT[$1]:+x}" ]; then
             echo "ERR: unknown user: \"$1\""
         else
             local user="$1"
-            local pass="${SVN_ACC[$1]}"
+            local pass="${MY_SVN_ACCOUNT[$1]}"
             shift 1
             command svn --username "$user" --password "$pass" $@
         fi
