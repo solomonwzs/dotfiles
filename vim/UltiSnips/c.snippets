@@ -54,3 +54,12 @@ snippet #concat "macro concat" b
 #define CONCAT_(_A, _B) _A##_B
 #define CONCAT(_A, _B) CONCAT_(_A, _B)
 endsnippet
+
+snippet scp "strncpy" b
+static inline void _strncpy(char *dst, const char *src, size_t n) {
+  strncpy(dst, src, n);
+  if (n > 0) {
+    dst[n - 1] = '\0';
+  }
+}
+endsnippet
