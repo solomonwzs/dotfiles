@@ -43,3 +43,19 @@ let g:tagbar_type_go = {
         \ 'ctagsbin': 'gotags',
         \ 'ctagsargs': '-sort -silent',
         \ }
+
+let g:md_ctags_bin = fnamemodify(stdpath('config').'/tools/markdown2ctags.py', ':p')
+let g:tagbar_type_markdown = {
+        \ 'ctagstype': 'markdown.pandoc',
+        \ 'ctagsbin': g:md_ctags_bin,
+        \ 'ctagsargs': '-f - --sort=yes',
+        \ 'kinds': [
+        \   's:sections',
+        \   'i:images'
+        \ ],
+        \ 'sro': '|',
+        \ 'kind2scope': {
+        \   's': 'section',
+        \ },
+        \ 'sort': 0,
+        \ }
