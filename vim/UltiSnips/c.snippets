@@ -26,10 +26,20 @@ int main(int argc, char **argv) {
 }
 endsnippet
 
-snippet #log "macro log" b
-#define xlog(_fmt_, ...)                                                \
-  printf("\033[0;33m[%s:%s:%d]\033[0m " _fmt_ "\n", __FILE__, __func__, \
-         __LINE__, ##__VA_ARGS__)
+snippet #xlog "macro log" b
+#define xlog(_type_, _fmt_, ...)                                        \
+  printf("\e[0;33m%.1s [%s:%s:%d]\e[0m " _fmt_ "\n", #_type_, __FILE__, \
+         __func__, __LINE__, ##__VA_ARGS__)
+endsnippet
+
+snippet #slog "macro log" b
+#define _STYLE_Debug "\e[3;36m"
+#define _STYLE_Info  "\e[3;32m"
+#define _STYLE_Warn  "\e[3;33m"
+#define _STYLE_Err   "\e[3;31m"
+#define slog(_type_, _fmt_, ...)                                      \
+  printf(_STYLE_##_type_ "%.1s [%s:%s:%d]\e[0m " _fmt_ "\n", #_type_, \
+         __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 endsnippet
 
 snippet #off "macro offsetof" b
@@ -53,4 +63,13 @@ endsnippet
 snippet #concat "macro concat" b
 #define CONCAT_(_A, _B) _A##_B
 #define CONCAT(_A, _B) CONCAT_(_A, _B)
+endsnippet
+
+snippet scp "strncpy" b
+static inline void _strncpy(char *dst, const char *src, size_t n) {
+  strncpy(dst, src, n);
+  if (n > 0) {
+    dst[n - 1] = '\0';
+  }
+}
 endsnippet
