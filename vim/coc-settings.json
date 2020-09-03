@@ -29,11 +29,13 @@
     // "rust": {},
 
     "golang": {
-      "command": "go-langserver",
+      "command": "gopls",
       "filetypes": ["go"],
       "initializationOptions": {
         "gocodeCompletionEnabled": true,
         "diagnosticsEnabled": true,
+        "usePlaceholders": true,
+        "completeUnimported": true,
         "lintTool": "golint"
       }
     },
