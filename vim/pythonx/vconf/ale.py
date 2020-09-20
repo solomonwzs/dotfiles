@@ -32,5 +32,5 @@ def set_cxx_gcc_options():
     flags = flags.strip()
     if flags != '':
         b = vim.vars
-        b['ale_c_gcc_options'] = flags
-        b['ale_cpp_gcc_options'] = flags
+        b['ale_c_cc_options'] = flags
+        b['ale_cpp_cc_options'] = flags
