@@ -9,15 +9,11 @@ let g:ale_lint_on_text_changed = 'normal'
 let g:ale_lint_on_insert_leave = 1
 let g:airline#extensions#ale#enabled = 1
 
-let g:ale_c_gcc_options = '-Wall -O2 -std=gnu99 -I./include'
-let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14 -I./include'
-let g:ale_c_cppcheck_options = ''
-let g:ale_cpp_cppcheck_options = ''
+let g:ale_c_cc_options = '-Wall -O2 -std=gnu99 -I./include'
+let g:ale_cpp_cc_options = '-Wall -O2 -std=c++14 -I./include'
 
 let g:ale_c_parse_compile_commands = 1
 
-" let g:ale_sign_error = 'X'
-" let g:ale_sign_warning = '!'
 let g:ale_sign_error = '✖'
 let g:ale_sign_warning = ''
 

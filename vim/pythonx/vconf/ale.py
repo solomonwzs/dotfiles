@@ -19,10 +19,14 @@ import vim
 
 def set_cxx_gcc_options():
     flags = ''
+    cflags = ''
+    cxxflags = ''
 
     makefile = os.path.join(os.getcwd(), 'Makefile')
     if os.path.exists(makefile):
-        flags = get_makefile_variable([makefile], 'CFLAGS')
+        cflags = get_makefile_variable([makefile], 'CFLAGS')
+        cxxflags = get_makefile_variable([makefile], 'CXXFLAGS')
+        flags = get_makefile_variable([makefile], 'CPPFLAGS')
 
     cflags_file = os.path.join(os.getcwd(), CXX_FLAGS_FILE_NAME)
     if os.path.exists(cflags_file):
@@ -30,7 +34,14 @@ def set_cxx_gcc_options():
         flags += ' ' + ' '.join(fs)
 
     flags = flags.strip()
+    cflags = cflags.strip()
+    cxxflags = cxxflags.strip()
+
+    b = vim.vars
+    if cflags != '':
+        b['ale_c_cc_options'] = cflags
+    if cxxflags != '':
+        b['ale_cpp_cc_options'] = cxxflags
     if flags != '':
-        b = vim.vars
-        b['ale_c_gcc_options'] = flags
-        b['ale_cpp_gcc_options'] = flags
+        b['ale_c_cc_options'] = flags
+        b['ale_cpp_cc_options'] = flags
