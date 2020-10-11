@@ -102,6 +102,29 @@ def encode_bytes_str(snip, enc):
     return s
 
 
+def change_name_rule(snip):
+    name = snip.v.text
+    if name.find("_") == -1:
+        arr = []
+        left = 0
+        for right in range(1, len(name)):
+            if 'A' <= name[right] and name[right] <= 'Z':
+                arr.append(name[left:right].lower())
+                left = right
+        if left < len(name):
+            arr.append(name[left:].lower())
+        return "_".join(arr)
+    else:
+        arr0 = name.split("_")
+        arr = []
+        for i in arr0:
+            if len(i) > 0 and 'a' <= i[0] and i[0] <= 'z':
+                arr.append(i[0].upper() + i[1:].lower())
+            else:
+                arr.append(i)
+        return "".join(arr)
+
+
 def comment_line(snip):
     START, END = get_line_comment_symbol(snip.ft)
 
@@ -156,8 +179,7 @@ def comment_block(snip, START, END):
     if text.strip().startswith(START):
         result = text.replace(START, '', 1).replace(END, '', 1)
     else:
-        result = text.replace(spaces, spaces + START, 1).rstrip('\n') + END
-        + '\n'
+        result = text.replace(spaces, spaces + START, 1).rstrip('\n') + END + '\n'
 
     if initial_indent:
         result = result.replace(initial_indent, '', 1)
