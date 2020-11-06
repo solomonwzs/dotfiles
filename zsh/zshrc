@@ -176,8 +176,8 @@ man() {
 }
 
 office_web_proxy() {
-    export https_proxy="$OFFICE_WEB_PROXY"
-    export http_proxy="$OFFICE_WEB_PROXY"
+    export https_proxy="$MY_OFFICE_WEB_PROXY"
+    export http_proxy="$MY_OFFICE_WEB_PROXY"
 }
 
 ssr_web_proxy() {
