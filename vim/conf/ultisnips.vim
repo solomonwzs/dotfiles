@@ -9,7 +9,10 @@ vnoremap <silent> <leader>ft :call UltiSnips#SaveLastVisualSelection()<CR>gvs
         \file_type<C-r>=UltiSnips#ExpandSnippet()<CR>
 
 vnoremap <silent> <leader>eu :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-        \encode_utf8<C-r>=UltiSnips#ExpandSnippet()<CR><esc>
+        \encode_utf8<C-r>=UltiSnips#ExpandSnippet()<CR>
 
 vnoremap <silent> <leader>eg :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-        \encode_gbk<C-r>=UltiSnips#ExpandSnippet()<CR><esc>
+        \encode_gbk<C-r>=UltiSnips#ExpandSnippet()<CR>
+
+vnoremap <silent> <leader>nr :call UltiSnips#SaveLastVisualSelection()<CR>gvs
+        \change_name_rule<C-r>=UltiSnips#ExpandSnippet()<CR>

@@ -5,6 +5,7 @@ from snippets.comment import (
 	vi_set_filetype,
 	exec_comment,
 	encode_bytes_str,
+	change_name_rule,
 )
 endglobal
 
@@ -36,6 +37,11 @@ endsnippet
 snippet encode_gbk "encode to gbk bytes" i
 `!p
 snip.rv = encode_bytes_str(snip, "gbk")`
+endsnippet
+
+snippet change_name_rule "change name rule" i
+`!p
+snip.rv = change_name_rule(snip)`
 endsnippet
 
 

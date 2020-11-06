@@ -87,7 +87,7 @@ endsnippet
 snippet #flist "func list" b
 #define _X(_cmd_, _func_, _n_)                          \
   if (strcmp(argv[1], _cmd_) == 0 && argc >= _n_ + 2) { \
-    return CONCAT(_call, _n_)(_func_);                  \
+    return _call##_n_(_func_);                          \
   }
   _FUNC_LIST
 #undef _X
