@@ -89,4 +89,5 @@ endfunction
 augroup my_conf_defx_nvim
     autocmd!
     autocmd FileType defx call s:defx_mappings()
+    autocmd FileType defx setlocal nonumber
 augroup END
