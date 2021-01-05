@@ -59,6 +59,9 @@ def decode_mime_encode_str(s: str) -> (bool, str):
     if len(res) == 0:
         return False, 'Error format'
     (charset, encoding, text) = res[0]
+    text = ''
+    for i in res:
+        text += i[2]
     try:
         if encoding == 'B' or encoding == 'b':
             text = base64.b64decode(text).decode(charset)
