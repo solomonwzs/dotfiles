@@ -5,11 +5,10 @@
 
 let g:lib_translate_target_lang = get(g:, 'lib_translate_target_lang', 'zh-CN')
 
-
 function! lib#translate#google(text)
-    if a:text ==# ''
-        return
-    endif
+  if a:text ==# ''
+    return
+  endif
 
 python3 << EOF
 from translate import google
@@ -38,15 +37,22 @@ else:
 EOF
 endfunc
 
+function! s:show_message(data, ...)
+  call ui#float#message('Google Translate', a:data, {})
+  echo 'OK: '.join(a:data, '; ')
+endfunc
 
 function! lib#translate#google_async(text)
-    echo 'translate ...'
-    if a:text ==# ''
-        return
-    endif
+  echo 'translate ...'
+  if a:text ==# ''
+    return
+  endif
 
-    let pys = g:vimhome.'/pythonx/translate/google.py'
-    let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
-            \ a:text]
-    call lib#adapt#async_call(cmd, {'ok_cb': '_msg', 'err_cb': '_msg'})
+  let pys = g:vimhome.'/pythonx/translate/google.py'
+  let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
+      \ a:text]
+  call lib#async#async_call(cmd, {
+      \ 'ok_cb': function('s:show_message'),
+      \ 'err_cb': '_msg'
+      \ })
 endfunc

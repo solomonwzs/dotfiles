@@ -6,8 +6,9 @@
 # @version  1.0
 # @license  MIT
 
+import base64
+import re
 import subprocess
-
 
 def system_command(cmd: str) -> str:
     """
@@ -20,7 +21,6 @@ def system_command(cmd: str) -> str:
         return err.decode("utf8")
     else:
         return output.decode("utf8")
-
 
 def utf8_str_width(s: str) -> int:
     """
@@ -45,3 +45,27 @@ def utf8_str_width(s: str) -> int:
             else:
                 break
     return width
+
+def decode_utf8_str(s: str) -> (bool, str):
+    res = re.findall(r'\\x(..)', s)
+    try:
+        b = bytes(map(lambda x: int(x, 16), res))
+        return True, b.decode('utf8')
+    except Exception as err:
+        return False, str(err)
+
+def decode_mime_encode_str(s: str) -> (bool, str):
+    res = re.findall(r'=\?(.*)\?(.)\?(.*)\?=', s)
+    if len(res) == 0:
+        return False, 'Error format'
+    (charset, encoding, text) = res[0]
+    try:
+        if encoding == 'B' or encoding == 'b':
+            text = base64.b64decode(text).decode(charset)
+            return True, text
+        elif encoding == 'Q' or encoding == 'q':
+            return True, text
+        else:
+            return False, 'Error encoding `%s`' % encoding
+    except Exception as err:
+        return False, str(err)

@@ -1,3 +1,8 @@
+" @author     Solomon Ng <solomon.wzs@gmail.com>
+" @version    1.0
+" @date       2021-01-04
+" @license    MIT
+
 let s:editor = 'vim'
 if has('nvim')
     let s:editor = 'nvim'
@@ -45,3 +50,23 @@ endfunc
 function! lib#common#editor()
     return s:editor
 endfunc
+
+function! lib#common#min(first, ...)
+    let val = a:first
+    for i in range(0, len(a:000) - 1)
+        if a:000[i] < val
+            let val = a:000[i]
+        endif
+    endfor
+    return val
+endfunction
+
+function! lib#common#max(first, ...)
+  let val = a:first
+  for i in range(0, len(a:000) - 1)
+    if a:000[i] > val
+      let val = a:000[i]
+    endif
+  endfor
+  return val
+endfunction

@@ -140,10 +140,10 @@ if __name__ == "__main__":
     if d is not None:
         for i in res.get("dict", []):
             pos = i.get("pos", "")
-            term = ','.join(i.get("terms", []))
+            term = ', '.join(i.get("terms", []))
             lines.append(f"{pos}: {term}")
     else:
         for i in res.get("sentences", []):
             lines.append(i.get("trans"))
-    sys.stdout.write('; '.join(lines))
+    sys.stdout.write('\n'.join(lines))
     sys.exit(0)

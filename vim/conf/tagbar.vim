@@ -44,7 +44,12 @@ let g:tagbar_type_go = {
         \ 'ctagsargs': '-sort -silent',
         \ }
 
-let g:md_ctags_bin = fnamemodify(stdpath('config').'/tools/markdown2ctags.py', ':p')
+let s:std_path = '$HOME/.vim'
+if has('nvim')
+    let s:std_path = stdpath('config')
+endif
+
+let g:md_ctags_bin = fnamemodify(s:std_path.'/tools/markdown2ctags.py', ':p')
 let g:tagbar_type_markdown = {
         \ 'ctagstype': 'markdown.pandoc',
         \ 'ctagsbin': g:md_ctags_bin,
