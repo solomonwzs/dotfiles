@@ -1,3 +1,8 @@
+" @author     Solomon Ng <solomon.wzs@gmail.com>
+" @version    1.0
+" @date       2021-01-04
+" @license    MIT
+
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -5,7 +10,7 @@ set updatetime=500
 
 " Encrypt
 if has('vim')
-    set cryptmethod=blowfish2
+  set cryptmethod=blowfish2
 endif
 
 let mapleader = "\\"
@@ -62,47 +67,47 @@ set wrap
 
 " Setting for cscope
 if has('cscope')
-    set cscopetagorder=0
-    set cscopetag
-    set nocscopeverbose
-    set cscopeverbose
-    set cscopequickfix=s-,d-,c-,t-,e-,f-,i-
+  set cscopetagorder=0
+  set cscopetag
+  set nocscopeverbose
+  set cscopeverbose
+  set cscopequickfix=s-,d-,c-,t-,e-,f-,i-
 endif
 
 set grepprg=grep\ -nH\ $*
 let g:tex_flavor='latex'
 
 augroup my_vimrc
-    autocmd!
+  autocmd!
 
-    autocmd CursorMovedI * if pumvisible() == 0 | pclose | endif
-    autocmd InsertLeave * if pumvisible() == 0 | pclose | endif
+  autocmd CursorMovedI * if pumvisible() == 0 | pclose | endif
+  autocmd InsertLeave * if pumvisible() == 0 | pclose | endif
 
-    " Restore cursor position
-    autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") |
-            \ exe "normal! g`\"" | endif
+  " Restore cursor position
+  autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") |
+      \ exe "normal! g`\"" | endif
 
-    autocmd FileType java       setlocal omnifunc=javacomplete#Complete
-    autocmd Filetype c          setlocal omnifunc=ccomplete#Complete
-    autocmd Filetype html       setlocal omnifunc=htmlcomplete#CompleteTags
-    autocmd Filetype markdown   setlocal omnifunc=htmlcomplete#CompleteTags
-    autocmd Filetype xml        setlocal omnifunc=xmlcomplete#CompleteTags
-    autocmd Filetype python     setlocal omnifunc=pythoncomplete#CompleteTags
-    autocmd FileType python     setlocal completeopt-=preview
-    autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
-    autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
-    autocmd FileType json       syntax match Comment +\/\/.\+$+
+  autocmd FileType java       setlocal omnifunc=javacomplete#Complete
+  autocmd Filetype c          setlocal omnifunc=ccomplete#Complete
+  autocmd Filetype html       setlocal omnifunc=htmlcomplete#CompleteTags
+  autocmd Filetype markdown   setlocal omnifunc=htmlcomplete#CompleteTags
+  autocmd Filetype xml        setlocal omnifunc=xmlcomplete#CompleteTags
+  autocmd Filetype python     setlocal omnifunc=pythoncomplete#CompleteTags
+  autocmd FileType python     setlocal completeopt-=preview
+  autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
+  autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
+  autocmd FileType json       syntax match Comment +\/\/.\+$+
 
-    if executable('ghc-mod')
-        autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
-    endif
+  if executable('ghc-mod')
+    autocmd FileType haskell setlocal omnifunc=necoghc#omnifunc
+  endif
 
-    autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
-    autocmd BufEnter,BufRead compile_flags.txt set filetype=conf
+  autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
+  autocmd BufEnter,BufRead compile_flags.txt set filetype=conf
 
-    autocmd FileType html,xml,yaml,vue.javascript,javascript,typescript,json,bzl
-            \ setlocal sw=2 tabstop=2 softtabstop=2
-    autocmd FileType make setlocal noet
+  autocmd FileType html,xml,yaml,vue.javascript,javascript,typescript,json,bzl
+      \ setlocal sw=2 tabstop=2 softtabstop=2
+  autocmd FileType make setlocal noet
 augroup END
 
 let g:html_indent_inctags = 'li,body,head'
@@ -114,12 +119,14 @@ let g:asmsyntax = 'nasm'
 
 nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
 vnoremap <leader>t :<C-U>call lib#translate#google_async(
-        \ lib#common#visual_selection(1))<CR>
+    \ lib#common#visual_selection(1))<CR>
+
+vnoremap <leader>d :<C-U>call ui#float#test(lib#common#visual_selection(0))<CR>
 
 nnoremap <silent> <F5> :let _s=@/ <Bar>
-        \ :%s/\s\+$//e <Bar>
-        \ :let @/=_s <Bar>
-        \ :nohl <Bar> :unlet _s <CR>
+    \ :%s/\s\+$//e <Bar>
+    \ :let @/=_s <Bar>
+    \ :nohl <Bar> :unlet _s <CR>
 
 " Setting for tmux && screen
 " if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
@@ -130,12 +137,12 @@ nnoremap <silent> <F5> :let _s=@/ <Bar>
 " Setting for C-c copy text
 vmap <C-c> "+y
 if $SSH_CLIENT !=? ''
-    " install `xclip` and set `X11Forwarding yes` in sshd_config"
-    if executable('xclip')
-        vmap <silent> "+y :call system('xclip -i -sel clip',
-                \ lib#common#visual_selection(0))<CR>
-        " map "+p :r!xclip -o -sel clip<CR>
-    endif
+  " install `xclip` and set `X11Forwarding yes` in sshd_config"
+  if executable('xclip')
+    vmap <silent> "+y :call system('xclip -i -sel clip',
+        \ lib#common#visual_selection(0))<CR>
+    " map "+p :r!xclip -o -sel clip<CR>
+  endif
 endif
 "================ MAP KEY ================
 
@@ -145,43 +152,43 @@ let g:lib_bundle_whitelist = []
 let g:lib_bundle_blacklist = []
 
 if has('nvim')
-    let g:lib_bundle_whitelist += [
-            \ 'defx-git',
-            \ 'defx.nvim',
-            \ ]
-    let g:lib_bundle_blacklist += [
-            \ 'nerdtree',
-            \ ]
+  let g:lib_bundle_whitelist += [
+      \ 'defx-git',
+      \ 'defx.nvim',
+      \ ]
+  let g:lib_bundle_blacklist += [
+      \ 'nerdtree',
+      \ ]
 endif
 
 if $VIM_GROUP ==? 'erl'
-    let g:lib_bundle_whitelist += [
-            \ 'syntastic',
-            \ 'vim-erlang-tags',
-            \ 'vim-erlang-omnicomplete',
-            \ 'YouCompleteMe',
-            \ ]
-    let g:lib_bundle_blacklist += [
-            \ 'ale',
-            \ 'vim-gutentags',
-            \ 'coc.nvim',
-            \ ]
+  let g:lib_bundle_whitelist += [
+      \ 'syntastic',
+      \ 'vim-erlang-tags',
+      \ 'vim-erlang-omnicomplete',
+      \ 'YouCompleteMe',
+      \ ]
+  let g:lib_bundle_blacklist += [
+      \ 'ale',
+      \ 'vim-gutentags',
+      \ 'coc.nvim',
+      \ ]
 elseif $VIM_GROUP ==? 'scheme'
-    let g:lib_bundle_blacklist += ['ale']
+  let g:lib_bundle_blacklist += ['ale']
 elseif $VIM_GROUP ==? 'python'
-    let g:lib_bundle_whitelist += [
-            \ 'YouCompleteMe',
-            \ 'jedi-vim',
-            \ ]
-    let g:lib_bundle_blacklist += ['coc.nvim']
+  let g:lib_bundle_whitelist += [
+      \ 'YouCompleteMe',
+      \ 'jedi-vim',
+      \ ]
+  let g:lib_bundle_blacklist += ['coc.nvim']
 elseif $VIM_GROUP ==? 'rust'
-    let g:lib_bundle_whitelist += ['syntastic']
-    let g:lib_bundle_blacklist += ['ale']
+  let g:lib_bundle_whitelist += ['syntastic']
+  let g:lib_bundle_blacklist += ['ale']
 elseif $VIM_GROUP ==? 'ycm'
-    let g:lib_bundle_whitelist += ['YouCompleteMe']
-    let g:lib_bundle_blacklist += ['coc.nvim']
+  let g:lib_bundle_whitelist += ['YouCompleteMe']
+  let g:lib_bundle_blacklist += ['coc.nvim']
 elseif $VIM_GROUP ==? 'debug'
-    let g:lib_bundle_whitelist += ['vista.vim']
+  let g:lib_bundle_whitelist += ['vista.vim']
 endif
 
 call lib#bundle#load()

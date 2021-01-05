@@ -6,8 +6,8 @@
 # @version  1.0
 # @license  MIT
 
+import re
 import subprocess
-
 
 def system_command(cmd: str) -> str:
     """
@@ -20,7 +20,6 @@ def system_command(cmd: str) -> str:
         return err.decode("utf8")
     else:
         return output.decode("utf8")
-
 
 def utf8_str_width(s: str) -> int:
     """
@@ -45,3 +44,14 @@ def utf8_str_width(s: str) -> int:
             else:
                 break
     return width
+
+def decode_utf8_str(s: str) -> str:
+    ustr = ''
+    for ch in s:
+        if ch == 'x' or ('0' <= ch and ch <= '9') \
+                or ('a' <= ch and ch <= 'f'):
+            ustr += ch
+        if ch == '\\':
+            ustr += '\\'
+    b = bytes(map(lambda x: int(x, 16), ustr.split("\\x")[1:]))
+    return b.decode('utf8')

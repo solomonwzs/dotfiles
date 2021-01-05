@@ -1,3 +1,8 @@
+" @author     Solomon Ng <solomon.wzs@gmail.com>
+" @version    1.0
+" @date       2021-01-04
+" @license    MIT
+
 scriptencoding utf-8
 
 let s:file_node_extensions = {
@@ -193,7 +198,7 @@ let s:file_node_pattern_matches = {
         \ }
 
 function! lib#icons#file_node_ext_icon(filetype, filename, fileext)
-    let icon = get(s:file_node_exact_matches, tolower(a:filename), '')
-    if !empty(icon) | return icon | endif
-    return get(s:file_node_extensions, tolower(a:filetype), '')
+  let icon = get(s:file_node_exact_matches, tolower(a:filename), '')
+  if !empty(icon) | return icon | endif
+  return get(s:file_node_extensions, tolower(a:filetype), '')
 endfunction

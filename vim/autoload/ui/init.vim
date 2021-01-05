@@ -15,10 +15,10 @@ let g:ui_stl_results_count = {}
 
 let g:ui_stl_separator = get(g:, 'ui_stl_separator', {})
 if !has_key(g:ui_stl_separator, 'left')
-    let g:ui_stl_separator['left'] = ''
+  let g:ui_stl_separator['left'] = ''
 endif
 if !has_key(g:ui_stl_separator, 'right')
-    let g:ui_stl_separator['right'] = ''
+  let g:ui_stl_separator['right'] = ''
 endif
 
 function! ui#init#init()
