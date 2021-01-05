@@ -121,7 +121,8 @@ nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
 vnoremap <leader>t :<C-U>call lib#translate#google_async(
     \ lib#common#visual_selection(1))<CR>
 
-vnoremap <leader>d :<C-U>call ui#float#test(lib#common#visual_selection(0))<CR>
+vnoremap <silent> <leader>du :<C-U>call lib#decode#decode_utf8_bytes()<CR>
+vnoremap <silent> <leader>dm :<C-U>call lib#decode#decode_mime_str()<CR>
 
 nnoremap <silent> <F5> :let _s=@/ <Bar>
     \ :%s/\s\+$//e <Bar>

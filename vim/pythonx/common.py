@@ -6,6 +6,7 @@
 # @version  1.0
 # @license  MIT
 
+import base64
 import re
 import subprocess
 
@@ -45,13 +46,26 @@ def utf8_str_width(s: str) -> int:
                 break
     return width
 
-def decode_utf8_str(s: str) -> str:
-    ustr = ''
-    for ch in s:
-        if ch == 'x' or ('0' <= ch and ch <= '9') \
-                or ('a' <= ch and ch <= 'f'):
-            ustr += ch
-        if ch == '\\':
-            ustr += '\\'
-    b = bytes(map(lambda x: int(x, 16), ustr.split("\\x")[1:]))
-    return b.decode('utf8')
+def decode_utf8_str(s: str) -> (bool, str):
+    res = re.findall(r'\\x(..)', s)
+    try:
+        b = bytes(map(lambda x: int(x, 16), res))
+        return True, b.decode('utf8')
+    except Exception as err:
+        return False, str(err)
+
+def decode_mime_encode_str(s: str) -> (bool, str):
+    res = re.findall(r'=\?(.*)\?(.)\?(.*)\?=', s)
+    if len(res) == 0:
+        return False, 'Error format'
+    (charset, encoding, text) = res[0]
+    try:
+        if encoding == 'B' or encoding == 'b':
+            text = base64.b64decode(text).decode(charset)
+            return True, text
+        elif encoding == 'Q' or encoding == 'q':
+            return True, text
+        else:
+            return False, 'Error encoding `%s`' % encoding
+    except Exception as err:
+        return False, str(err)

@@ -89,18 +89,9 @@ endfunction
 "     echo x
 " endfunction
 
-function! ui#float#test(text)
-  " call ui#float#message('vim', ['hello world', 'just for test'])
+function! ui#float#test()
+  call ui#float#message('vim', ['hello world', 'just for test'])
   " call ui#float#message('vim', [a:text], {'visual': 1})
-  let ustr = ''
-python3 << EOF
-import vim
-import common
-
-ustr = common.decode_utf8_str(vim.eval('a:text'))
-vim.command('let ustr = "%s"' % ustr)
-EOF
-  echo ustr
 endfunction
 
 function! ui#float#message(title, content, opts)
