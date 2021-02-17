@@ -27,6 +27,7 @@ let s:basic_valid_bundles = [
     \ 'vim-go',
     \ 'vim-indent-guides',
     \ 'vim-markdown',
+    \ 'vim-prettier',
     \ 'vim-python-pep8-indent',
     \ 'vim-signature',
     \ 'vim-toml',

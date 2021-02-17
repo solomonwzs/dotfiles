@@ -2,6 +2,15 @@ let s:bundledir = fnameescape(g:vimhome).'/bundle'
 
 call plug#begin(s:bundledir)
 
+" Vim plugin which formated javascript files by js-beautify.
+" Plug 'https://github.com/maksimr/vim-jsbeautify.git'
+
+" A Vim plugin for Prettier.
+Plug 'https://github.com/prettier/vim-prettier.git', {
+  \ 'do': 'yarn install',
+  \ 'branch': 'release/0.x'
+  \ }
+
 " A tree explorer plugin for vim
 Plug 'https://github.com/scrooloose/nerdtree'
 
