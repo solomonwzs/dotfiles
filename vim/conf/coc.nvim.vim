@@ -59,6 +59,9 @@ nmap <silent> <space>cn <Plug>(coc-diagnostic-next)
 nmap <silent> <space>cp <Plug>(coc-diagnostic-prev)
 nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))<CR><CR>
 
+nmap <silent> <leader>t <Plug>(coc-ext-translate)
+vmap <silent> <leader>t <Plug>(coc-ext-translate-v)
+
 " let g:gitgutter_enabled = 1
 " function! GitGutterGetHunkSummary()
 "     let blame = get(b:, 'coc_git_status', '')
