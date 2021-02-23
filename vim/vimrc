@@ -117,9 +117,9 @@ let g:asmsyntax = 'nasm'
 "================ MAP KEY ================
 " nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
 
-nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
-vnoremap <leader>t :<C-U>call lib#translate#google_async(
-    \ lib#common#visual_selection(1))<CR>
+" nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
+" vnoremap <leader>t :<C-U>call lib#translate#google_async(
+"     \ lib#common#visual_selection(1))<CR>
 
 vnoremap <silent> <leader>du :<C-U>call lib#decode#decode_utf8_bytes()<CR>
 vnoremap <silent> <leader>dm :<C-U>call lib#decode#decode_mime_str()<CR>

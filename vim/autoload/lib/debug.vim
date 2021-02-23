@@ -18,3 +18,7 @@ EOF
 
 echo g:foo
 endfunction
+
+function! lib#debug#bar()
+  echo 'hello'
+endfunction

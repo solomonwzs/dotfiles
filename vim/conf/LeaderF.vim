@@ -36,4 +36,9 @@ let g:Lf_CtagsFuncOpts = {
         \ 'rust': '--rust-kinds=f',
         \ }
 
+let g:Lf_WildIgnore = {
+    \ 'dir': ['node_modules'],
+    \ 'file': []
+    \ }
+
 cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ? ('Leaderf rg') : ('Rg'))

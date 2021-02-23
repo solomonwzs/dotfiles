@@ -27,6 +27,8 @@ let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/header_guard,-
 
 let g:ale_python_flake8_options = '--ignore=E402,E241,E501,E302,E265'
 
+let g:ale_javascript_eslint_options = "--rule 'prettier/prettier:0'"
+
 let g:ale_rust_cargo_use_check = 1
 let g:ale_rust_cargo_check_tests = 1
 

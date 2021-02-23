@@ -54,21 +54,35 @@ def decode_utf8_str(s: str) -> (bool, str):
     except Exception as err:
         return False, str(err)
 
+def swict_hex(matchobj) -> bytes:
+    str_hex = matchobj.group(1)
+    i = int(str_hex, base=16)
+    return bytes([i])
+
 def decode_mime_encode_str(s: str) -> (bool, str):
-    res = re.findall(r'=\?(.*)\?(.)\?(.*)\?=', s)
+    res = re.findall(r'=\?(.*)\?([BbQq])\?(.*)\?=', s)
     if len(res) == 0:
         return False, 'Error format'
-    (charset, encoding, text) = res[0]
-    text = ''
-    for i in res:
-        text += i[2]
-    try:
+
+    blist = []
+    for s in res:
+        (charset, encoding, text) = s
         if encoding == 'B' or encoding == 'b':
-            text = base64.b64decode(text).decode(charset)
-            return True, text
-        elif encoding == 'Q' or encoding == 'q':
-            return True, text
+            blist.append((charset, base64.b64decode(text)))
         else:
-            return False, 'Error encoding `%s`' % encoding
-    except Exception as err:
-        return False, str(err)
+            enb = re.sub(b'=([A-F0-9]{2})', swict_hex, text.encode('ascii'))
+            blist.append((charset, enb))
+
+    if len(blist) == 0:
+        return True, ''
+
+    (charset, b) = blist[0]
+    text = ''
+    for i in range(1, len(blist)):
+        if blist[i][0] == charset:
+            b += blist[i][1]
+        else:
+            text += b.decode(charset)
+            (charset, b) = blist[i]
+    text += b.decode(charset)
+    return True, text
