@@ -3,24 +3,24 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "coc-solomon-ext configuration",
+      "title": "coc-ext-common configuration",
       "properties": {
-        "coc-solomon-ext.enabled": {
+        "coc-ext.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable coc-solomon-ext extension"
+          "description": "Enable coc-ext extension"
         },
-        "coc-solomon-ext.log.detail": {
+        "coc-ext.log.detail": {
           "type": "boolean",
           "default": false,
           "description": "print detail log"
         },
-        "coc-solomon-ext.log.level": {
+        "coc-ext.log.level": {
           "type": "number",
           "default": 1,
           "description": "log level"
         },
-        "coc-solomon-ext.debug": {
+        "coc-ext.debug": {
           "type": "number",
           "default": 1,
           "description": "debug"
@@ -29,8 +29,8 @@
     },
     "commands": [
       {
-        "command": "coc-solomon-ext.Command",
-        "title": "coc-solomon-ext command title"
+        "command": "coc-ext.Command",
+        "title": "coc-ext command title"
       }
     ]
   }

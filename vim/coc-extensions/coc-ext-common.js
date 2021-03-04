@@ -23,7 +23,7 @@ var __toModule = (module2) => {
   return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true})), module2);
 };
 
-// src/index.ts
+// src/coc-ext-common.ts
 __markAsModule(exports);
 __export(exports, {
   activate: () => activate
@@ -36,7 +36,7 @@ var ExtList = class extends import_coc.BasicList {
   constructor(nvim) {
     super(nvim);
     this.name = "ext_list";
-    this.description = "CocList for coc-solomon-ext";
+    this.description = "CocList for coc-ext-common";
     this.defaultAction = "open";
     this.actions = [];
     this.addAction("open", (item) => {
@@ -46,11 +46,11 @@ var ExtList = class extends import_coc.BasicList {
   async loadItems(context) {
     return [
       {
-        label: "coc-solomon-ext list item 1",
+        label: "coc-ext-common list item 1",
         data: {name: "list item 1"}
       },
       {
-        label: "coc-solomon-ext list item 2",
+        label: "coc-ext-common list item 2",
         data: {name: "list item 2"}
       }
     ];
@@ -64,7 +64,7 @@ var CommandsList = class extends import_coc2.BasicList {
   constructor(nvim) {
     super(nvim);
     this.name = "cmd_list";
-    this.description = "CocList for coc-solomon-ext (commands)";
+    this.description = "CocList for coc-ext-common (commands)";
     this.defaultAction = "execute";
     this.actions = [];
   }
@@ -96,22 +96,17 @@ var import_coc4 = __toModule(require("coc.nvim"));
 // src/utils/config.ts
 var import_coc3 = __toModule(require("coc.nvim"));
 function getcfg(key, defaultValue) {
-  const config = import_coc3.workspace.getConfiguration("coc-solomon-ext");
-  return defaultValue === void 0 ? config.get(key) : config.get(key, defaultValue);
+  const config = import_coc3.workspace.getConfiguration("coc-ext");
+  return config.get(key, defaultValue);
 }
 
 // src/utils/logger.ts
 var import_path = __toModule(require("path"));
 var Logger = class {
   constructor() {
-    this.channel = import_coc4.window.createOutputChannel("coc-solomon-ext");
-    this.detail = getcfg("log.detail") === true;
-    const level = getcfg("log.level");
-    if (level !== void 0) {
-      this.level = level;
-    } else {
-      this.level = 1;
-    }
+    this.channel = import_coc4.window.createOutputChannel("coc-ext");
+    this.detail = getcfg("log.detail", false) === true;
+    this.level = getcfg("log.level", 1);
   }
   dispose() {
     return this.channel.dispose();
@@ -283,10 +278,10 @@ var import_coc5 = __toModule(require("coc.nvim"));
 function defauleFloatWinConfig() {
   return {
     autoHide: true,
-    border: getcfg("window.enableBorder") ? [1, 1, 1, 1] : [0, 0, 0, 0],
+    border: getcfg("window.enableBorder", false) ? [1, 1, 1, 1] : [0, 0, 0, 0],
     close: false,
-    maxHeight: getcfg("window.maxHeight"),
-    maxWidth: getcfg("window.maxWidth")
+    maxHeight: getcfg("window.maxHeight", void 0),
+    maxWidth: getcfg("window.maxWidth", void 0)
   };
 }
 async function getText(mode) {
@@ -393,7 +388,7 @@ function decode_mime_encode_str(str) {
   return text;
 }
 
-// src/index.ts
+// src/coc-ext-common.ts
 function translateFn(mode) {
   return async () => {
     const text = await getText(mode);
@@ -413,9 +408,9 @@ translate fail`);
   };
 }
 async function activate(context) {
-  context.logger.info(`coc-solomon-ext works`);
-  logger.info(`coc-solomon-ext works`);
-  logger.info(import_coc6.workspace.getConfiguration("coc-solomon-ext"));
+  context.logger.info(`coc-ext-common works`);
+  logger.info(`coc-ext-common works`);
+  logger.info(import_coc6.workspace.getConfiguration("coc-ext.common"));
   context.subscriptions.push(import_coc6.commands.registerCommand("ext-debug", async () => {
     const doc = await import_coc6.workspace.document;
     logger.debug(doc.lineCount);

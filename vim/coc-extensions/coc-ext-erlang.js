@@ -23,7 +23,7 @@ var __toModule = (module2) => {
   return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true})), module2);
 };
 
-// src/coc-erlangls.ts
+// src/coc-ext-erlang.ts
 __markAsModule(exports);
 __export(exports, {
   activate: () => activate
@@ -36,22 +36,17 @@ var import_coc2 = __toModule(require("coc.nvim"));
 // src/utils/config.ts
 var import_coc = __toModule(require("coc.nvim"));
 function getcfg(key, defaultValue) {
-  const config = import_coc.workspace.getConfiguration("coc-solomon-ext");
-  return defaultValue === void 0 ? config.get(key) : config.get(key, defaultValue);
+  const config = import_coc.workspace.getConfiguration("coc-ext");
+  return config.get(key, defaultValue);
 }
 
 // src/utils/logger.ts
 var import_path = __toModule(require("path"));
 var Logger = class {
   constructor() {
-    this.channel = import_coc2.window.createOutputChannel("coc-solomon-ext");
-    this.detail = getcfg("log.detail") === true;
-    const level = getcfg("log.level");
-    if (level !== void 0) {
-      this.level = level;
-    } else {
-      this.level = 1;
-    }
+    this.channel = import_coc2.window.createOutputChannel("coc-ext");
+    this.detail = getcfg("log.detail", false) === true;
+    this.level = getcfg("log.level", 1);
   }
   dispose() {
     return this.channel.dispose();
@@ -106,14 +101,13 @@ var Logger = class {
 };
 var logger = new Logger();
 
-// src/coc-erlangls.ts
+// src/coc-ext-erlang.ts
 var client;
 async function activate(context) {
   context.logger.info(`coc-erlangls works`);
   logger.info(`coc-erlangls works`);
-  logger.info(import_coc3.workspace.getConfiguration("erlang_ls"));
-  const config = import_coc3.workspace.getConfiguration("erlang_ls");
-  const server_path = config.get("erlang_ls_path", "/bin/erlang_ls");
+  logger.info(import_coc3.workspace.getConfiguration("coc-ext.erlang"));
+  const server_path = getcfg("erlang.erlang_ls_path", "/bin/erlang_ls");
   const clientOptions = {
     documentSelector: [{scheme: "file", language: "erlang"}],
     initializationOptions: ""
