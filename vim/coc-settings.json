@@ -13,8 +13,11 @@
   "diagnostic.errorSign": ">>",
   "diagnostic.warningSign": ">>",
 
-  "erlang_ls.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
-  "erlang_ls.trace.server": "off",
+  "coc-ext.erlang.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
+  "coc-ext.erlang.trace_server": "off",
+
+  "coc-ext.log.detail": false,
+  "coc-ext.log.level": 0,
 
   "languageserver": {
     // pacman -S bash-language-server

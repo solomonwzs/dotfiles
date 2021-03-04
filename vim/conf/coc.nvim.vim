@@ -62,6 +62,9 @@ nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))
 nmap <silent> <leader>t <Plug>(coc-ext-translate)
 vmap <silent> <leader>t <Plug>(coc-ext-translate-v)
 
+vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8-v)
+vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime-v)
+
 " let g:gitgutter_enabled = 1
 " function! GitGutterGetHunkSummary()
 "     let blame = get(b:, 'coc_git_status', '')
