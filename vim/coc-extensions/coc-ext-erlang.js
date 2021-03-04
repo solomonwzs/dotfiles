@@ -104,8 +104,8 @@ var logger = new Logger();
 // src/coc-ext-erlang.ts
 var client;
 async function activate(context) {
-  context.logger.info(`coc-erlangls works`);
-  logger.info(`coc-erlangls works`);
+  context.logger.info(`coc-ext-erlang works`);
+  logger.info(`coc-ext-erlang works`);
   logger.info(import_coc3.workspace.getConfiguration("coc-ext.erlang"));
   const server_path = getcfg("erlang.erlang_ls_path", "/bin/erlang_ls");
   const clientOptions = {
