@@ -16,6 +16,9 @@
   "erlang_ls.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
   "erlang_ls.trace.server": "off",
 
+  "coc-solomon-ext.log.detail": false,
+  "coc-solomon-ext.log.level": 0,
+
   "languageserver": {
     // pacman -S bash-language-server
     "bash": {

@@ -1,0 +1,37 @@
+{
+  "activationEvents": ["*"],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "coc-solomon-ext configuration",
+      "properties": {
+        "coc-solomon-ext.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable coc-solomon-ext extension"
+        },
+        "coc-solomon-ext.log.detail": {
+          "type": "boolean",
+          "default": false,
+          "description": "print detail log"
+        },
+        "coc-solomon-ext.log.level": {
+          "type": "number",
+          "default": 1,
+          "description": "log level"
+        },
+        "coc-solomon-ext.debug": {
+          "type": "number",
+          "default": 1,
+          "description": "debug"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "coc-solomon-ext.Command",
+        "title": "coc-solomon-ext command title"
+      }
+    ]
+  }
+}
