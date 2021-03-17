@@ -324,16 +324,6 @@ async function popup(content, filetype, cfg) {
 
 // src/utils/decoder.ts
 var import_util = __toModule(require("util"));
-function decode_utf8_str(str) {
-  const re = /\x(..)/g;
-  let expl = re.exec(str);
-  const buf = [];
-  while (expl) {
-    buf.push(parseInt(expl[1], 16));
-    expl = re.exec(str);
-  }
-  return Buffer.from(buf).toString("utf8");
-}
 function decode_mime_encode_str(str) {
   const re = /=\?(.*)\?([BbQq])\?(.*)\?=/g;
   const res = [];
@@ -388,6 +378,46 @@ function decode_mime_encode_str(str) {
   return text;
 }
 
+// src/utils/python.ts
+var import_child_process = __toModule(require("child_process"));
+var import_path2 = __toModule(require("path"));
+async function call_python(module2, func, argv) {
+  return new Promise((resolve) => {
+    const msg = JSON.stringify({
+      module: module2,
+      func,
+      argv
+    });
+    let root_dir = process.env.COC_VIMCONFIG;
+    if (!root_dir) {
+      root_dir = ".";
+    }
+    const script = import_path2.default.join(root_dir, "pythonx", "coc-ext.py");
+    const py = import_child_process.spawn("python3", [script], {stdio: ["pipe", "pipe", "pipe"]});
+    py.stdin.write(msg);
+    py.stdin.end();
+    let exitCode = 0;
+    const data = [];
+    const error = [];
+    py.stdout.on("data", (d) => {
+      data.push(d);
+    });
+    py.stderr.on("data", (d) => {
+      error.push(d);
+    });
+    py.on("close", (code) => {
+      if (code) {
+        exitCode = code;
+      }
+      resolve({
+        exitCode,
+        data: data.length == 0 ? void 0 : Buffer.concat(data),
+        error: error.length == 0 ? void 0 : Buffer.concat(error)
+      });
+    });
+  });
+}
+
 // src/coc-ext-common.ts
 function translateFn(mode) {
   return async () => {
@@ -407,26 +437,57 @@ translate fail`);
     }
   };
 }
+function decodeStrFn(enc) {
+  return async () => {
+    var _a;
+    const text = await getText("v");
+    const res = await call_python("coder", "decode_str", [text, enc]);
+    if (res.exitCode == 0 && res.data) {
+      popup(`[${enc.toUpperCase()} decode]
+
+${res.data.toString("utf8")}`);
+    } else {
+      logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
+    }
+  };
+}
+function encodeStrFn(enc) {
+  return async () => {
+    var _a;
+    const doc = await import_coc6.workspace.document;
+    const range = await import_coc6.workspace.getSelectedRange("v", doc);
+    if (!range) {
+      return;
+    }
+    const text = doc.textDocument.getText(range);
+    const res = await call_python("coder", "encode_str", [text, enc]);
+    if (res.exitCode == 0 && res.data) {
+      const ed = import_coc6.TextEdit.replace(range, res.data.toString("utf8"));
+      await doc.applyEdits([ed]);
+    } else {
+      logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
+    }
+  };
+}
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
   logger.info(import_coc6.workspace.getConfiguration("coc-ext.common"));
+  logger.info(process.env.COC_VIMCONFIG);
   context.subscriptions.push(import_coc6.commands.registerCommand("ext-debug", async () => {
-    const doc = await import_coc6.workspace.document;
-    logger.debug(doc.lineCount);
   }, {sync: false}), import_coc6.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
   }), import_coc6.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc6.workspace.registerKeymap(["v"], "ext-decode-utf8-v", async () => {
-    const text = await getText("v");
-    const tt = decode_utf8_str(text);
-    popup(`[UTF8 decode]
-
-${tt}`);
-  }, {
+  }), import_coc6.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc6.workspace.registerKeymap(["v"], "ext-decode-mime-v", async () => {
+  }), import_coc6.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+    sync: false
+  }), import_coc6.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+    sync: false
+  }), import_coc6.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    sync: false
+  }), import_coc6.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decode_mime_encode_str(text);
     popup(`[Mime decode]
