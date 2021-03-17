@@ -13,11 +13,11 @@ let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
 vnoremap <silent> <leader>uf :call UltiSnips#SaveLastVisualSelection()<CR>gvs
     \file_type<C-r>=UltiSnips#ExpandSnippet()<CR>
 
-vnoremap <silent> <leader>uu :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-    \encode_utf8<C-r>=UltiSnips#ExpandSnippet()<CR>
+" vnoremap <silent> <leader>uu :call UltiSnips#SaveLastVisualSelection()<CR>gvs
+"     \encode_utf8<C-r>=UltiSnips#ExpandSnippet()<CR>
 
-vnoremap <silent> <leader>ug :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-    \encode_gbk<C-r>=UltiSnips#ExpandSnippet()<CR>
+" vnoremap <silent> <leader>ug :call UltiSnips#SaveLastVisualSelection()<CR>gvs
+"     \encode_gbk<C-r>=UltiSnips#ExpandSnippet()<CR>
 
 vnoremap <silent> <leader>un :call UltiSnips#SaveLastVisualSelection()<CR>gvs
     \change_name_rule<C-r>=UltiSnips#ExpandSnippet()<CR>
