@@ -85,10 +85,40 @@ snippet #calln "calln" b
 endsnippet
 
 snippet #flist "func list" b
-#define _X(_cmd_, _func_, _n_)                          \
-  if (strcmp(argv[1], _cmd_) == 0 && argc >= _n_ + 2) { \
+#define _X(_cmd_, _func_, _n_, ...)                     \
+  if (argc >= _n_ + 2 && strcmp(argv[1], _cmd_) == 0) { \
     return _call##_n_(_func_);                          \
   }
   _FUNC_LIST
 #undef _X
+endsnippet
+
+snippet tool "tool" b
+#define _call0(_f_) _f_()
+#define _call1(_f_) _f_(argv[2])
+#define _call2(_f_) _f_(argv[2], argv[3])
+#define _call3(_f_) _f_(argv[2], argv[3], argv[4])
+#define _call4(_f_) _f_(argv[2], argv[3], argv[4], argv[5])
+#define _call5(_f_) _f_(argv[2], argv[3], argv[4], argv[5], argv[6])
+#define _call6(_f_) _f_(argv[2], argv[3], argv[4], argv[5], argv[6], argv[7])
+
+#define _FUNC_LIST                 \
+  _X("foo", call_foo, 1, "<arg1>") \
+  _X("bar", call_bar, 2, "<arg1> <arg2>")
+
+int main(int argc, char **argv) {
+#define _X(_cmd_, _func_, _n_, ...)                     \
+  if (argc >= _n_ + 2 && strcmp(argv[1], _cmd_) == 0) { \
+    return _call##_n_(_func_);                          \
+  }
+  _FUNC_LIST
+#undef _X
+
+  printf("Usage: %s $command $arg...\n", argv[0]);
+#define _X(_cmd_, _func_, _n_, _args_, ...) printf("  " _cmd_ " " _args_ "\n");
+  _FUNC_LIST
+#undef _X
+
+  return -1;
+}
 endsnippet

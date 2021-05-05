@@ -1,7 +1,7 @@
 " let g:coc_global_extensions = [
 "         \ 'coc-git',
 "         \ 'coc-json',
-"         \ 'coc-python',
+"         \ 'coc-pyright',
 "         \ 'coc-rls',
 "         \ 'coc-snippets',
 "         \ 'coc-tsserver',
