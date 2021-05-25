@@ -24,7 +24,7 @@ def decode_str(text: str, enc: str):
         str_hex = matchobj.group(1)
         i = int(str_hex, base=16)
         return bytes([i])
-    bs = re.sub(br'\\x([a-fA-F0-9]{2})', _hex, text.encode('ascii'))
+    bs = re.sub(br'\\x([a-fA-F0-9]{2})', _hex, text.encode('utf8'))
     sys.stdout.write(bs.decode(enc))
 
 def encode_quotation_str(text: str, enc: str):
