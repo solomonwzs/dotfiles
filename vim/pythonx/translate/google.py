@@ -22,8 +22,8 @@ def RL(a: int, b: str):
         if b[c + 1] == Yb:
             d = ctypes.c_uint32(a).value >> d
         else:
-            d = ctypes.c_int32(a << (d & 0x1f)).value
-        a = a + d & 0xffffffff if b[c] == Yb else a ^ d
+            d = ctypes.c_int32(a << (d & 0x1F)).value
+        a = a + d & 0xFFFFFFFF if b[c] == Yb else a ^ d
     return a
 
 
@@ -44,10 +44,17 @@ def TL(a: str):
             if 2048 > m:
                 e.append(m >> 6 | 192)
             else:
-                if 55296 == (m & 64512) and g + 1 < len(a) and 56320 == (ord(a[g + 1]) & 64512):
+                if (
+                    55296 == (m & 64512)
+                    and g + 1 < len(a)
+                    and 56320 == (ord(a[g + 1]) & 64512)
+                ):
                     g += 1
-                    m = 65536 + ctypes.c_int32((m & 1023) << 10).value \
+                    m = (
+                        65536
+                        + ctypes.c_int32((m & 1023) << 10).value
                         + (ord(a[g]) & 1023)
+                    )
                     e.append(m >> 18 | 240)
                     e.append(m >> 12 & 63 | 128)
                 else:
@@ -125,8 +132,7 @@ def translate(text: str, tl="zh-CN", timeout=10):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="call google translate api")
     parser.add_argument("text", type=str, help="text")
-    parser.add_argument("-t", "--tl", type=str, default="zh-CN",
-                        help="target language")
+    parser.add_argument("-t", "--tl", type=str, default="zh-CN", help="target language")
     args = parser.parse_args()
 
     text = args.text
@@ -140,10 +146,10 @@ if __name__ == "__main__":
     if d is not None:
         for i in res.get("dict", []):
             pos = i.get("pos", "")
-            term = ', '.join(i.get("terms", []))
+            term = ", ".join(i.get("terms", []))
             lines.append(f"{pos}: {term}")
     else:
         for i in res.get("sentences", []):
             lines.append(i.get("trans"))
-    sys.stdout.write('\n'.join(lines))
+    sys.stdout.write("\n".join(lines))
     sys.exit(0)

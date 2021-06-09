@@ -10,7 +10,7 @@
 class Argument(object):
     def __init__(self, arg):
         self.arg = arg
-        self.name = arg.split('::')[0].strip()
+        self.name = arg.split("::")[0].strip()
 
     def __str__(self):
         return self.name
@@ -19,9 +19,9 @@ class Argument(object):
         return self.name
 
     def is_kwarg(self):
-        return '=' in self.arg
+        return "=" in self.arg
 
 
 def write_arguments(snip, t):
-    args = [Argument(arg).name for arg in t[2].split(',') if arg]
-    snip.rv = ', '.join(args)
+    args = [Argument(arg).name for arg in t[2].split(",") if arg]
+    snip.rv = ", ".join(args)

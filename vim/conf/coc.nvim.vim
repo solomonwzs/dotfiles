@@ -78,4 +78,4 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 "     return winwidth(0) > 120 ? blame : ''
 " endfunction
 
-command! -nargs=0 PyFormat call CocAction('format')
+command! -nargs=0 Format call CocAction('format')
