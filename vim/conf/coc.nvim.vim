@@ -77,3 +77,5 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 "     let blame = get(b:, 'coc_git_status', '')
 "     return winwidth(0) > 120 ? blame : ''
 " endfunction
+
+command! -nargs=0 PyFormat call CocAction('format')
