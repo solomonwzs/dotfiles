@@ -1,7 +1,7 @@
 " let g:coc_global_extensions = [
 "         \ 'coc-git',
 "         \ 'coc-json',
-"         \ 'coc-python',
+"         \ 'coc-pyright',
 "         \ 'coc-rls',
 "         \ 'coc-snippets',
 "         \ 'coc-tsserver',
@@ -77,3 +77,5 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 "     let blame = get(b:, 'coc_git_status', '')
 "     return winwidth(0) > 120 ? blame : ''
 " endfunction
+
+command! -nargs=0 Format call CocAction('format')

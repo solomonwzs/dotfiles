@@ -19,6 +19,8 @@
   "coc-ext.log.detail": false,
   "coc-ext.log.level": 0,
 
+  "python.formatting.provider": "black",
+
   "languageserver": {
     // pacman -S bash-language-server
     "bash": {

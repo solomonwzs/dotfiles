@@ -168,6 +168,7 @@ async function simple_https_request(opts, data) {
     const req = import_https.default.request(opts, (resp) => {
       const buf = [];
       resp.on("data", (chunk) => {
+        logger.info(chunk);
         buf.push(chunk);
       });
       resp.on("end", () => {

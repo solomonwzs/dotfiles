@@ -16,8 +16,8 @@ from common import system_command
 from typing import List
 import re
 
-CXX_HEADER_EXT = {'.h', '.hh', '.hpp', '.hxx'}
-CXX_FLAGS_FILE_NAME = 'compile_flags.txt'
+CXX_HEADER_EXT = {".h", ".hh", ".hpp", ".hxx"}
+CXX_FLAGS_FILE_NAME = "compile_flags.txt"
 
 
 def get_system_type() -> str:
@@ -47,7 +47,7 @@ def get_system_cxx_header_paths() -> List[str]:
     return [x for x in paths if os.path.isdir(x)]
 
 
-def find_cxx_header_files_dir(path='.'):
+def find_cxx_header_files_dir(path="."):
     result = []
     for root, dirs, files in os.walk(path):
         for name in files:

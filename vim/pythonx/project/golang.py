@@ -17,10 +17,10 @@ from common import system_command
 
 def get_go_env():
     output = system_command("go env").strip()
-    kvlist = output.split('\n')
+    kvlist = output.split("\n")
     env = {}
     for kv in kvlist:
-        arr = kv.split('=', 1)
+        arr = kv.split("=", 1)
         if len(arr) == 2:
             env[arr[0]] = arr[1][1:-1]
     return env
@@ -32,7 +32,7 @@ def compiled_packages():
 
 def get_go_path():
     gopath = os.environ.get("GOPATH", "")
-    return gopath.split(':')
+    return gopath.split(":")
 
 
 if __name__ == "__main__":

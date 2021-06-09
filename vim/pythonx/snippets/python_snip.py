@@ -10,7 +10,7 @@
 class Argument(object):
     def __init__(self, arg):
         self.arg = arg
-        self.name = arg.split('=')[0].strip()
+        self.name = arg.split("=")[0].strip()
 
     def __str__(self):
         return self.name
@@ -19,12 +19,12 @@ class Argument(object):
         return self.name
 
     def is_kwarg(self):
-        return '=' in self.arg
+        return "=" in self.arg
 
 
 def get_arguments(arglist):
-    args = [Argument(arg) for arg in arglist.split(',') if arg]
-    return [arg for arg in args if arg.name != 'self']
+    args = [Argument(arg) for arg in arglist.split(",") if arg]
+    return [arg for arg in args if arg.name != "self"]
 
 
 def write_doc_return(snip):
@@ -42,7 +42,7 @@ def write_doc_arguments(snip, args):
 def write_doc_function(snip, t):
     snip >> 1
     snip += '"""'
-    snip += f'TODO: Doc for {t[1]}\n'
+    snip += f"TODO: Doc for {t[1]}\n"
 
     args = get_arguments(t[2])
     if len(args) > 0:
