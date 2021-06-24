@@ -19,7 +19,47 @@
   "coc-ext.log.detail": false,
   "coc-ext.log.level": 0,
 
+  "coc-ext.formatting": [
+    {
+      "langs": ["cpp", "c"],
+      "setting": {
+        "provider": "clang-format",
+        "clangFormStyle": {
+          "AlignConsecutiveMacros": "true",
+          "AlignEscapedNewlines": "Left",
+          "AllowShortFunctionsOnASingleLine": "Inline",
+          "BasedOnStyle": "Google",
+          "Standard": "C++11"
+        }
+      }
+    },
+    {
+      "langs": ["proto"],
+      "setting": {
+        "provider": "clang-format",
+        "clangFormStyle": {
+          "AlignConsecutiveAssignments": "true",
+          "AlignConsecutiveDeclarations": "true",
+          "AlignEscapedNewlines": "Left"
+        }
+      }
+    },
+    {
+      "langs": ["typescript", "json", "javascript"],
+      "setting": {
+        "provider": "prettier",
+        "prettierOptions": [
+          "--config-precedence",
+          "cli-override",
+          "--print-width",
+          "80"
+        ]
+      }
+    }
+  ],
+
   "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["-l", "80"],
 
   "languageserver": {
     // pacman -S bash-language-server

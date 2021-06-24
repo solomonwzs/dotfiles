@@ -79,3 +79,7 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 " endfunction
 
 command! -nargs=0 Format call CocAction('format')
+
+augroup my_coc_nvim
+  autocmd FileType python let b:coc_root_patterns = ['.env']
+augroup END
