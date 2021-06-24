@@ -28,7 +28,7 @@ __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
-var import_coc9 = __toModule(require("coc.nvim"));
+var import_coc10 = __toModule(require("coc.nvim"));
 
 // src/lists/lists.ts
 var import_coc = __toModule(require("coc.nvim"));
@@ -491,7 +491,7 @@ async function call_python(module2, func, argv) {
 }
 
 // src/formatter/formatprovider.ts
-var import_coc8 = __toModule(require("coc.nvim"));
+var import_coc9 = __toModule(require("coc.nvim"));
 
 // src/formatter/clfformatter.ts
 var import_coc6 = __toModule(require("coc.nvim"));
@@ -595,6 +595,37 @@ var PrettierFormatter = class extends BaseFormatter {
   }
 };
 
+// src/formatter/bazelformatter.ts
+var import_coc8 = __toModule(require("coc.nvim"));
+var BazelFormatter = class extends BaseFormatter {
+  constructor(setting) {
+    super(setting);
+    this.setting = setting;
+  }
+  async formatDocument(document, _options, _token, range) {
+    if (range) {
+      return [];
+    }
+    const exec = this.setting.exec ? this.setting.exec : "buildifier";
+    const resp = await call_shell(exec, [], document.getText());
+    if (resp.exitCode != 0) {
+      import_coc8.window.showMessage(`buildifier fail, ret ${resp.exitCode}`);
+      if (resp.error) {
+        logger.error(resp.error.toString());
+      }
+    } else if (resp.data) {
+      import_coc8.window.showMessage("buildifier ok");
+      return [
+        import_coc8.TextEdit.replace({
+          start: {line: 0, character: 0},
+          end: {line: document.lineCount, character: 0}
+        }, resp.data.toString())
+      ];
+    }
+    return [];
+  }
+};
+
 // src/formatter/formatprovider.ts
 var FormattingEditProvider = class {
   constructor(setting) {
@@ -602,6 +633,8 @@ var FormattingEditProvider = class {
       this.formatter = new ClfFormatter(setting);
     } else if (setting.provider == "prettier") {
       this.formatter = new PrettierFormatter(setting);
+    } else if (setting.provider == "bazel-buildifier") {
+      this.formatter = new BazelFormatter(setting);
     } else {
       this.formatter = null;
     }
@@ -609,7 +642,7 @@ var FormattingEditProvider = class {
   async _provideEdits(document, options, token, range) {
     if (!this.formatter) {
       logger.error("formatter was null");
-      import_coc8.window.showMessage("formatter was null");
+      import_coc9.window.showMessage("formatter was null");
       return [];
     }
     return this.formatter.formatDocument(document, options, token, range);
@@ -658,15 +691,15 @@ ${res.data.toString("utf8")}`);
 function encodeStrFn(enc) {
   return async () => {
     var _a;
-    const doc = await import_coc9.workspace.document;
-    const range = await import_coc9.workspace.getSelectedRange("v", doc);
+    const doc = await import_coc10.workspace.document;
+    const range = await import_coc10.workspace.getSelectedRange("v", doc);
     if (!range) {
       return;
     }
     const text = doc.textDocument.getText(range);
     const res = await call_python("coder", "encode_str", [text, enc]);
     if (res.exitCode == 0 && res.data) {
-      const ed = import_coc9.TextEdit.replace(range, res.data.toString("utf8"));
+      const ed = import_coc10.TextEdit.replace(range, res.data.toString("utf8"));
       await doc.applyEdits([ed]);
     } else {
       logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -676,30 +709,30 @@ function encodeStrFn(enc) {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc9.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc10.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
-    s.langs.forEach((lang) => {
+    s.languages.forEach((lang) => {
       const selector = [{scheme: "file", language: lang}];
       const provider = new FormattingEditProvider(s.setting);
-      context.subscriptions.push(import_coc9.languages.registerDocumentFormatProvider(selector, provider, 1), import_coc9.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+      context.subscriptions.push(import_coc10.languages.registerDocumentFormatProvider(selector, provider, 1), import_coc10.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
     });
   });
-  context.subscriptions.push(import_coc9.commands.registerCommand("ext-debug", async () => {
-  }, {sync: false}), import_coc9.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+  context.subscriptions.push(import_coc10.commands.registerCommand("ext-debug", async () => {
+  }, {sync: false}), import_coc10.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
     sync: false
-  }), import_coc9.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
+  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decode_mime_encode_str(text);
     popup(`[Mime decode]
@@ -707,5 +740,5 @@ async function activate(context) {
 ${tt}`);
   }, {
     sync: false
-  }), import_coc9.listManager.registerList(new lists_default(import_coc9.workspace.nvim)), import_coc9.listManager.registerList(new commands_default(import_coc9.workspace.nvim)));
+  }), import_coc10.listManager.registerList(new lists_default(import_coc10.workspace.nvim)), import_coc10.listManager.registerList(new commands_default(import_coc10.workspace.nvim)));
 }

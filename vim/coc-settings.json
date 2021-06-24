@@ -21,7 +21,7 @@
 
   "coc-ext.formatting": [
     {
-      "langs": ["cpp", "c"],
+      "languages": ["cpp", "c"],
       "setting": {
         "provider": "clang-format",
         "clangFormStyle": {
@@ -34,7 +34,7 @@
       }
     },
     {
-      "langs": ["proto"],
+      "languages": ["proto"],
       "setting": {
         "provider": "clang-format",
         "clangFormStyle": {
@@ -45,7 +45,7 @@
       }
     },
     {
-      "langs": ["typescript", "json", "javascript"],
+      "languages": ["typescript", "json", "javascript"],
       "setting": {
         "provider": "prettier",
         "prettierOptions": [
@@ -54,6 +54,12 @@
           "--print-width",
           "80"
         ]
+      }
+    },
+    {
+      "languages": ["bzl"],
+      "setting": {
+        "provider": "bazel-buildifier"
       }
     }
   ],
