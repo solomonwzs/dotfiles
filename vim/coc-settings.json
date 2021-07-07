@@ -118,5 +118,6 @@
       "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",
       "filetypes": ["elixir", "eelixir"]
     }
-  }
+  },
+  "git.enableGutters": true
 }

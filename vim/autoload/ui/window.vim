@@ -45,19 +45,23 @@ function! ui#window#new(argv)
   setlocal shiftwidth=4
   setlocal undolevels=-1
   setlocal wrap
+  " setlocal nomodifiable
 
   redrawstatus
 
-  let stl = printf('%!airline#statusline(%s)', winnr())
-  exec printf('augroup Lib_win_%s_Colorscheme', bufname)
-  exec printf('au ColorScheme * call s:setStatusLine(%s)', stl)
-  exec printf('au WinEnter,FileType * call s:setStatusLine(%s)', stl)
-  exec printf('augroup END')
+  " let stl = printf('%!airline#statusline(%s)', winnr())
+  " exec printf('augroup Lib_win_%s_Colorscheme', bufname)
+  " exec printf('au ColorScheme * call s:setStatusLine(%s)', stl)
+  " exec printf('au WinEnter,FileType * call s:setStatusLine(%s)', stl)
+  " exec printf('augroup END')
+  return win_getid()
 endfunc
 
 function! ui#window#test()
-python3 << EOF
-  argv = {'position': 'top'}
-  vim.command(f"call ui#window#new({argv})")
-EOF
+" python3 << EOF
+" argv = {'position': 'top'}
+" vim.command(f"call ui#window#new({argv})")
+" EOF
+  let argv = {'position': 'top'}
+  echo ui#window#new(argv)
 endfunc

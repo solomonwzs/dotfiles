@@ -720,6 +720,18 @@ async function activate(context) {
     });
   });
   context.subscriptions.push(import_coc10.commands.registerCommand("ext-debug", async () => {
+    const id = await import_coc10.workspace.nvim.call("ui#window#new", {
+      position: "top"
+    });
+    const w = import_coc10.workspace.nvim.createWindow(id);
+    logger.info(w.id);
+    const doc = await import_coc10.workspace.document;
+    const ed = import_coc10.TextEdit.replace({
+      start: {line: 0, character: 0},
+      end: {line: doc.lineCount, character: 0}
+    }, "hello world");
+    await doc.applyEdits([ed]);
+    await import_coc10.workspace.nvim.command("setlocal nomodifiable");
   }, {sync: false}), import_coc10.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
   }), import_coc10.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
