@@ -510,6 +510,9 @@ var ClfFormatter = class extends BaseFormatter {
     super(setting);
     this.setting = setting;
   }
+  supportRangeFormat() {
+    return false;
+  }
   async formatDocument(document, options, _token, range) {
     if (range) {
       return [];
@@ -564,6 +567,9 @@ var PrettierFormatter = class extends BaseFormatter {
     super(setting);
     this.setting = setting;
   }
+  supportRangeFormat() {
+    return false;
+  }
   async formatDocument(document, _options, _token, range) {
     if (range) {
       return [];
@@ -601,6 +607,9 @@ var BazelFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
     this.setting = setting;
+  }
+  supportRangeFormat() {
+    return false;
   }
   async formatDocument(document, _options, _token, range) {
     if (range) {
@@ -646,6 +655,12 @@ var FormattingEditProvider = class {
       return [];
     }
     return this.formatter.formatDocument(document, options, token, range);
+  }
+  supportRangeFormat() {
+    if (this.formatter) {
+      return this.formatter.supportRangeFormat();
+    }
+    return false;
   }
   provideDocumentFormattingEdits(document, options, token) {
     return this._provideEdits(document, options, token);
@@ -716,7 +731,10 @@ async function activate(context) {
     s.languages.forEach((lang) => {
       const selector = [{scheme: "file", language: lang}];
       const provider = new FormattingEditProvider(s.setting);
-      context.subscriptions.push(import_coc10.languages.registerDocumentFormatProvider(selector, provider, 1), import_coc10.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+      context.subscriptions.push(import_coc10.languages.registerDocumentFormatProvider(selector, provider, 1));
+      if (provider.supportRangeFormat()) {
+        context.subscriptions.push(import_coc10.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+      }
     });
   });
   context.subscriptions.push(import_coc10.commands.registerCommand("ext-debug", async () => {
