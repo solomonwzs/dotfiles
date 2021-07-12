@@ -28,7 +28,7 @@ __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
-var import_coc10 = __toModule(require("coc.nvim"));
+var import_coc11 = __toModule(require("coc.nvim"));
 
 // src/lists/lists.ts
 var import_coc = __toModule(require("coc.nvim"));
@@ -491,7 +491,7 @@ async function call_python(module2, func, argv) {
 }
 
 // src/formatter/formatprovider.ts
-var import_coc9 = __toModule(require("coc.nvim"));
+var import_coc10 = __toModule(require("coc.nvim"));
 
 // src/formatter/clfformatter.ts
 var import_coc6 = __toModule(require("coc.nvim"));
@@ -635,6 +635,64 @@ var BazelFormatter = class extends BaseFormatter {
   }
 };
 
+// src/formatter/luaformatter.ts
+var import_coc9 = __toModule(require("coc.nvim"));
+var LuaFormatter = class extends BaseFormatter {
+  constructor(setting) {
+    super(setting);
+    this.setting = setting;
+    this.opts = [];
+    this.opts_has_indent_width = false;
+    this.opts_has_usetab = false;
+    if (this.setting.luaFormatOptions) {
+      for (const i in this.setting.luaFormatOptions) {
+        this.opts.push(this.setting.luaFormatOptions[i]);
+        if (this.setting.luaFormatOptions[i].search("indent-width") != -1) {
+          this.opts_has_indent_width = true;
+        } else if (this.setting.luaFormatOptions[i].search("use-tab") != -1) {
+          this.opts_has_usetab = true;
+        }
+      }
+    }
+  }
+  supportRangeFormat() {
+    return false;
+  }
+  async formatDocument(document, options, _token, range) {
+    if (range) {
+      return [];
+    }
+    const opts = [];
+    if (options.tabSize !== void 0 && !this.opts_has_indent_width) {
+      opts.push(`--indent-width=${options.tabSize}`);
+    }
+    if (options.insertSpaces !== void 0 && !this.opts_has_usetab) {
+      if (options.insertSpaces) {
+        opts.push("--no-use-tab");
+      } else {
+        opts.push("--use-tab");
+      }
+    }
+    const exec = this.setting.exec ? this.setting.exec : "lua-format";
+    const resp = await call_shell(exec, this.opts.concat(opts), document.getText());
+    if (resp.exitCode != 0) {
+      import_coc9.window.showMessage(`lua-format fail, ret ${resp.exitCode}`);
+      if (resp.error) {
+        logger.error(resp.error.toString());
+      }
+    } else if (resp.data) {
+      import_coc9.window.showMessage("lua-format ok");
+      return [
+        import_coc9.TextEdit.replace({
+          start: {line: 0, character: 0},
+          end: {line: document.lineCount, character: 0}
+        }, resp.data.toString())
+      ];
+    }
+    return [];
+  }
+};
+
 // src/formatter/formatprovider.ts
 var FormattingEditProvider = class {
   constructor(setting) {
@@ -644,6 +702,8 @@ var FormattingEditProvider = class {
       this.formatter = new PrettierFormatter(setting);
     } else if (setting.provider == "bazel-buildifier") {
       this.formatter = new BazelFormatter(setting);
+    } else if (setting.provider == "lua-format") {
+      this.formatter = new LuaFormatter(setting);
     } else {
       this.formatter = null;
     }
@@ -651,7 +711,7 @@ var FormattingEditProvider = class {
   async _provideEdits(document, options, token, range) {
     if (!this.formatter) {
       logger.error("formatter was null");
-      import_coc9.window.showMessage("formatter was null");
+      import_coc10.window.showMessage("formatter was null");
       return [];
     }
     return this.formatter.formatDocument(document, options, token, range);
@@ -706,15 +766,15 @@ ${res.data.toString("utf8")}`);
 function encodeStrFn(enc) {
   return async () => {
     var _a;
-    const doc = await import_coc10.workspace.document;
-    const range = await import_coc10.workspace.getSelectedRange("v", doc);
+    const doc = await import_coc11.workspace.document;
+    const range = await import_coc11.workspace.getSelectedRange("v", doc);
     if (!range) {
       return;
     }
     const text = doc.textDocument.getText(range);
     const res = await call_python("coder", "encode_str", [text, enc]);
     if (res.exitCode == 0 && res.data) {
-      const ed = import_coc10.TextEdit.replace(range, res.data.toString("utf8"));
+      const ed = import_coc11.TextEdit.replace(range, res.data.toString("utf8"));
       await doc.applyEdits([ed]);
     } else {
       logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -724,45 +784,45 @@ function encodeStrFn(enc) {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc10.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc11.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
     s.languages.forEach((lang) => {
       const selector = [{scheme: "file", language: lang}];
       const provider = new FormattingEditProvider(s.setting);
-      context.subscriptions.push(import_coc10.languages.registerDocumentFormatProvider(selector, provider, 1));
+      context.subscriptions.push(import_coc11.languages.registerDocumentFormatProvider(selector, provider, 1));
       if (provider.supportRangeFormat()) {
-        context.subscriptions.push(import_coc10.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+        context.subscriptions.push(import_coc11.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
       }
     });
   });
-  context.subscriptions.push(import_coc10.commands.registerCommand("ext-debug", async () => {
-    const id = await import_coc10.workspace.nvim.call("ui#window#new", {
+  context.subscriptions.push(import_coc11.commands.registerCommand("ext-debug", async () => {
+    const id = await import_coc11.workspace.nvim.call("ui#window#new", {
       position: "top"
     });
-    const w = import_coc10.workspace.nvim.createWindow(id);
+    const w = import_coc11.workspace.nvim.createWindow(id);
     logger.info(w.id);
-    const doc = await import_coc10.workspace.document;
-    const ed = import_coc10.TextEdit.replace({
+    const doc = await import_coc11.workspace.document;
+    const ed = import_coc11.TextEdit.replace({
       start: {line: 0, character: 0},
       end: {line: doc.lineCount, character: 0}
     }, "hello world");
     await doc.applyEdits([ed]);
-    await import_coc10.workspace.nvim.command("setlocal nomodifiable");
-  }, {sync: false}), import_coc10.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    await import_coc11.workspace.nvim.command("setlocal nomodifiable");
+  }, {sync: false}), import_coc11.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
     sync: false
-  }), import_coc10.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
+  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decode_mime_encode_str(text);
     popup(`[Mime decode]
@@ -770,5 +830,5 @@ async function activate(context) {
 ${tt}`);
   }, {
     sync: false
-  }), import_coc10.listManager.registerList(new lists_default(import_coc10.workspace.nvim)), import_coc10.listManager.registerList(new commands_default(import_coc10.workspace.nvim)));
+  }), import_coc11.listManager.registerList(new lists_default(import_coc11.workspace.nvim)), import_coc11.listManager.registerList(new commands_default(import_coc11.workspace.nvim)));
 }

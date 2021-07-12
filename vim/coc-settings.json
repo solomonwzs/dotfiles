@@ -45,7 +45,7 @@
       }
     },
     {
-      "languages": ["typescript", "json", "javascript"],
+      "languages": ["typescript", "json", "javascript", "html"],
       "setting": {
         "provider": "prettier",
         "prettierOptions": [
@@ -60,6 +60,13 @@
       "languages": ["bzl"],
       "setting": {
         "provider": "bazel-buildifier"
+      }
+    },
+    {
+      "languages": ["lua"],
+      "setting": {
+        "provider": "lua-format",
+        "luaFormatOptions": ["--column-table-limit=80"]
       }
     }
   ],
