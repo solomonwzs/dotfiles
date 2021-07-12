@@ -6,13 +6,13 @@
 # @version  1.0
 # @license  MIT
 
+# import pathlib
+# sys.path.append(str(pathlib.Path(__file__).parent.absolute()))
+
 import fcntl
 import json
 import os
-import pathlib
 import sys
-
-sys.path.append(pathlib.Path(__file__).parent.absolute())
 
 import CocExt
 

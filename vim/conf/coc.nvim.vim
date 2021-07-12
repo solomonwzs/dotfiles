@@ -78,4 +78,11 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 "     return winwidth(0) > 120 ? blame : ''
 " endfunction
 
-command! -nargs=0 Format call CocAction('format')
+nmap <silent> <space>cf <Plug>(coc-format)
+vmap <silent> <space>cf <Plug>(coc-format-selected)
+" command! -nargs=0 Format call CocAction('format')
+" command! -range=% Format <line1>,<line2>call CocAction('formatSelected', 'v')
+
+augroup my_coc_nvim
+  autocmd FileType python let b:coc_root_patterns = ['.env']
+augroup END

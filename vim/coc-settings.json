@@ -19,7 +19,60 @@
   "coc-ext.log.detail": false,
   "coc-ext.log.level": 0,
 
+  "coc-ext.formatting": [
+    {
+      "languages": ["cpp", "c"],
+      "setting": {
+        "provider": "clang-format",
+        "clangFormStyle": {
+          "AlignConsecutiveMacros": "true",
+          "AlignEscapedNewlines": "Left",
+          "AllowShortFunctionsOnASingleLine": "Inline",
+          "BasedOnStyle": "Google",
+          "Standard": "C++11"
+        }
+      }
+    },
+    {
+      "languages": ["proto"],
+      "setting": {
+        "provider": "clang-format",
+        "clangFormStyle": {
+          "AlignConsecutiveAssignments": "true",
+          "AlignConsecutiveDeclarations": "true",
+          "AlignEscapedNewlines": "Left"
+        }
+      }
+    },
+    {
+      "languages": ["typescript", "json", "javascript", "html"],
+      "setting": {
+        "provider": "prettier",
+        "prettierOptions": [
+          "--config-precedence",
+          "cli-override",
+          "--print-width",
+          "80"
+        ]
+      }
+    },
+    {
+      "languages": ["bzl"],
+      "setting": {
+        "provider": "bazel-buildifier"
+      }
+    },
+    {
+      "languages": ["lua"],
+      "setting": {
+        "provider": "lua-format",
+        "luaFormatOptions": ["--column-table-limit=80"]
+      }
+    }
+  ],
+
   "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["-l", "80"],
 
   "languageserver": {
     // pacman -S bash-language-server
@@ -72,5 +125,6 @@
       "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",
       "filetypes": ["elixir", "eelixir"]
     }
-  }
+  },
+  "git.enableGutters": true
 }

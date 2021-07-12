@@ -114,7 +114,7 @@ function! ui#float#close_all_float()
 endfunction
 
 augroup my_autoload_ui_float
-  autocmd CursorMoved * call ui#float#close_all_float()
+  " autocmd CursorMoved * call ui#float#close_all_float()
 
   autocmd FileType ui_float setlocal nonumber
   autocmd FileType ui_float setlocal nocursorline

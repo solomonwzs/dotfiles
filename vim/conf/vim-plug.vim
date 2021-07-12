@@ -6,10 +6,10 @@ call plug#begin(s:bundledir)
 " Plug 'https://github.com/maksimr/vim-jsbeautify.git'
 
 " A Vim plugin for Prettier.
-Plug 'https://github.com/prettier/vim-prettier.git', {
-  \ 'do': 'yarn install',
-  \ 'branch': 'release/0.x'
-  \ }
+" Plug 'https://github.com/prettier/vim-prettier.git', {
+"   \ 'do': 'yarn install',
+"   \ 'branch': 'release/0.x'
+"   \ }
 
 " A tree explorer plugin for vim
 Plug 'https://github.com/scrooloose/nerdtree'
@@ -220,7 +220,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 
 " Vim plugin for clang-format, a formatter for C, C++, Obj-C, Java,
 " JavaScript, TypeScript and ProtoBuf.
-Plug 'https://github.com/rhysd/vim-clang-format.git'
+" Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 " A Vim plugin for visually displaying indent levels in code.
 Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'

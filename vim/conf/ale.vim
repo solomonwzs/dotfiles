@@ -25,7 +25,7 @@ let g:ale_sign_warning = ''
 
 let g:ale_cpp_cpplint_options = '--filter=-legal/copyright,-build/header_guard,-runtime/references,-runtime/string'
 
-" let g:ale_python_flake8_options = '--ignore=E402,E241,E501,E302,E265,W503'
+let g:ale_python_flake8_options = '--ignore=E402,E241,E501,E302,E265,W503'
 
 let g:ale_javascript_eslint_options = "--rule 'prettier/prettier:0'"
 
