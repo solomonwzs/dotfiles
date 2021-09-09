@@ -29,3 +29,51 @@ P *_container_of_impl(M *ptr, const M P::*member) {
 #define container_of(_ptr_, _type_, _member_) \
   _container_of_impl(_ptr_, &_type_::_member_)
 endsnippet
+
+snippet coro "coroutine traits" b
+struct ${1:name} {
+  struct promise_type {
+    $1 get_return_object() {
+      return $1(
+          std::experimental::coroutine_handle<promise_type>::from_promise(
+              *this));
+    }
+
+    std::experimental::suspend_never initial_suspend() { return {}; }
+
+    std::experimental::suspend_always final_suspend() noexcept { return {}; }
+
+    void unhandled_exception() noexcept {}
+
+    void return_void() {}
+
+    void return_value(int val) {}
+
+    std::experimental::suspend_always yield_value(int val) { return {}; }
+  };
+
+  explicit $1(std::experimental::coroutine_handle<promise_type> h) {}
+  std::experimental::coroutine_handle<promise_type> handle;
+};
+
+endsnippet
+
+snippet awaitable "awaitable traits" b
+struct ${1:name} {
+  bool await_ready() { return false; }
+
+  void await_suspend(std::experimental::coroutine_handle<> h) noexcept {}
+
+  void await_resume() noexcept {}
+};
+endsnippet
+
+snippet #coro "incode coroutine" b
+#if defined(__clang__)
+#include <experimental/coroutine>
+#define corons std::experimental
+#else
+#include <coroutine>
+#define corons std
+#endif
+endsnippet
