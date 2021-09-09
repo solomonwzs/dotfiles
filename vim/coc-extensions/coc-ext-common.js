@@ -315,7 +315,7 @@ async function popup(content, filetype, cfg) {
     return;
   }
   if (!filetype) {
-    filetype = "markdown";
+    filetype = "text";
   }
   if (!cfg) {
     cfg = defauleFloatWinConfig();
@@ -369,7 +369,7 @@ function getTempFileWithDocumentContents(document) {
 // src/utils/decoder.ts
 var import_util2 = __toModule(require("util"));
 function decode_mime_encode_str(str) {
-  const re = /=\?(.*)\?([BbQq])\?(.*)\?=/g;
+  const re = /=\?(.+?)\?([BbQq])\?(.+?)\?=/g;
   const res = [];
   let expl = re.exec(str);
   while (expl) {
@@ -827,7 +827,7 @@ async function activate(context) {
     const tt = decode_mime_encode_str(text);
     popup(`[Mime decode]
 
-${tt}`);
+${tt}`, "ui_float");
   }, {
     sync: false
   }), import_coc11.listManager.registerList(new lists_default(import_coc11.workspace.nvim)), import_coc11.listManager.registerList(new commands_default(import_coc11.workspace.nvim)));

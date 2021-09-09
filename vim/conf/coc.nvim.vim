@@ -36,6 +36,7 @@ endif
 nnoremap <silent> <space>cg :<C-u>CocList --normal gstatus<CR>
 nnoremap <silent> <space>ce :<C-u>CocList extensions<CR>
 nnoremap <silent> <space>cr :<C-u>CocRestart<CR>
+nnoremap <silent> <space>log :<C-u>CocCommand workspace.showOutput coc-ext<CR>
 
 " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 " inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
