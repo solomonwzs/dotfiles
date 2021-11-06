@@ -106,7 +106,7 @@ augroup my_vimrc
   autocmd BufEnter,BufRead compile_flags.txt set filetype=conf
 
   autocmd FileType
-      \ html,xml,yaml,vue.javascript,javascript,typescript,json,lua,bzl
+      \ html,xml,yaml,vue.javascript,javascript,typescript,json,lua
       \ setlocal sw=2 tabstop=2 softtabstop=2
   autocmd FileType make setlocal noet
 augroup END
