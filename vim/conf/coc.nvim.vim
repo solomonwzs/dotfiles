@@ -60,19 +60,6 @@ nmap <silent> <space>cn <Plug>(coc-diagnostic-next)
 nmap <silent> <space>cp <Plug>(coc-diagnostic-prev)
 nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))<CR><CR>
 
-nmap <silent> <leader>t <Plug>(coc-ext-translate)
-vmap <silent> <leader>t <Plug>(coc-ext-translate-v)
-
-vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)
-vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)
-vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)
-
-vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)
-vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
-
-" vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)
-" vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
-
 " let g:gitgutter_enabled = 1
 " function! GitGutterGetHunkSummary()
 "     let blame = get(b:, 'coc_git_status', '')
@@ -85,5 +72,9 @@ vmap <silent> <space>cf <Plug>(coc-format-selected)
 " command! -range=% Format <line1>,<line2>call CocAction('formatSelected', 'v')
 
 augroup my_coc_nvim
+  autocmd!
   autocmd FileType python let b:coc_root_patterns = ['.env']
+
+  autocmd BufEnter,BufRead *.encrypted set filetype=encrypted
+  autocmd FileType encrypted setl nomodifiable buftype=nofile
 augroup END

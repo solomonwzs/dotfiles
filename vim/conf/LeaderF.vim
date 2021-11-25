@@ -1,7 +1,7 @@
 scriptencoding utf-8
 
 let g:Lf_ShortcutF = '<C-P>p'
-noremap <C-P>P :LeaderfFile .<CR>
+noremap <C-P>P :Leaderf file --no-ignore .<CR>
 noremap <C-P>m :LeaderfMru<CR>
 noremap <C-P>f :LeaderfFunction<CR>
 noremap <C-P>b :LeaderfBuffer<CR>
@@ -41,4 +41,7 @@ let g:Lf_WildIgnore = {
     \ 'file': []
     \ }
 
-cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ? ('Leaderf rg') : ('Rg'))
+cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ?
+    \ ('Leaderf rg') : ('Rg'))
+cnoreabbrev <expr> Rga ((getcmdtype() is# ':' && getcmdline() is# 'Rga') ?
+    \ ('Leaderf rg --no-ignore') : ('Rga'))

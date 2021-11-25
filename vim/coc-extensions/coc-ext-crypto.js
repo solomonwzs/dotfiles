@@ -23,12 +23,13 @@ var __toModule = (module2) => {
   return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true})), module2);
 };
 
-// src/coc-ext-erlang.ts
+// src/coc-ext-crypto.ts
 __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
 var import_coc3 = __toModule(require("coc.nvim"));
+var import_path4 = __toModule(require("path"));
 
 // src/utils/logger.ts
 var import_coc2 = __toModule(require("coc.nvim"));
@@ -106,26 +107,106 @@ var Logger = class {
 };
 var logger = new Logger();
 
-// src/coc-ext-erlang.ts
-var client;
-async function activate(context) {
-  context.logger.info(`coc-ext-erlang works`);
-  logger.info(`coc-ext-erlang works`);
-  logger.info(import_coc3.workspace.getConfiguration("coc-ext.erlang"));
-  const server_path = getcfg("erlang.erlang_ls_path", "/bin/erlang_ls");
-  const clientOptions = {
-    documentSelector: [{scheme: "file", language: "erlang"}],
-    initializationOptions: ""
-  };
-  const serverArgs = ["--transport", "stdio"];
-  const serverOptions = {
-    command: server_path,
-    args: serverArgs,
-    transport: import_coc3.TransportKind.stdio
-  };
-  client = new import_coc3.LanguageClient("erlang_ls", serverOptions, clientOptions);
-  client.start();
-  client.onReady().then(() => {
-    import_coc3.window.showMessage(`coc-erlangls is ready`);
+// src/utils/externalexec.ts
+var import_child_process = __toModule(require("child_process"));
+var import_path3 = __toModule(require("path"));
+async function call_shell(cmd, argv, input) {
+  return new Promise((resolve) => {
+    const sh = import_child_process.spawn(cmd, argv, {stdio: ["pipe", "pipe", "pipe"]});
+    if (input) {
+      sh.stdin.write(input);
+      sh.stdin.end();
+    }
+    let exitCode = 0;
+    const data = [];
+    const error = [];
+    sh.stdout.on("data", (d) => {
+      data.push(d);
+    });
+    sh.stderr.on("data", (d) => {
+      error.push(d);
+    });
+    sh.on("close", (code) => {
+      if (code) {
+        exitCode = code;
+      }
+      resolve({
+        exitCode,
+        data: data.length == 0 ? void 0 : Buffer.concat(data),
+        error: error.length == 0 ? void 0 : Buffer.concat(error)
+      });
+    });
   });
+}
+
+// src/coc-ext-crypto.ts
+function get_enc_filename(filename) {
+  const dir = import_path4.default.dirname(filename);
+  const name = import_path4.default.basename(filename);
+  return import_path4.default.join(dir, `.${name}.encrypted`);
+}
+async function encrypt(doc, setting) {
+  const exec = setting.openssl ? setting.openssl : "openssl";
+  const enc_filename = get_enc_filename(import_coc3.Uri.parse(doc.uri).fsPath);
+  const argv = [
+    "enc",
+    "-e",
+    "-aes256",
+    "-pbkdf2",
+    "-pass",
+    `pass:${setting.password}`,
+    setting.salt ? "-salt" : "-nosalt",
+    "-out",
+    enc_filename
+  ];
+  return call_shell(exec, argv, doc.textDocument.getText());
+}
+async function decrypt(doc, setting) {
+  const exec = setting.openssl ? setting.openssl : "openssl";
+  const enc_filename = get_enc_filename(import_coc3.Uri.parse(doc.uri).fsPath);
+  const argv = [
+    "des",
+    "-d",
+    "-salt",
+    "-aes256",
+    "-pbkdf2",
+    "-pass",
+    `pass:${setting.password}`,
+    setting.salt ? "-salt" : "-nosalt",
+    "-in",
+    enc_filename
+  ];
+  const res = await call_shell(exec, argv);
+  if (res.error != void 0 || res.data == void 0) {
+    return false;
+  }
+  const ed = import_coc3.TextEdit.replace({
+    start: {line: 0, character: 0},
+    end: {line: doc.lineCount, character: 0}
+  }, res.data.toString());
+  await doc.applyEdits([ed]);
+  return true;
+}
+async function activate(context) {
+  context.logger.info(`coc-ext-crypto works`);
+  logger.info(`coc-ext-crypto works`);
+  const confpath = import_path4.default.join(import_coc3.workspace.root, ".crypto.json");
+  let setting;
+  try {
+    const content = await import_coc3.workspace.readFile(confpath);
+    setting = JSON.parse(content);
+  } catch (e) {
+    import_coc3.window.showMessage(`open config file ${confpath} fail`);
+    return;
+  }
+  context.subscriptions.push(import_coc3.commands.registerCommand("ext-decrypt", async () => {
+    const doc = await import_coc3.workspace.document;
+    await decrypt(doc, setting);
+  }), import_coc3.events.on("BufWritePost", async (bufnr) => {
+    const doc = await import_coc3.workspace.document;
+    const res = await encrypt(doc, setting);
+    if (res.error) {
+      logger.error(res.error);
+    }
+  }));
 }

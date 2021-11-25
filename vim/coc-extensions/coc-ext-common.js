@@ -831,4 +831,11 @@ ${tt}`, "ui_float");
   }, {
     sync: false
   }), import_coc11.listManager.registerList(new lists_default(import_coc11.workspace.nvim)), import_coc11.listManager.registerList(new commands_default(import_coc11.workspace.nvim)));
+  import_coc11.workspace.nvim.command("nmap <silent> <leader>t <Plug>(coc-ext-translate)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>t <Plug>(coc-ext-translate-v)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)");
 }
