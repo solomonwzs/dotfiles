@@ -80,7 +80,8 @@ var Logger = class {
         }
       }
     }
-    this.channel.appendLine(`${now.toISOString()} ${level} ${str}`);
+    const fn = import_path2.default.basename(__filename);
+    this.channel.appendLine(`${level} [${fn}] ${str}`);
   }
   debug(value) {
     if (this.level > 0) {
