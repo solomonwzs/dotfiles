@@ -176,9 +176,9 @@ function! s:lightline_ale_diagnostic(kind, sign) abort
 endfunction
 
 function! LightlineCocErrors() abort
-    let msg = s:lightline_coc_diagnostic('error', '✖')
+    let msg = s:lightline_coc_diagnostic('error', '')
     if empty(msg)
-        let msg = s:lightline_ale_diagnostic('error', '✖')
+        let msg = s:lightline_ale_diagnostic('error', '')
     endif
     return msg
 endfunction
