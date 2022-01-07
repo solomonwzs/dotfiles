@@ -14,7 +14,7 @@ let g:ale_cpp_cc_options = '-Wall -O2 -std=c++14 -I./include'
 
 let g:ale_c_parse_compile_commands = 1
 
-let g:ale_sign_error = '✖'
+let g:ale_sign_error = ''
 let g:ale_sign_warning = ''
 
 " genrate rc-file:

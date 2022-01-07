@@ -140,7 +140,8 @@ var Logger = class {
         }
       }
     }
-    this.channel.appendLine(`${now.toISOString()} ${level} ${str}`);
+    const fn = import_path2.default.basename(__filename);
+    this.channel.appendLine(`${level} [${fn}] ${str}`);
   }
   debug(value) {
     if (this.level > 0) {
@@ -368,59 +369,6 @@ function getTempFileWithDocumentContents(document) {
 
 // src/utils/decoder.ts
 var import_util2 = __toModule(require("util"));
-function decode_mime_encode_str(str) {
-  const re = /=\?(.+?)\?([BbQq])\?(.+?)\?=/g;
-  const res = [];
-  let expl = re.exec(str);
-  while (expl) {
-    res.push(expl);
-    expl = re.exec(str);
-  }
-  if (res.length == 0) {
-    return "";
-  }
-  const list = [];
-  for (const s of res) {
-    const charset2 = s[1];
-    const encoding = s[2];
-    const text2 = s[3];
-    if (encoding === "B" || encoding === "b") {
-      list.push([charset2, Buffer.from(text2, "base64")]);
-    } else {
-      const buf2 = [];
-      const re0 = /(=[A-F0-9]{2}|.)/g;
-      let expl2 = re0.exec(text2);
-      while (expl2) {
-        if (expl2[1].length == 3) {
-          buf2.push(parseInt(expl2[1].slice(1), 16));
-        } else {
-          buf2.push(expl2[1].charCodeAt(0));
-        }
-        expl2 = re0.exec(text2);
-      }
-      list.push([charset2, Buffer.from(buf2)]);
-    }
-  }
-  if (list.length == 0) {
-    return "";
-  }
-  let charset = list[0][0];
-  let buf = list[0][1];
-  let text = "";
-  for (const i of list.slice(1)) {
-    if (i[0] === charset) {
-      buf = Buffer.concat([buf, i[1]]);
-    } else {
-      const decoder2 = new import_util2.TextDecoder(charset);
-      text += decoder2.decode(buf);
-      charset = i[0];
-      buf = i[1];
-    }
-  }
-  const decoder = new import_util2.TextDecoder(charset);
-  text += decoder.decode(buf);
-  return text;
-}
 
 // src/utils/externalexec.ts
 var import_child_process = __toModule(require("child_process"));
@@ -488,6 +436,61 @@ async function call_python(module2, func, argv) {
       });
     });
   });
+}
+
+// src/utils/decoder.ts
+function decode_mime_encode_str(str) {
+  const re = /=\?(.+?)\?([BbQq])\?(.+?)\?=/g;
+  const res = [];
+  let expl = re.exec(str);
+  while (expl) {
+    res.push(expl);
+    expl = re.exec(str);
+  }
+  if (res.length == 0) {
+    return "";
+  }
+  const list = [];
+  for (const s of res) {
+    const charset2 = s[1];
+    const encoding = s[2];
+    const text2 = s[3];
+    if (encoding === "B" || encoding === "b") {
+      list.push([charset2, Buffer.from(text2, "base64")]);
+    } else {
+      const buf2 = [];
+      const re0 = /(=[A-F0-9]{2}|.)/g;
+      let expl2 = re0.exec(text2);
+      while (expl2) {
+        if (expl2[1].length == 3) {
+          buf2.push(parseInt(expl2[1].slice(1), 16));
+        } else {
+          buf2.push(expl2[1].charCodeAt(0));
+        }
+        expl2 = re0.exec(text2);
+      }
+      list.push([charset2, Buffer.from(buf2)]);
+    }
+  }
+  if (list.length == 0) {
+    return "";
+  }
+  let charset = list[0][0];
+  let buf = list[0][1];
+  let text = "";
+  for (const i of list.slice(1)) {
+    if (i[0] === charset) {
+      buf = Buffer.concat([buf, i[1]]);
+    } else {
+      const decoder2 = new import_util2.TextDecoder(charset);
+      text += decoder2.decode(buf);
+      charset = i[0];
+      buf = i[1];
+    }
+  }
+  const decoder = new import_util2.TextDecoder(charset);
+  text += decoder.decode(buf);
+  return text;
 }
 
 // src/formatter/formatprovider.ts
@@ -831,4 +834,11 @@ ${tt}`, "ui_float");
   }, {
     sync: false
   }), import_coc11.listManager.registerList(new lists_default(import_coc11.workspace.nvim)), import_coc11.listManager.registerList(new commands_default(import_coc11.workspace.nvim)));
+  import_coc11.workspace.nvim.command("nmap <silent> <leader>t <Plug>(coc-ext-translate)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>t <Plug>(coc-ext-translate-v)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)");
+  import_coc11.workspace.nvim.command("vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)");
 }

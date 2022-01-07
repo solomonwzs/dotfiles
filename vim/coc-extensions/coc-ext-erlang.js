@@ -40,8 +40,20 @@ function getcfg(key, defaultValue) {
   return config.get(key, defaultValue);
 }
 
-// src/utils/logger.ts
+// src/utils/common.ts
 var import_path = __toModule(require("path"));
+function stringify(value) {
+  if (typeof value === "string") {
+    return value;
+  } else if (value instanceof String) {
+    return value.toString();
+  } else {
+    return JSON.stringify(value, null, 2);
+  }
+}
+
+// src/utils/logger.ts
+var import_path2 = __toModule(require("path"));
 var Logger = class {
   constructor() {
     this.channel = import_coc2.window.createOutputChannel("coc-ext");
@@ -54,28 +66,22 @@ var Logger = class {
   logLevel(level, value) {
     var _a;
     const now = new Date();
-    let str;
-    if (typeof value === "string") {
-      str = value;
-    } else if (value instanceof String) {
-      str = value.toString();
-    } else {
-      str = JSON.stringify(value, null, 2);
-    }
+    const str = stringify(value);
     if (this.detail) {
       const stack = (_a = new Error().stack) == null ? void 0 : _a.split("\n");
       if (stack && stack.length >= 4) {
         const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
         const expl = re.exec(stack[3]);
         if (expl) {
-          const file = import_path.default.basename(expl[3]);
+          const file = import_path2.default.basename(expl[3]);
           const line = expl[4];
           this.channel.appendLine(`${now.toISOString()} ${level} [${file}:${line}] ${str}`);
           return;
         }
       }
     }
-    this.channel.appendLine(`${now.toISOString()} ${level} ${str}`);
+    const fn = import_path2.default.basename(__filename);
+    this.channel.appendLine(`${level} [${fn}] ${str}`);
   }
   debug(value) {
     if (this.level > 0) {
