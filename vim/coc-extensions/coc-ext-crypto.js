@@ -822,8 +822,8 @@ var import_minimatch = __toModule(require_minimatch());
 var import_path4 = __toModule(require("path"));
 
 // src/utils/externalexec.ts
-var import_child_process = __toModule(require("child_process"));
 var import_path = __toModule(require("path"));
+var import_child_process = __toModule(require("child_process"));
 async function call_shell(cmd, args, input) {
   return new Promise((resolve) => {
     const sh = import_child_process.spawn(cmd, args, {stdio: ["pipe", "pipe", "pipe"]});
@@ -855,6 +855,46 @@ async function call_shell(cmd, args, input) {
 
 // src/utils/file.ts
 var import_fs = __toModule(require("fs"));
+async function fs_stat(filename) {
+  return new Promise((resolve) => {
+    import_fs.default.stat(filename, (err, stats) => {
+      if (err == null) {
+        resolve({
+          stats,
+          error: void 0
+        });
+      } else {
+        resolve({
+          stats: void 0,
+          error: err
+        });
+      }
+    });
+  });
+}
+async function get_filelist(dir_path, cmd) {
+  let args;
+  let exec;
+  if (cmd == "rg") {
+    exec = cmd;
+    args = ["--color", "never", "--files", dir_path];
+  } else if (cmd == "find" || cmd == void 0) {
+    exec = "find";
+    args = [dir_path, "-type", "f"];
+  } else {
+    return null;
+  }
+  const res = await call_shell(exec, args);
+  if (res.exitCode != 0) {
+    if (res.error) {
+    }
+    return null;
+  }
+  if (res.data) {
+    return res.data.toString().trimEnd().split("\n");
+  }
+  return null;
+}
 
 // src/utils/logger.ts
 var import_coc2 = __toModule(require("coc.nvim"));
@@ -932,49 +972,6 @@ var Logger = class {
   }
 };
 var logger = new Logger();
-
-// src/utils/file.ts
-async function fs_stat(filename) {
-  return new Promise((resolve) => {
-    import_fs.default.stat(filename, (err, stats) => {
-      if (err == null) {
-        resolve({
-          stats,
-          error: void 0
-        });
-      } else {
-        resolve({
-          stats: void 0,
-          error: err
-        });
-      }
-    });
-  });
-}
-async function get_filelist(dir_path, cmd) {
-  let args;
-  let exec;
-  if (cmd == "rg") {
-    exec = cmd;
-    args = ["--color", "never", "--files", dir_path];
-  } else if (cmd == "find" || cmd == void 0) {
-    exec = "find";
-    args = [dir_path, "-type", "f", "(", "-iwholename", "*/**.md", ")"];
-  } else {
-    return null;
-  }
-  const res = await call_shell(exec, args);
-  if (res.exitCode != 0) {
-    if (res.error) {
-      logger.error(res.error.toString());
-    }
-    return null;
-  }
-  if (res.data) {
-    return res.data.toString().trimEnd().split("\n");
-  }
-  return null;
-}
 
 // src/utils/decoder.ts
 var import_util = __toModule(require("util"));
@@ -1084,36 +1081,44 @@ var CryptoHandler = class {
       return null;
     }
   }
-  getEncryptCmd(filename) {
+  getEncryptCmd(output_file, input_file) {
+    const args = [
+      "enc",
+      "-e",
+      "-aes256",
+      "-pbkdf2",
+      "-pass",
+      `pass:${this.setting.password}`,
+      this.setting.salt ? "-salt" : "-nosalt",
+      "-out",
+      output_file
+    ];
+    if (input_file && input_file.length != 0) {
+      args.push("-in", input_file);
+    }
     return {
       exec: this.setting.openssl ? this.setting.openssl : "openssl",
-      args: [
-        "enc",
-        "-e",
-        "-aes256",
-        "-pbkdf2",
-        "-pass",
-        `pass:${this.setting.password}`,
-        this.setting.salt ? "-salt" : "-nosalt",
-        "-out",
-        filename
-      ]
+      args
     };
   }
-  getDecryptCmd(filename) {
+  getDecryptCmd(input_file, output_file) {
+    const args = [
+      "des",
+      "-d",
+      "-aes256",
+      "-pbkdf2",
+      "-pass",
+      `pass:${this.setting.password}`,
+      this.setting.salt ? "-salt" : "-nosalt",
+      "-in",
+      input_file
+    ];
+    if (output_file && output_file.length != 0) {
+      args.push("-out", output_file);
+    }
     return {
       exec: this.setting.openssl ? this.setting.openssl : "openssl",
-      args: [
-        "des",
-        "-d",
-        "-aes256",
-        "-pbkdf2",
-        "-pass",
-        `pass:${this.setting.password}`,
-        this.setting.salt ? "-salt" : "-nosalt",
-        "-in",
-        filename
-      ]
+      args
     };
   }
   shouldEncrypt(filepath) {
@@ -1156,10 +1161,29 @@ var CryptoHandler = class {
     return call_shell(cmd.exec, cmd.args, doc.textDocument.getText());
   }
   async encryptAllFiles() {
-    const fl = await get_filelist(import_coc3.workspace.root);
+    const includes = [];
+    if (this.setting.includes) {
+      for (const i of this.setting.includes) {
+        includes.push(import_path4.default.resolve(i));
+      }
+    }
+    const fl = await get_filelist(import_coc3.workspace.root, "find");
     if (!fl) {
       import_coc3.window.showMessage("get file list fail");
       return;
+    }
+    for (const f of fl) {
+      if (this.shouldEncrypt(f)) {
+        const new_name = await this.getEncFilename(import_coc3.Uri.parse(f).fsPath);
+        if (new_name == null) {
+          continue;
+        }
+        const cmd = this.getEncryptCmd(new_name, f);
+        const res = await call_shell(cmd.exec, cmd.args);
+        if (res.exitCode != 0) {
+          logger.error(`encrypt ${f} fail`);
+        }
+      }
     }
   }
   async decryptFromFile(doc) {
@@ -1199,13 +1223,7 @@ async function activate(context) {
     const doc = await import_coc3.workspace.document;
     await handler.decryptFromFile(doc);
   }), import_coc3.commands.registerCommand("ext-encrypt-all", async () => {
-    const fl = await get_filelist(import_coc3.workspace.root);
-    if (!fl) {
-      return;
-    }
-    for (const f of fl) {
-      logger.debug([f, handler.shouldEncrypt(f)]);
-    }
+    handler.encryptAllFiles();
   }));
   if (handler.isAutoEncrypt()) {
     context.subscriptions.push(import_coc3.events.on("BufWritePost", async () => {
