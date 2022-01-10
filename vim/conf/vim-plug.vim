@@ -228,6 +228,9 @@ Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 " Display all accessible marks and their surrounding lines in a collapsible sidebar.
 Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
+" Nvim Treesitter configurations and abstraction layer.
+" Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
