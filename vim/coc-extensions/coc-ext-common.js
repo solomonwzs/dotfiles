@@ -28,7 +28,7 @@ __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
-var import_coc11 = __toModule(require("coc.nvim"));
+var import_coc12 = __toModule(require("coc.nvim"));
 
 // src/lists/lists.ts
 var import_coc = __toModule(require("coc.nvim"));
@@ -371,11 +371,11 @@ function getTempFileWithDocumentContents(document) {
 var import_util2 = __toModule(require("util"));
 
 // src/utils/externalexec.ts
-var import_child_process = __toModule(require("child_process"));
 var import_path4 = __toModule(require("path"));
-async function call_shell(cmd, argv, input) {
+var import_child_process = __toModule(require("child_process"));
+async function call_shell(cmd, args, input) {
   return new Promise((resolve) => {
-    const sh = import_child_process.spawn(cmd, argv, {stdio: ["pipe", "pipe", "pipe"]});
+    const sh = import_child_process.spawn(cmd, args, {stdio: ["pipe", "pipe", "pipe"]});
     if (input) {
       sh.stdin.write(input);
       sh.stdin.end();
@@ -401,12 +401,12 @@ async function call_shell(cmd, argv, input) {
     });
   });
 }
-async function call_python(module2, func, argv) {
+async function call_python(module2, func, args) {
   return new Promise((resolve) => {
     const msg = JSON.stringify({
       module: module2,
       func,
-      argv
+      args
     });
     let root_dir = process.env.COC_VIMCONFIG;
     if (!root_dir) {
@@ -494,7 +494,7 @@ function decode_mime_encode_str(str) {
 }
 
 // src/formatter/formatprovider.ts
-var import_coc10 = __toModule(require("coc.nvim"));
+var import_coc11 = __toModule(require("coc.nvim"));
 
 // src/formatter/clfformatter.ts
 var import_coc6 = __toModule(require("coc.nvim"));
@@ -536,14 +536,14 @@ var ClfFormatter = class extends BaseFormatter {
     if (!setting["BasedOnStyle"]) {
       setting["BasedOnStyle"] = "Google";
     }
-    const argv = [
+    const args = [
       "-style",
       JSON.stringify(setting),
       "--assume-filename",
       filepath
     ];
     const exec = this.setting.exec ? this.setting.exec : "clang-format";
-    const resp = await call_shell(exec, argv, document.getText());
+    const resp = await call_shell(exec, args, document.getText());
     if (resp.exitCode != 0) {
       import_coc6.window.showMessage(`clang-format fail, ret ${resp.exitCode}`);
       if (resp.error) {
@@ -578,13 +578,13 @@ var PrettierFormatter = class extends BaseFormatter {
       return [];
     }
     const filepath = await getTempFileWithDocumentContents(document);
-    const argv = [];
+    const args = [];
     if (this.setting.prettierOptions) {
-      argv.push(...this.setting.prettierOptions);
+      args.push(...this.setting.prettierOptions);
     }
-    argv.push(filepath);
+    args.push(filepath);
     const exec = this.setting.exec ? this.setting.exec : "prettier";
-    const resp = await call_shell(exec, argv);
+    const resp = await call_shell(exec, args);
     import_fs2.default.unlinkSync(filepath);
     if (resp.exitCode != 0) {
       import_coc7.window.showMessage(`prettier fail, ret ${resp.exitCode}`);
@@ -648,11 +648,11 @@ var LuaFormatter = class extends BaseFormatter {
     this.opts_has_indent_width = false;
     this.opts_has_usetab = false;
     if (this.setting.luaFormatOptions) {
-      for (const i in this.setting.luaFormatOptions) {
-        this.opts.push(this.setting.luaFormatOptions[i]);
-        if (this.setting.luaFormatOptions[i].search("indent-width") != -1) {
+      for (const i of this.setting.luaFormatOptions) {
+        this.opts.push(i);
+        if (i.search("indent-width") != -1) {
           this.opts_has_indent_width = true;
-        } else if (this.setting.luaFormatOptions[i].search("use-tab") != -1) {
+        } else if (i.search("use-tab") != -1) {
           this.opts_has_usetab = true;
         }
       }
@@ -696,6 +696,46 @@ var LuaFormatter = class extends BaseFormatter {
   }
 };
 
+// src/formatter/shellformatter.ts
+var import_coc10 = __toModule(require("coc.nvim"));
+var ShellFormatter = class extends BaseFormatter {
+  constructor(setting) {
+    super(setting);
+    this.setting = setting;
+    this.opts = [];
+    if (this.setting.shellFormatOptions) {
+      for (const i of this.setting.shellFormatOptions) {
+        this.opts.push(i);
+      }
+    }
+  }
+  supportRangeFormat() {
+    return false;
+  }
+  async formatDocument(document, _options, _token, range) {
+    if (range) {
+      return [];
+    }
+    const exec = this.setting.exec ? this.setting.exec : "shfmt";
+    const resp = await call_shell(exec, this.opts, document.getText());
+    if (resp.exitCode != 0) {
+      import_coc10.window.showMessage(`buildifier fail, ret ${resp.exitCode}`);
+      if (resp.error) {
+        logger.error(resp.error.toString());
+      }
+    } else if (resp.data) {
+      import_coc10.window.showMessage("buildifier ok");
+      return [
+        import_coc10.TextEdit.replace({
+          start: {line: 0, character: 0},
+          end: {line: document.lineCount, character: 0}
+        }, resp.data.toString())
+      ];
+    }
+    return [];
+  }
+};
+
 // src/formatter/formatprovider.ts
 var FormattingEditProvider = class {
   constructor(setting) {
@@ -707,6 +747,8 @@ var FormattingEditProvider = class {
       this.formatter = new BazelFormatter(setting);
     } else if (setting.provider == "lua-format") {
       this.formatter = new LuaFormatter(setting);
+    } else if (setting.provider == "shfmt") {
+      this.formatter = new ShellFormatter(setting);
     } else {
       this.formatter = null;
     }
@@ -714,7 +756,7 @@ var FormattingEditProvider = class {
   async _provideEdits(document, options, token, range) {
     if (!this.formatter) {
       logger.error("formatter was null");
-      import_coc10.window.showMessage("formatter was null");
+      import_coc11.window.showMessage("formatter was null");
       return [];
     }
     return this.formatter.formatDocument(document, options, token, range);
@@ -769,15 +811,15 @@ ${res.data.toString("utf8")}`);
 function encodeStrFn(enc) {
   return async () => {
     var _a;
-    const doc = await import_coc11.workspace.document;
-    const range = await import_coc11.workspace.getSelectedRange("v", doc);
+    const doc = await import_coc12.workspace.document;
+    const range = await import_coc12.workspace.getSelectedRange("v", doc);
     if (!range) {
       return;
     }
     const text = doc.textDocument.getText(range);
     const res = await call_python("coder", "encode_str", [text, enc]);
     if (res.exitCode == 0 && res.data) {
-      const ed = import_coc11.TextEdit.replace(range, res.data.toString("utf8"));
+      const ed = import_coc12.TextEdit.replace(range, res.data.toString("utf8"));
       await doc.applyEdits([ed]);
     } else {
       logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -787,45 +829,45 @@ function encodeStrFn(enc) {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc11.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc12.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
     s.languages.forEach((lang) => {
       const selector = [{scheme: "file", language: lang}];
       const provider = new FormattingEditProvider(s.setting);
-      context.subscriptions.push(import_coc11.languages.registerDocumentFormatProvider(selector, provider, 1));
+      context.subscriptions.push(import_coc12.languages.registerDocumentFormatProvider(selector, provider, 1));
       if (provider.supportRangeFormat()) {
-        context.subscriptions.push(import_coc11.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+        context.subscriptions.push(import_coc12.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
       }
     });
   });
-  context.subscriptions.push(import_coc11.commands.registerCommand("ext-debug", async () => {
-    const id = await import_coc11.workspace.nvim.call("ui#window#new", {
+  context.subscriptions.push(import_coc12.commands.registerCommand("ext-debug", async () => {
+    const id = await import_coc12.workspace.nvim.call("ui#window#new", {
       position: "top"
     });
-    const w = import_coc11.workspace.nvim.createWindow(id);
+    const w = import_coc12.workspace.nvim.createWindow(id);
     logger.info(w.id);
-    const doc = await import_coc11.workspace.document;
-    const ed = import_coc11.TextEdit.replace({
+    const doc = await import_coc12.workspace.document;
+    const ed = import_coc12.TextEdit.replace({
       start: {line: 0, character: 0},
       end: {line: doc.lineCount, character: 0}
     }, "hello world");
     await doc.applyEdits([ed]);
-    await import_coc11.workspace.nvim.command("setlocal nomodifiable");
-  }, {sync: false}), import_coc11.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    await import_coc12.workspace.nvim.command("setlocal nomodifiable");
+  }, {sync: false}), import_coc12.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
     sync: false
-  }), import_coc11.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
+  }), import_coc12.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decode_mime_encode_str(text);
     popup(`[Mime decode]
@@ -833,12 +875,12 @@ async function activate(context) {
 ${tt}`, "ui_float");
   }, {
     sync: false
-  }), import_coc11.listManager.registerList(new lists_default(import_coc11.workspace.nvim)), import_coc11.listManager.registerList(new commands_default(import_coc11.workspace.nvim)));
-  import_coc11.workspace.nvim.command("nmap <silent> <leader>t <Plug>(coc-ext-translate)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>t <Plug>(coc-ext-translate-v)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)");
-  import_coc11.workspace.nvim.command("vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)");
+  }), import_coc12.listManager.registerList(new lists_default(import_coc12.workspace.nvim)), import_coc12.listManager.registerList(new commands_default(import_coc12.workspace.nvim)));
+  import_coc12.workspace.nvim.command("nmap <silent> <leader>t <Plug>(coc-ext-translate)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>t <Plug>(coc-ext-translate-v)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)");
+  import_coc12.workspace.nvim.command("vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)");
 }

@@ -68,6 +68,13 @@
         "provider": "lua-format",
         "luaFormatOptions": ["--column-table-limit=80"]
       }
+    },
+    {
+      "languages": ["sh"],
+      "setting": {
+        "provider": "shfmt",
+        "shellFormatOptions": ["-i", "4"]
+      }
     }
   ],
 
