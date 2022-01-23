@@ -21,5 +21,5 @@ if __name__ == "__main__":
     msg = json.loads(sys.stdin.read())
     module = getattr(CocExt, msg.get("module"))
     function = getattr(module, msg.get("func"))
-    argv = msg.get("argv")
+    argv = msg.get("args")
     function(*argv)
