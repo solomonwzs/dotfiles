@@ -83,6 +83,8 @@ vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
 
 vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)
 
+vmap <silent> <leader>cn <Plug>(coc-ext-change-name-rule)
+
 augroup my_coc_nvim
   autocmd!
   autocmd FileType python let b:coc_root_patterns = ['.env']
