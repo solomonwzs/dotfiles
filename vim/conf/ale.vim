@@ -49,6 +49,7 @@ let g:ale_linters = {
 
 let g:ale_pattern_options = {
         \ '.*\.erl$': {'ale_enabled': 0},
+        \ '.*\.json$': {'ale_enabled': 0},
         \ }
 
 python3 << EOF

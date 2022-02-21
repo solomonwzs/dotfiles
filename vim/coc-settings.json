@@ -21,52 +21,14 @@
 
   "coc-ext.formatting": [
     {
-      "languages": ["cpp", "c"],
-      "setting": {
-        "provider": "clang-format",
-        "clangFormStyle": {
-          "AlignConsecutiveMacros": "true",
-          "AlignEscapedNewlines": "Left",
-          "AllowShortFunctionsOnASingleLine": "Inline",
-          "BasedOnStyle": "Google",
-          "Standard": "C++11"
-        }
-      }
-    },
-    {
       "languages": ["proto"],
       "setting": {
         "provider": "clang-format",
-        "clangFormStyle": {
+        "args": {
           "AlignConsecutiveAssignments": "true",
           "AlignConsecutiveDeclarations": "true",
           "AlignEscapedNewlines": "Left"
         }
-      }
-    },
-    {
-      "languages": ["typescript", "json", "javascript", "html"],
-      "setting": {
-        "provider": "prettier",
-        "prettierOptions": [
-          "--config-precedence",
-          "cli-override",
-          "--print-width",
-          "80"
-        ]
-      }
-    },
-    {
-      "languages": ["bzl"],
-      "setting": {
-        "provider": "bazel-buildifier"
-      }
-    },
-    {
-      "languages": ["lua"],
-      "setting": {
-        "provider": "lua-format",
-        "luaFormatOptions": ["--column-table-limit=80"]
       }
     }
   ],

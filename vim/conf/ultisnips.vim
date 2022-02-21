@@ -19,5 +19,5 @@ vnoremap <silent> <leader>uf :call UltiSnips#SaveLastVisualSelection()<CR>gvs
 " vnoremap <silent> <leader>ug :call UltiSnips#SaveLastVisualSelection()<CR>gvs
 "     \encode_gbk<C-r>=UltiSnips#ExpandSnippet()<CR>
 
-vnoremap <silent> <leader>un :call UltiSnips#SaveLastVisualSelection()<CR>gvs
-    \change_name_rule<C-r>=UltiSnips#ExpandSnippet()<CR>
+" vnoremap <silent> <leader>un :call UltiSnips#SaveLastVisualSelection()<CR>gvs
+"     \change_name_rule<C-r>=UltiSnips#ExpandSnippet()<CR>

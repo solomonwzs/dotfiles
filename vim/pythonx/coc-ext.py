@@ -19,7 +19,7 @@ import CocExt
 if __name__ == "__main__":
     fcntl.fcntl(sys.stdin, fcntl.F_SETFL, os.O_NONBLOCK)
     msg = json.loads(sys.stdin.read())
-    module = getattr(CocExt, msg.get("module"))
-    function = getattr(module, msg.get("func"))
-    argv = msg.get("argv")
+    module = getattr(CocExt, msg.get("m"))
+    function = getattr(module, msg.get("f"))
+    argv = msg.get("a")
     function(*argv)
