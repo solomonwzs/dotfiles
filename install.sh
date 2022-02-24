@@ -25,26 +25,27 @@ function make_link() {
     target="$1"
     link_name="$2"
     info "Create '$link_name'"
-    ([ -e "$link_name" ] && info "'$link_name' has exists") || \
+    ([ -e "$link_name" ] && warn "'$link_name' has exists") ||
         ln -s "$target" "$link_name"
 }
 
 function copy_file() {
     info "Create '$2'"
-    ([ -e "$2" ] && info "'$2' has exists") || \
+    ([ -e "$2" ] && warn "'$2' has exists") ||
         cp "$1" "$2"
 }
 
 function git_clone() {
     addr="$1"
     dir="$2"
-    ([ -e "$dir" ] && info "'$dir' has exists" ) || \
+    ([ -e "$dir" ] && warn "'$dir' has exists") ||
         git clone "$addr" "$dir"
 }
 
-! hash fzf && warn "Not install 'fzf'"
-! hash tmux && warn "Not install 'tmux'"
-! hash rg && warn "Not install 'rg'"
+deps=("fzf" "tmux" "rg")
+for i in "${deps[@]}"; do
+    (! hash "$i" && warn "Not install '$i'") || true
+done
 
 make_link "$EXECUTE_DIRNAME/vim" "$HOME/.vim"
 make_link "$EXECUTE_DIRNAME/vim" "$HOME/.config/nvim"
@@ -54,13 +55,12 @@ make_link "$EXECUTE_DIRNAME/zsh/zshrc" "$HOME/.zshrc"
 copy_file "$EXECUTE_DIRNAME/zsh/my_conf.sh" "$HOME/.my_conf.sh"
 
 info "Create terminfo"
-[ -e "$HOME/.terminfo/t/tmux-256color" ] || \
+[ -e "$HOME/.terminfo/t/tmux-256color" ] ||
     tic -x "$EXECUTE_DIRNAME/tmux/tmux-256color.terminfo"
-[ -e "$HOME/.terminfo/x/xterm-256color-italic" ] || \
+[ -e "$HOME/.terminfo/x/xterm-256color-italic" ] ||
     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
-info "Create '$HOME/.tmux.conf'"
-cp "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
+copy_file "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
 info "Download 'oh-my-zsh'"
