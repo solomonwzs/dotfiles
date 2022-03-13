@@ -22,7 +22,7 @@ Plug 'https://github.com/vim-scripts/DrawIt'
 " Plug 'https://github.com/kien/ctrlp.vim'
 
 " Lean & mean status/tabline for vim that's light as air
-Plug 'https://github.com/bling/vim-airline'
+Plug 'https://github.com/vim-airline/vim-airline'
 
 " Generate Vim tags for Erlang files
 Plug 'https://github.com/vim-erlang/vim-erlang-tags'
