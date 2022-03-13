@@ -239,6 +239,9 @@ Plug 'https://github.com/nvim-lua/plenary.nvim'
 " Find, Filter, Preview, Pick. All lua, all the time.
 Plug 'https://github.com/nvim-telescope/telescope.nvim'
 
+" lua `fork` of vim-web-devicons for neovim.
+Plug 'https://github.com/kyazdani42/nvim-web-devicons'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

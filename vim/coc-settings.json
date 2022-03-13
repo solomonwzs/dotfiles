@@ -10,8 +10,8 @@
 
   "diagnostic.infoSign": ">>",
   "diagnostic.hintSign": ">>",
-  "diagnostic.errorSign": ">>",
-  "diagnostic.warningSign": ">>",
+  "diagnostic.errorSign": "",
+  "diagnostic.warningSign": "",
 
   "coc-ext.erlang.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
   "coc-ext.erlang.trace_server": "off",
@@ -30,11 +30,21 @@
           "AlignEscapedNewlines": "Left"
         }
       }
+    },
+    {
+      "languages": ["lua"],
+      "setting": {
+        "provider": "lua-format",
+        "args": []
+      }
     }
   ],
 
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["-l", "80"],
+
+  "sumneko-lua.enableNvimLuaDev": true,
+  "Lua.hint.enable": false,
 
   "languageserver": {
     // pacman -S bash-language-server
@@ -89,5 +99,6 @@
       "filetypes": ["elixir", "eelixir"]
     }
   },
-  "git.enableGutters": true
+  "git.enableGutters": true,
+  "Lua.telemetry.enable": true
 }
