@@ -225,11 +225,19 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " A Vim plugin for visually displaying indent levels in code.
 Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 
-" Display all accessible marks and their surrounding lines in a collapsible sidebar.
+" Display all accessible marks and their surrounding lines in a collapsible
+" sidebar.
 Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
 " Nvim Treesitter configurations and abstraction layer.
 " Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
+
+" plenary: full; complete; entire; absolute; unqualified. All the lua functions
+" I don't want to write twice.
+Plug 'https://github.com/nvim-lua/plenary.nvim'
+
+" Find, Filter, Preview, Pick. All lua, all the time.
+Plug 'https://github.com/nvim-telescope/telescope.nvim'
 
 call plug#end()
 

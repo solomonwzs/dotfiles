@@ -41,6 +41,21 @@ let s:bundle_priority = {
 
 let s:loaded_bundles = {}
 let s:loaded_bundles_list = []
+let s:is_nvim = has('nvim')
+
+function! s:load_conf_file(name)
+  let vim_cfile = g:vimhome.'/conf/'.a:name.'.vim'
+  if filereadable(vim_cfile)
+    exec 'so '.vim_cfile
+  endif
+  if s:is_nvim
+    let name0 = substitute(a:name, '\.', '-', 'g')
+    let lua_cfile = g:vimhome.'/lua/plugin-conf/'.name0.'.lua'
+    if filereadable(lua_cfile)
+      exec 'lua require("plugin-conf/'.name0.'")'
+    endif
+  endif
+endfunc
 
 function! s:priority_comp(i1, i2)
   function! s:get_priority(i)
@@ -88,10 +103,7 @@ function! lib#bundle#load()
   call plug#end()
 
   for i in s:loaded_bundles_list
-    let cfile = g:vimhome.'/conf/'.i.'.vim'
-    if filereadable(cfile)
-      exec 'so '.cfile
-    endif
+    call s:load_conf_file(i)
   endfor
 endfunc
 
