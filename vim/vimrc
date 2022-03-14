@@ -158,11 +158,11 @@ if has('nvim')
   let g:lib_bundle_whitelist += [
       \ 'defx-git',
       \ 'defx.nvim',
+      \ 'plenary.nvim',
+      \ 'telescope.nvim',
+      \ 'nvim-web-devicons',
+      \ 'nvim-treesitter',
       \ ]
-      " \ 'plenary.nvim',
-      " \ 'telescope.nvim',
-      " \ 'nvim-web-devicons',
-      " \ 'nvim-treesitter',
   let g:lib_bundle_blacklist += [
       \ 'nerdtree',
       \ ]

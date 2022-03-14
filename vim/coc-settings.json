@@ -35,7 +35,10 @@
       "languages": ["lua"],
       "setting": {
         "provider": "lua-format",
-        "args": []
+        "args": [
+          "--single-quote-to-double-quote",
+          "--no-keep-simple-control-block-one-line"
+        ]
       }
     }
   ],
