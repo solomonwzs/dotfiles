@@ -8,8 +8,8 @@
   "git.removedSign.hlGroup": "GitGutterDelete",
   "git.topRemovedSign.hlGroup": "GitGutterDelete",
 
-  "diagnostic.infoSign": ">>",
-  "diagnostic.hintSign": ">>",
+  "diagnostic.infoSign": "",
+  "diagnostic.hintSign": "",
   "diagnostic.errorSign": "",
   "diagnostic.warningSign": "",
 
