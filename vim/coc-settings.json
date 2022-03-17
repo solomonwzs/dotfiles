@@ -13,8 +13,15 @@
   "diagnostic.errorSign": "",
   "diagnostic.warningSign": "",
 
-  "coc-ext.erlang.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
-  "coc-ext.erlang.trace_server": "off",
+  "list.insertMappings": {
+    "<C-x>": "do:exit"
+  },
+  "list.normalMappings": {
+    "<C-x>": "do:exit"
+  },
+
+  "coc-ext.erlang.erlangLsPath": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
+  "coc-ext.erlang.traceServer": "off",
 
   "coc-ext.log.detail": false,
   "coc-ext.log.level": 0,
