@@ -11,11 +11,11 @@ noremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", expand('<cwor
 vnoremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
 
 let g:Lf_CommandMap = {
-        \ '<C-K>': ['<Up>'],
-        \ '<C-J>': ['<Down>'],
-        \ '<Up>': ['<C-K>'],
-        \ '<Down>': ['<C-J>']
-        \ }
+    \ '<C-K>': ['<Up>'],
+    \ '<C-J>': ['<Down>'],
+    \ '<Up>': ['<C-K>'],
+    \ '<Down>': ['<C-J>']
+    \ }
 
 " let g:Lf_StlSeparator = {'left': '', 'right': '', 'font': ''}
 let g:Lf_StlSeparator = { 'left': '', 'right': '' }
@@ -33,12 +33,12 @@ let g:Lf_PreviewResult = {'Function': 0, 'BufTag': 0}
 let g:Lf_PreviewInPopup = 1 " <C-p> to preview
 
 let g:Lf_CtagsFuncOpts = {
-        \ 'rust': '--rust-kinds=f',
-        \ }
+    \ 'rust': '--rust-kinds=f',
+    \ }
 
 let g:Lf_WildIgnore = {
-    \ 'dir': ['node_modules'],
-    \ 'file': []
+    \ 'dir'  : ['node_modules'],
+    \ 'file' : []
     \ }
 
 cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ?

@@ -9,6 +9,8 @@
 "         \ 'coc-vimlsp',
 "         \ ]
 
+let g:coc_disable_transparent_cursor = 1
+
 let g:markdown_fenced_languages = [
         \ 'vim',
         \ 'help'
@@ -92,3 +94,6 @@ augroup my_coc_nvim
   autocmd BufEnter,BufRead *.encrypted set filetype=encrypted
   autocmd FileType encrypted setl nomodifiable buftype=nofile
 augroup END
+
+cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
+    \ ('CocList') : ('Cl'))
