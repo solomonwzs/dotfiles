@@ -90,7 +90,7 @@ let g:lightline.enable = {
 function! LightLineFilePath() abort
   let icon = lib#icons#file_node_ext_icon(&filetype, expand('%:t'), expand('%:e'))
   let icon = empty(icon) ? '' : icon.'  '
-  return icon.expand('%')
+  return icon.expand('%:p')
 endfunction
 
 function! LightlineReadonly() abort
