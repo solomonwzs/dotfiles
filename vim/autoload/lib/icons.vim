@@ -197,7 +197,7 @@ let s:file_node_pattern_matches = {
         \ 'Vagrantfile$'          : ''
         \ }
 
-function! lib#icons#file_node_ext_icon(filetype, filename, fileext)
+function! lib#icons#file_node_ext_icon(filetype, filename)
   let icon = get(s:file_node_exact_matches, tolower(a:filename), '')
   if !empty(icon) | return icon | endif
   return get(s:file_node_extensions, tolower(a:filetype), '')

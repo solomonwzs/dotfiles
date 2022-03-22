@@ -36,9 +36,13 @@ let g:lightline.tabline = {
     \   ],
     \ }
 
+" let g:lightline.tab = {
+"     \ 'active'   : [ 'tabnum', 'icon', 'filename', 'modified' ],
+"     \ 'inactive' : [ 'tabnum', 'filename', 'modified' ],
+"     \ }
 let g:lightline.tab = {
-    \ 'active'   : [ 'tabnum', 'icon', 'filename', 'modified' ],
-    \ 'inactive' : [ 'tabnum', 'filename', 'modified' ],
+    \ 'active'   : [ 'icon', 'filename', 'modified' ],
+    \ 'inactive' : [ 'icon', 'filename', 'modified' ],
     \ }
 
 let g:lightline.component = {
@@ -88,7 +92,7 @@ let g:lightline.enable = {
     \ }
 
 function! LightLineFilePath() abort
-  let icon = lib#icons#file_node_ext_icon(&filetype, expand('%:t'), expand('%:e'))
+  let icon = lib#icons#file_node_ext_icon(&filetype, expand('%:t'))
   let icon = empty(icon) ? '' : icon.'  '
   return icon.expand('%:p')
 endfunction
@@ -97,9 +101,13 @@ function! LightlineReadonly() abort
   return &readonly && &filetype !=# 'help' ? '' : ''
 endfunction
 
-function! LightlineIcon(f) abort
-  let icon = lib#icons#file_node_ext_icon(&filetype, expand('%:t'), expand('%:e'))
-  let icon = empty(icon) ? '' : icon
+function! LightlineIcon(n) abort
+  let buflist = tabpagebuflist(a:n)
+  let winnr = tabpagewinnr(a:n)
+  let fn = expand('#'.buflist[winnr - 1].':t')
+  let ext = expand('#'.buflist[winnr - 1].':e')
+  let icon = lib#icons#file_node_ext_icon(ext, fn)
+  let icon = empty(icon) ? '' : icon.' '
   return icon
 endfunction
 
