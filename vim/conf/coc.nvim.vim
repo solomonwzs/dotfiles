@@ -11,6 +11,8 @@
 
 let g:coc_disable_transparent_cursor = 1
 
+let g:coc_borderchars = ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
+
 let g:markdown_fenced_languages = [
         \ 'vim',
         \ 'help'
