@@ -22,7 +22,7 @@ Plug 'https://github.com/vim-scripts/DrawIt'
 " Plug 'https://github.com/kien/ctrlp.vim'
 
 " Lean & mean status/tabline for vim that's light as air
-Plug 'https://github.com/bling/vim-airline'
+Plug 'https://github.com/vim-airline/vim-airline'
 
 " Generate Vim tags for Erlang files
 Plug 'https://github.com/vim-erlang/vim-erlang-tags'
@@ -225,11 +225,22 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " A Vim plugin for visually displaying indent levels in code.
 Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 
-" Display all accessible marks and their surrounding lines in a collapsible sidebar.
+" Display all accessible marks and their surrounding lines in a collapsible
+" sidebar.
 Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
 " Nvim Treesitter configurations and abstraction layer.
-" Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
+Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
+
+" plenary: full; complete; entire; absolute; unqualified. All the lua functions
+" I don't want to write twice.
+Plug 'https://github.com/nvim-lua/plenary.nvim'
+
+" Find, Filter, Preview, Pick. All lua, all the time.
+Plug 'https://github.com/nvim-telescope/telescope.nvim'
+
+" lua `fork` of vim-web-devicons for neovim.
+Plug 'https://github.com/kyazdani42/nvim-web-devicons'
 
 call plug#end()
 

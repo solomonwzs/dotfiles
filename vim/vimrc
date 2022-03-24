@@ -154,9 +154,14 @@ let g:lib_bundle_whitelist = []
 let g:lib_bundle_blacklist = []
 
 if has('nvim')
+  lua require('basic')
   let g:lib_bundle_whitelist += [
       \ 'defx-git',
       \ 'defx.nvim',
+      \ 'plenary.nvim',
+      \ 'telescope.nvim',
+      \ 'nvim-web-devicons',
+      \ 'nvim-treesitter',
       \ ]
   let g:lib_bundle_blacklist += [
       \ 'nerdtree',

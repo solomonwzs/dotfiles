@@ -8,13 +8,20 @@
   "git.removedSign.hlGroup": "GitGutterDelete",
   "git.topRemovedSign.hlGroup": "GitGutterDelete",
 
-  "diagnostic.infoSign": ">>",
-  "diagnostic.hintSign": ">>",
-  "diagnostic.errorSign": ">>",
-  "diagnostic.warningSign": ">>",
+  "diagnostic.infoSign": "",
+  "diagnostic.hintSign": "",
+  "diagnostic.errorSign": "",
+  "diagnostic.warningSign": "",
 
-  "coc-ext.erlang.erlang_ls_path": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
-  "coc-ext.erlang.trace_server": "off",
+  "list.insertMappings": {
+    "<C-x>": "do:exit"
+  },
+  "list.normalMappings": {
+    "<C-x>": "do:exit"
+  },
+
+  "coc-ext.erlang.erlangLsPath": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
+  "coc-ext.erlang.traceServer": "off",
 
   "coc-ext.log.detail": false,
   "coc-ext.log.level": 0,
@@ -30,11 +37,24 @@
           "AlignEscapedNewlines": "Left"
         }
       }
+    },
+    {
+      "languages": ["lua"],
+      "setting": {
+        "provider": "lua-format",
+        "args": [
+          "--single-quote-to-double-quote",
+          "--no-keep-simple-control-block-one-line"
+        ]
+      }
     }
   ],
 
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["-l", "80"],
+
+  "sumneko-lua.enableNvimLuaDev": true,
+  "Lua.hint.enable": false,
 
   "languageserver": {
     // pacman -S bash-language-server
@@ -89,5 +109,6 @@
       "filetypes": ["elixir", "eelixir"]
     }
   },
-  "git.enableGutters": true
+  "git.enableGutters": true,
+  "Lua.telemetry.enable": true
 }

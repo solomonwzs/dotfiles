@@ -9,6 +9,10 @@
 "         \ 'coc-vimlsp',
 "         \ ]
 
+let g:coc_disable_transparent_cursor = 1
+
+let g:coc_borderchars = ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
+
 let g:markdown_fenced_languages = [
         \ 'vim',
         \ 'help'
@@ -85,6 +89,8 @@ vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)
 
 vmap <silent> <leader>cn <Plug>(coc-ext-change-name-rule)
 
+nmap <silent> <leader>cs <Plug>(coc-ext-cursor-symbol)
+
 augroup my_coc_nvim
   autocmd!
   autocmd FileType python let b:coc_root_patterns = ['.env']
@@ -92,3 +98,6 @@ augroup my_coc_nvim
   autocmd BufEnter,BufRead *.encrypted set filetype=encrypted
   autocmd FileType encrypted setl nomodifiable buftype=nofile
 augroup END
+
+cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
+    \ ('CocList') : ('Cl'))
