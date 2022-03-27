@@ -1,2 +1,132 @@
-var k=Object.create,l=Object.defineProperty,S=Object.getPrototypeOf,$=Object.prototype.hasOwnProperty,L=Object.getOwnPropertyNames,O=Object.getOwnPropertyDescriptor;var h=t=>l(t,"__esModule",{value:!0});var _=(t,n)=>{for(var e in n)l(t,e,{get:n[e],enumerable:!0})},T=(t,n,e)=>{if(n&&typeof n=="object"||typeof n=="function")for(let r of L(n))!$.call(t,r)&&r!=="default"&&l(t,r,{get:()=>n[r],enumerable:!(e=O(n,r))||e.enumerable});return t},s=t=>t&&t.__esModule?t:T(h(l(t!=null?k(S(t)):{},"default",{value:t,enumerable:!0})),t);h(exports);_(exports,{activate:()=>A});var i=s(require("coc.nvim"));var x=s(require("coc.nvim"));var d=s(require("coc.nvim"));function o(t,n){return d.workspace.getConfiguration("coc-ext").get(t,n)}var E=s(require("path"));function v(t){return typeof t=="string"?t:t instanceof String?t.toString():JSON.stringify(t,null,2)}var f=s(require("path")),w=class{constructor(){this.channel=x.window.createOutputChannel("coc-ext"),this.detail=o("log.detail",!1)===!0,this.level=o("log.level",1)}dispose(){return this.channel.dispose()}logLevel(n,e){var m;let r=new Date,a=v(e);if(this.detail){let c=(m=new Error().stack)==null?void 0:m.split(`
-`);if(c&&c.length>=4){let g=/at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g.exec(c[3]);if(g){let y=f.default.basename(g[3]),C=g[4];this.channel.appendLine(`${r.toISOString()} ${n} [${y}:${C}] ${a}`);return}}}let b=f.default.basename(__filename);this.channel.appendLine(`${n} [${b}] ${a}`)}debug(n){this.level>0||this.logLevel("D",n)}info(n){this.level>1||this.logLevel("I",n)}warn(n){this.level>2||this.logLevel("W",n)}error(n){this.logLevel("E",n)}},p=new w;var u;async function A(t){t.logger.info("coc-ext-erlang works"),p.info("coc-ext-erlang works"),p.info(i.workspace.getConfiguration("coc-ext.erlang"));let n=o("erlang.erlangLsPath","/bin/erlang_ls"),e={documentSelector:[{scheme:"file",language:"erlang"}],initializationOptions:""},a={command:n,args:["--transport","stdio"],transport:i.TransportKind.stdio};u=new i.LanguageClient("erlang_ls",a,e),u.start(),u.onReady().then(()=>{i.window.showMessage("coc-erlangls is ready")})}
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __markAsModule = (target) => __defProp(target, "__esModule", {value: true});
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, {get: all[name], enumerable: true});
+};
+var __exportStar = (target, module2, desc) => {
+  if (module2 && typeof module2 === "object" || typeof module2 === "function") {
+    for (let key of __getOwnPropNames(module2))
+      if (!__hasOwnProp.call(target, key) && key !== "default")
+        __defProp(target, key, {get: () => module2[key], enumerable: !(desc = __getOwnPropDesc(module2, key)) || desc.enumerable});
+  }
+  return target;
+};
+var __toModule = (module2) => {
+  if (module2 && module2.__esModule)
+    return module2;
+  return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true})), module2);
+};
+
+// src/coc-ext-erlang.ts
+__markAsModule(exports);
+__export(exports, {
+  activate: () => activate
+});
+var import_coc3 = __toModule(require("coc.nvim"));
+
+// src/utils/logger.ts
+var import_coc2 = __toModule(require("coc.nvim"));
+
+// src/utils/config.ts
+var import_coc = __toModule(require("coc.nvim"));
+function getcfg(key, defaultValue) {
+  const config = import_coc.workspace.getConfiguration("coc-ext");
+  return config.get(key, defaultValue);
+}
+
+// src/utils/common.ts
+var import_path = __toModule(require("path"));
+function stringify(value) {
+  if (typeof value === "string") {
+    return value;
+  } else if (value instanceof String) {
+    return value.toString();
+  } else {
+    return JSON.stringify(value, null, 2);
+  }
+}
+
+// src/utils/logger.ts
+var import_path2 = __toModule(require("path"));
+var Logger = class {
+  constructor() {
+    this.channel = import_coc2.window.createOutputChannel("coc-ext");
+    this.detail = getcfg("log.detail", false) === true;
+    this.level = getcfg("log.level", 1);
+  }
+  dispose() {
+    return this.channel.dispose();
+  }
+  logLevel(level, value) {
+    var _a;
+    const now = new Date();
+    const str = stringify(value);
+    if (this.detail) {
+      const stack = (_a = new Error().stack) == null ? void 0 : _a.split("\n");
+      if (stack && stack.length >= 4) {
+        const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
+        const expl = re.exec(stack[3]);
+        if (expl) {
+          const file = import_path2.default.basename(expl[3]);
+          const line = expl[4];
+          this.channel.appendLine(`${now.toISOString()} ${level} [${file}:${line}] ${str}`);
+          return;
+        }
+      }
+    }
+    const fn = import_path2.default.basename(__filename);
+    this.channel.appendLine(`${level} [${fn}] ${str}`);
+  }
+  debug(value) {
+    if (this.level > 0) {
+      return;
+    }
+    this.logLevel("D", value);
+  }
+  info(value) {
+    if (this.level > 1) {
+      return;
+    }
+    this.logLevel("I", value);
+  }
+  warn(value) {
+    if (this.level > 2) {
+      return;
+    }
+    this.logLevel("W", value);
+  }
+  error(message) {
+    this.logLevel("E", message);
+  }
+};
+var logger = new Logger();
+
+// src/coc-ext-erlang.ts
+var client;
+async function activate(context) {
+  context.logger.info(`coc-ext-erlang works`);
+  logger.info(`coc-ext-erlang works`);
+  logger.info(import_coc3.workspace.getConfiguration("coc-ext.erlang"));
+  const server_path = getcfg("erlang.erlangLsPath", "/bin/erlang_ls");
+  const clientOptions = {
+    documentSelector: [{scheme: "file", language: "erlang"}],
+    initializationOptions: ""
+  };
+  const serverArgs = ["--transport", "stdio"];
+  const serverOptions = {
+    command: server_path,
+    args: serverArgs,
+    transport: import_coc3.TransportKind.stdio
+  };
+  client = new import_coc3.LanguageClient("erlang_ls", serverOptions, clientOptions);
+  client.start();
+  client.onReady().then(() => {
+    import_coc3.window.showMessage(`coc-erlangls is ready`);
+  });
+}
