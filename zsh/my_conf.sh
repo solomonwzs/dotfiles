@@ -6,9 +6,10 @@ declare -A MY_SVN_ACCONUT=(         \
 )
 
 # proxy setting
-MY_OFFICE_WEB_PROXY=""
-MY_SSR_WEB_PROXY=""
-MY_V2RAY_WEB_PROXY=""
+MY_OFFICE_PROXY=""
+MY_SSR_PROXY=""
+MY_V2RAY_PROXY=""
+MY_CLASH_PROXY=""
 
 # color setting
 MY_ZSH_COLOR_NAME="63"
