@@ -22,12 +22,9 @@ def encode_str(text: str, enc: str):
 
 
 def decode_str(text: str, enc: str):
-    def _hex(matchobj):
-        str_hex = matchobj.group(1)
-        i = int(str_hex, base=16)
-        return bytes([i])
-
-    bs = re.sub(br"\\x([a-fA-F0-9]{2})", _hex, text.encode("utf8"))
+    bs = bytes(
+        [int(i, base=16) for i in re.findall(r"\\x([a-fA-F0-9]{2})", text)]
+    )
     sys.stdout.write(bs.decode(enc))
 
 
