@@ -77,3 +77,27 @@ snippet #coro "incode coroutine" b
 #define corons std
 #endif
 endsnippet
+
+snippet #xmlog "macro log" b
+#ifndef __DEBUG_TOOL
+#define _XMLOG_LEVEL_Info  Comm::COMM_LOG_INFO
+#define _XMLOG_LEVEL_Err   Comm::COMM_LOG_ERR
+#define _XMLOG_LEVEL_Warn  Comm::COMM_LOG_ERR
+#define _XMLOG_LEVEL_Debug Comm::COMM_LOG_DEBUG
+#define xmlog(_type_, _fmt_, ...)                                             \
+  do {                                                                        \
+    if (Comm::GetLogLevel() >= _XMLOG_LEVEL_##_type_) {                       \
+      Comm::Log(_XMLOG_LEVEL_##_type_, ">[%s:%d] " _fmt_, __func__, __LINE__, \
+                ##__VA_ARGS__);                                               \
+    }                                                                         \
+  } while (0)
+#else
+#define _STYLE_Info  "\e[3;32m"
+#define _STYLE_Err   "\e[3;31m"
+#define _STYLE_Warn  "\e[3;33m"
+#define _STYLE_Debug "\e[3;36m"
+#define xmlog(_type_, _fmt_, ...)                                     \
+  printf(_STYLE_##_type_ "%.1s [%s:%s:%d]\e[0m " _fmt_ "\n", #_type_, \
+         __FILE__, __func__, __LINE__, ##__VA_ARGS__)
+#endif
+endsnippet
