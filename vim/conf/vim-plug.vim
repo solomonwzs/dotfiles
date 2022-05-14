@@ -106,7 +106,7 @@ Plug 'https://github.com/Shougo/neocomplete.vim.git'
 Plug 'https://github.com/morhetz/gruvbox.git'
 
 " An arctic, north-bluish clean and elegant Vim theme.
-Plug 'https://github.com/arcticicestudio/nord-vim.git'
+" Plug 'https://github.com/arcticicestudio/nord-vim.git'
 
 " Rainbow Parentheses Improved, shorter code, no level limit,
 " smooth and fast, powerful configuration.
@@ -241,6 +241,9 @@ Plug 'https://github.com/nvim-telescope/telescope.nvim'
 
 " lua `fork` of vim-web-devicons for neovim.
 Plug 'https://github.com/kyazdani42/nvim-web-devicons'
+
+" A fancy, configurable, notification manager for NeoVim.
+Plug 'https://github.com/rcarriga/nvim-notify'
 
 call plug#end()
 

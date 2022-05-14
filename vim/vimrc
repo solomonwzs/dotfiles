@@ -150,53 +150,5 @@ endif
 
 
 "================ Load Plugin ================
-let g:lib_bundle_whitelist = []
-let g:lib_bundle_blacklist = []
-
-if has('nvim')
-  lua require('basic')
-  let g:lib_bundle_whitelist += [
-      \ 'defx-git',
-      \ 'defx.nvim',
-      \ 'plenary.nvim',
-      \ 'telescope.nvim',
-      \ 'nvim-web-devicons',
-      \ 'nvim-treesitter',
-      \ ]
-  let g:lib_bundle_blacklist += [
-      \ 'nerdtree',
-      \ ]
-endif
-
-if $VIM_GROUP ==? 'erl'
-  let g:lib_bundle_whitelist += [
-      \ 'syntastic',
-      \ 'vim-erlang-tags',
-      \ 'vim-erlang-omnicomplete',
-      \ 'YouCompleteMe',
-      \ ]
-  let g:lib_bundle_blacklist += [
-      \ 'ale',
-      \ 'vim-gutentags',
-      \ 'coc.nvim',
-      \ ]
-elseif $VIM_GROUP ==? 'scheme'
-  let g:lib_bundle_blacklist += ['ale']
-elseif $VIM_GROUP ==? 'python'
-  let g:lib_bundle_whitelist += [
-      \ 'YouCompleteMe',
-      \ 'jedi-vim',
-      \ ]
-  let g:lib_bundle_blacklist += ['coc.nvim']
-elseif $VIM_GROUP ==? 'rust'
-  let g:lib_bundle_whitelist += ['syntastic']
-  let g:lib_bundle_blacklist += ['ale']
-elseif $VIM_GROUP ==? 'ycm'
-  let g:lib_bundle_whitelist += ['YouCompleteMe']
-  let g:lib_bundle_blacklist += ['coc.nvim']
-elseif $VIM_GROUP ==? 'debug'
-  let g:lib_bundle_whitelist += ['vista.vim']
-endif
-
 call lib#bundle#load()
 "================ Load Plugin ================
