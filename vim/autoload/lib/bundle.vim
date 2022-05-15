@@ -3,8 +3,6 @@
 " @date       2021-01-04
 " @license    MIT
 
-let s:is_nvim = has('nvim')
-
 let s:bundle_list = [
     \ {'name': 'DrawIt'},
     \ {'name': 'LeaderF'},
@@ -17,7 +15,7 @@ let s:bundle_list = [
     \ {'name': 'gruvbox', 'priority': 1},
     \ {'name': 'lightline.vim', 'priority': 1},
     \ {'name': 'nerdtree', 'nvim': 0},
-    \ {'name': 'nvim-notify', 'vim': 0},
+    \ {'name': 'nvim-notify', 'vim': 0, 'nvim': 0, 'priority': -1},
     \ {'name': 'nvim-treesitter', 'vim': 0},
     \ {'name': 'nvim-web-devicons', 'vim': 0},
     \ {'name': 'plenary.nvim', 'vim': 0},
@@ -45,16 +43,17 @@ let s:loaded_bundles_list = []
 let s:is_nvim = has('nvim')
 
 function! s:load_conf_file(name)
-  let vim_cfile = g:vimhome.'/conf/'.a:name.'.vim'
-  if filereadable(vim_cfile)
-    exec 'so '.vim_cfile
-  endif
   if s:is_nvim
     let name0 = substitute(a:name, '\.', '-', 'g')
     let lua_cfile = g:vimhome.'/lua/plugin-conf/'.name0.'.lua'
     if filereadable(lua_cfile)
       exec 'lua require("plugin-conf/'.name0.'")'
     endif
+  endif
+
+  let vim_cfile = g:vimhome.'/conf/'.a:name.'.vim'
+  if filereadable(vim_cfile)
+    exec 'so '.vim_cfile
   endif
 endfunc
 

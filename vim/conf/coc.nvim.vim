@@ -1,3 +1,7 @@
+scriptencoding utf-8
+
+" runtime! auoload/coc/ui.vim
+
 " let g:coc_global_extensions = [
 "         \ 'coc-git',
 "         \ 'coc-json',
@@ -9,32 +13,75 @@
 "         \ 'coc-vimlsp',
 "         \ ]
 
+let s:is_nvim = has('nvim')
+
 let g:coc_disable_transparent_cursor = 1
 
 let g:coc_borderchars = ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
 
 let g:markdown_fenced_languages = [
-        \ 'vim',
-        \ 'help'
-        \ ]
+    \ 'vim',
+    \ 'help'
+    \ ]
 
 function! s:show_documentation()
-    if (index(['vim', 'help'], &filetype) >= 0)
-        execute 'h '.expand('<cword>')
-    elseif &filetype ==? 'man'
-        execute 'Man '.expand('<cword>')
-    else
-        call CocAction('doHover')
-    endif
+  if (index(['vim', 'help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  elseif &filetype ==? 'man'
+    execute 'Man '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+
+function! s:init_coc() abort
+  runtime! autoload/coc/ui.vim
+  execute "lua vim.notify('Initialized coc.nvim for LSP support', 'info', { title = 'LSP Status' })"
+endfunction
+
+function! s:status_notify() abort
+  let l:status = get(g:, 'coc_status', '')
+  let l:level = 'info'
+  if empty(l:status) | return '' | endif
+  call v:lua.require('coc-notify').coc_status_notify(l:status, l:level)
+endfunction
+
+function! s:diagnostic_notify() abort
+  let l:info = get(b:, 'coc_diagnostic_info', {})
+  if empty(l:info) | return '' | endif
+  let l:msgs = []
+  let l:level = 'info'
+  if get(l:info, 'warning', 0)
+    let l:level = 'warn'
+  endif
+  if get(l:info, 'error', 0)
+    let l:level = 'error'
+  endif
+
+  if get(l:info, 'error', 0)
+    call add(l:msgs, ' Errors: ' . l:info['error'])
+  endif
+  if get(l:info, 'warning', 0)
+    call add(l:msgs, ' Warnings: ' . l:info['warning'])
+  endif
+  if get(l:info, 'information', 0)
+    call add(l:msgs, ' Infos: ' . l:info['information'])
+  endif
+  if get(l:info, 'hint', 0)
+    call add(l:msgs, ' Hints: ' . l:info['hint'])
+  endif
+  let l:msg = join(l:msgs, "\n")
+  if empty(l:msg) | let l:msg = ' All OK' | endif
+  call v:lua.require('coc-notify').coc_diag_notify(l:msg, l:level)
 endfunction
 
 function! s:check_back_space() abort
-    let col = col('.') - 1
-    return !col || getline('.')[col - 1]  =~# '\s'
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
 if !lib#bundle#has_loaded('ultisnips')
-    imap <C-a> <Plug>(coc-snippets-expand)
+  imap <C-a> <Plug>(coc-snippets-expand)
 endif
 
 nnoremap <silent> <space>cg :<C-u>CocList --normal gstatus<CR>
@@ -45,9 +92,9 @@ nnoremap <silent> <space>log :<C-u>CocCommand workspace.showOutput coc-ext<CR>
 " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 " inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 inoremap <silent><expr> <TAB>
-        \ pumvisible() ? "\<C-n>" :
-        \ <SID>check_back_space() ? "\<TAB>" :
-        \ coc#refresh()
+    \ pumvisible() ? "\<C-n>" :
+    \ <SID>check_back_space() ? "\<TAB>" :
+    \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
@@ -97,6 +144,12 @@ augroup my_coc_nvim
 
   autocmd BufEnter,BufRead *.encrypted set filetype=encrypted
   autocmd FileType encrypted setl nomodifiable buftype=nofile
+
+  " if s:is_nvim
+  "   autocmd User CocNvimInit call s:init_coc()
+  "   autocmd User CocStatusChange call s:status_notify()
+  "   autocmd User CocDiagnosticChange call s:diagnostic_notify()
+  " endif
 augroup END
 
 cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
