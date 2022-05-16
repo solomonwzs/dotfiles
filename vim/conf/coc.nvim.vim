@@ -35,8 +35,13 @@ function! s:show_documentation()
 endfunction
 
 function! s:init_coc() abort
-  runtime! autoload/coc/ui.vim
-  execute "lua vim.notify('Initialized coc.nvim for LSP support', 'info', { title = 'LSP Status' })"
+  " runtime! autoload/coc/ui.vim
+  call coc#notify#create(['Initialized coc.nvim for LSP support'], {
+      \ 'title': 'LSP Status',
+      \ 'kind': 'info',
+      \ 'borderhighlight': 'CocInfoFloat',
+      \ 'timeout': 2500,
+      \ })
 endfunction
 
 function! s:status_notify() abort
@@ -145,11 +150,9 @@ augroup my_coc_nvim
   autocmd BufEnter,BufRead *.encrypted set filetype=encrypted
   autocmd FileType encrypted setl nomodifiable buftype=nofile
 
-  " if s:is_nvim
-  "   autocmd User CocNvimInit call s:init_coc()
-  "   autocmd User CocStatusChange call s:status_notify()
-  "   autocmd User CocDiagnosticChange call s:diagnostic_notify()
-  " endif
+  " autocmd User CocNvimInit call s:init_coc()
+  " autocmd User CocStatusChange call s:status_notify()
+  " autocmd User CocDiagnosticChange call s:diagnostic_notify()
 augroup END
 
 cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
