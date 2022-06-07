@@ -54,6 +54,8 @@ let g:ale_pattern_options = {
         \ '.*\.hpp$': {'ale_enabled': 0},
         \ '.*\.c$': {'ale_enabled': 0},
         \ '.*\.h$': {'ale_enabled': 0},
+        \ '.*\.ts$': {'ale_enabled': 0},
+        \ '.*\.js$': {'ale_enabled': 0},
         \ }
 
 python3 << EOF
