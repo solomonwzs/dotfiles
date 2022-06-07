@@ -89,10 +89,6 @@ if !lib#bundle#has_loaded('ultisnips')
   imap <C-a> <Plug>(coc-snippets-expand)
 endif
 
-nnoremap <silent> <space>cg :<C-u>CocList --normal gstatus<CR>
-nnoremap <silent> <space>ce :<C-u>CocList extensions<CR>
-nnoremap <silent> <space>cr :<C-u>CocRestart<CR>
-nnoremap <silent> <space>log :<C-u>CocCommand workspace.showOutput coc-ext<CR>
 
 " inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
 " inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
@@ -111,10 +107,11 @@ nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
-nmap <silent> <space>ci <Plug>(coc-diagnostic-info)
+nmap <silent> <space>ci :<C-U>CocDiagnostics<CR>
 nmap <silent> <space>cn <Plug>(coc-diagnostic-next)
 nmap <silent> <space>cp <Plug>(coc-diagnostic-prev)
 nmap <silent> <space>cs :<C-U><C-R>=printf("CocSearch -w %s", expand('<cword>'))<CR><CR>
+nmap <silent> <space>cl :<C-U>CocCommand workspace.showOutput coc-ext<CR>
 
 " let g:gitgutter_enabled = 1
 " function! GitGutterGetHunkSummary()
