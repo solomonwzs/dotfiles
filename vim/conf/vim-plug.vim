@@ -47,7 +47,7 @@ Plug 'https://github.com/will133/vim-dirdiff'
 Plug 'https://github.com/skywind3000/asyncrun.vim.git'
 
 " Asynchronous Lint Engine
-Plug 'https://github.com/w0rp/ale.git'
+" Plug 'https://github.com/w0rp/ale.git'
 
 " Show a diff using Vim its sign column.
 " Plug 'https://github.com/mhinz/vim-signify.git'
