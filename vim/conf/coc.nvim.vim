@@ -89,6 +89,54 @@ if !lib#bundle#has_loaded('ultisnips')
   imap <C-a> <Plug>(coc-snippets-expand)
 endif
 
+function! s:insert_word(word) abort
+  let cur_pumid = coc#pum#winid()
+  let parts = getwinvar(cur_pumid, 'parts', [])
+  if !empty(parts)
+    let curr = getline('.')
+    if curr ==# parts[0].a:word.parts[1]
+      return
+    endif
+    if !exists('*nvim_buf_set_text')
+      noa call setline('.', parts[0].a:word.parts[1])
+      noa call cursor(line('.'), strlen(parts[0].a:word) + 1)
+    else
+      let row = line('.') - 1
+      let startCol = strlen(parts[0])
+      let endCol = strlen(getline('.')) - strlen(parts[1])
+      call nvim_buf_set_text(bufnr('%'), row, startCol, row, endCol, [a:word])
+      call cursor(line('.'), strlen(parts[0].a:word) + 1)
+    endif
+    doautocmd TextChangedP
+  endif
+endfunction
+  
+let s:pumid = 0
+function! s:pum_next() abort
+  let cur_pumid = coc#pum#winid()
+  if s:pumid != cur_pumid
+    let s:pumid = cur_pumid
+
+    let input = getwinvar(cur_pumid, 'input', '')
+    let index = coc#window#get_cursor(cur_pumid)[0] - 1
+    let words = getwinvar(cur_pumid, 'words', [])
+    let selword = get(words, index, '')
+    if input != selword
+      call timer_start(10, {-> s:insert_word(selword)})
+      return ''
+    endif
+  endif
+
+  call coc#pum#next(1)
+  return ''
+endfunction
+
+function! s:pum_prev() abort
+  let s:pumid = coc#pum#winid()
+  call coc#pum#prev(1)
+  return ''
+endfunction
+
 if coc#util#api_version() <= 30
   inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
@@ -97,32 +145,11 @@ if coc#util#api_version() <= 30
   inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
   inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 else
-  let s:pumid = 0
-  function! s:pum_next() abort
-    let cur_pumid = coc#pum#winid()
-    if s:pumid != cur_pumid
-      let s:pumid = cur_pumid
-
-      let input = getwinvar(cur_pumid, 'input', '')
-      let index = coc#window#get_cursor(cur_pumid)[0] - 1
-      let words = getwinvar(cur_pumid, 'words', [])
-      let selword = get(words, index, '')
-      if input != selword
-        call coc#pum#next(0)
-        return coc#pum#prev(1)
-      else
-        return coc#pum#next(1)
-      endif
-    else
-      return coc#pum#next(1)
-    endif
-  endfunction
-
   inoremap <silent><expr> <TAB>
       \ coc#pum#visible() ? <SID>pum_next() :
       \ <SID>check_back_space() ? "\<Tab>" :
       \ coc#refresh()
-  inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+  inoremap <expr><S-TAB> coc#pum#visible() ? <SID>pum_prev() : "\<C-h>"
   inoremap <silent><expr> <c-space> coc#refresh()
   inoremap <silent><expr> <CR> coc#pum#visible() ? 
       \ coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
