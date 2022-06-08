@@ -7,7 +7,7 @@ let s:bundle_list = [
     \ {'name': 'DrawIt'},
     \ {'name': 'LeaderF'},
     \ {'name': 'asyncrun.vim'},
-    \ {'name': 'coc.nvim'},
+    \ {'name': 'coc.nvim', 'priority': 2},
     \ {'name': 'defx-git', 'vim': 0},
     \ {'name': 'defx.nvim', 'vim': 0},
     \ {'name': 'deol.nvim'},

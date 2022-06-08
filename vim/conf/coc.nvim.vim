@@ -89,15 +89,47 @@ if !lib#bundle#has_loaded('ultisnips')
   imap <C-a> <Plug>(coc-snippets-expand)
 endif
 
+if coc#util#api_version() <= 30
+  inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+  inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+  inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+else
+  let s:pumid = 0
+  function! s:pum_next() abort
+    let cur_pumid = coc#pum#winid()
+    if s:pumid != cur_pumid
+      let s:pumid = cur_pumid
 
-" inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-" inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-inoremap <silent><expr> <TAB>
-    \ pumvisible() ? "\<C-n>" :
-    \ <SID>check_back_space() ? "\<TAB>" :
-    \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+      let input = getwinvar(cur_pumid, 'input', '')
+      let index = coc#window#get_cursor(cur_pumid)[0] - 1
+      let words = getwinvar(cur_pumid, 'words', [])
+      let selword = get(words, index, '')
+      if input != selword
+        call coc#pum#next(0)
+        return coc#pum#prev(1)
+      else
+        return coc#pum#next(1)
+      endif
+    else
+      return coc#pum#next(1)
+    endif
+  endfunction
+
+  inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? <SID>pum_next() :
+      \ <SID>check_back_space() ? "\<Tab>" :
+      \ coc#refresh()
+  inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+  inoremap <silent><expr> <c-space> coc#refresh()
+  inoremap <silent><expr> <CR> coc#pum#visible() ? 
+      \ coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+  hi CocSearch ctermfg=255 cterm=bold
+  hi CocMenuSel ctermbg=109 ctermfg=239 cterm=bold
+endif
 
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 
