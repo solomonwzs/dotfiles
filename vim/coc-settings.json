@@ -2,6 +2,11 @@
   "coc.preferences.jumpCommand": "split",
   "coc.preferences.currentFunctionSymbolAutoUpdate": true,
 
+  "suggest.floatConfig": {
+    "highlight": "CocNone",
+    "border": true
+  },
+
   "git.addedSign.hlGroup": "GitGutterAdd",
   "git.changedSign.hlGroup": "GitGutterChange",
   "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete",
@@ -72,11 +77,6 @@
       "command": "gopls",
       "filetypes": ["go"],
       "initializationOptions": {
-        "gocodeCompletionEnabled": true,
-        "diagnosticsEnabled": true,
-        "usePlaceholders": true,
-        "completeUnimported": true,
-        "lintTool": "golint"
       }
     },
 

@@ -31,10 +31,10 @@ Plug 'https://github.com/vim-erlang/vim-erlang-tags'
 " Plug 'https://github.com/klen/python-mode'
 
 " A nicer Python indentation style for vim.
-Plug 'https://github.com/hynek/vim-python-pep8-indent'
+" Plug 'https://github.com/hynek/vim-python-pep8-indent'
 
 " Go development plugin for Vim
-Plug 'https://github.com/fatih/vim-go'
+" Plug 'https://github.com/fatih/vim-go'
 
 " Vim plugin to diff two directories
 Plug 'https://github.com/will133/vim-dirdiff'
@@ -223,7 +223,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 " A Vim plugin for visually displaying indent levels in code.
-Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
+" Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 
 " Display all accessible marks and their surrounding lines in a collapsible
 " sidebar.

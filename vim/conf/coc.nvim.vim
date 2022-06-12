@@ -154,7 +154,7 @@ else
   inoremap <silent><expr> <CR> coc#pum#visible() ? 
       \ coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
-  hi CocSearch ctermfg=255 cterm=bold
+  hi CocPumSearch ctermfg=255 cterm=bold
   hi CocMenuSel ctermbg=109 ctermfg=239 cterm=bold
 endif
 
