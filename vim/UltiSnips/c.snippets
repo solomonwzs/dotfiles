@@ -36,6 +36,16 @@ snippet #slog "macro log" b
          __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 endsnippet
 
+snippet #flog "macro file log" b
+#define flog(_fmt_, ...)                                                      \
+  do {                                                                        \
+    FILE* __f = fopen("/tmp/1.log", "a");                                     \
+    fprintf(__f, "[%s:%s:%d]\e[0m " _fmt_ "\n", __FILE__, __func__, __LINE__, \
+            ##__VA_ARGS__);                                                   \
+    fclose(__f);                                                              \
+  } while (0)
+endsnippet
+
 snippet #off "macro offsetof" b
 #ifndef offsetof
 #ifdef __GNUC__
