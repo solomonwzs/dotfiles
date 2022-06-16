@@ -61,6 +61,7 @@ info "Create terminfo"
     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
 copy_file "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
+copy_file "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
 info "Download 'oh-my-zsh'"
