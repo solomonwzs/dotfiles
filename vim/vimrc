@@ -104,6 +104,7 @@ augroup my_vimrc
 
   autocmd BufEnter,BufRead *.vue set filetype=vue.javascript
   autocmd BufEnter,BufRead compile_flags.txt set filetype=conf
+  autocmd BufEnter,BufRead tigrc,.tigrc set filetype=tigrc
 
   autocmd FileType
       \ html,xml,yaml,vue.javascript,javascript,typescript,json,lua

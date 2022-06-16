@@ -16,4 +16,6 @@ color diff-del 196 default
 color diff-index 24 default
 color diff-stat 24 default
 
+color help-group 66 default
+
 set mouse = true
