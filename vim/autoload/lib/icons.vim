@@ -182,6 +182,7 @@ let s:file_node_exact_matches = {
         \ 'package.json'                     : '',
         \ 'procfile'                         : '',
         \ 'react.jsx'                        : '',
+        \ 'tigrc'                            : '',
         \ 'webpack.config.js'                : 'ﰩ',
         \ }
 
