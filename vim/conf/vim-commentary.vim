@@ -3,6 +3,6 @@ augroup my_conf_vim_commentary
 
     autocmd FileType nginx setlocal commentstring=#\ %s
     autocmd FileType logstash setlocal commentstring=#\ %s
-    autocmd FileType c,cpp,typescript,javascript,proto
+    autocmd FileType c,cpp,typescript,javascript,proto,json
         \ setlocal commentstring=//\ %s
 augroup END

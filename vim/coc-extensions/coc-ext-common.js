@@ -768,33 +768,33 @@ var import_coc11 = __toModule(require("coc.nvim"));
 
 // src/utils/symbol.ts
 var import_coc12 = __toModule(require("coc.nvim"));
-var symbolKindName = {
-  1: "File",
-  2: "Module",
-  3: "Namespace",
-  4: "Package",
-  5: "Class",
-  6: "Method",
-  7: "Property",
-  8: "Field",
-  9: "Constructor",
-  10: "Enum",
-  11: "Interface",
-  12: "Function",
-  13: "Variable",
-  14: "Constant",
-  15: "String",
-  16: "Number",
-  17: "Boolean",
-  18: "Array",
-  19: "Object",
-  20: "Key",
-  21: "Null",
-  22: "EnumMember",
-  23: "Struct",
-  24: "Event",
-  25: "Operator",
-  26: "TypeParameter"
+var symbolKind2Info = {
+  1: {name: "File", icon: "\uF40E", short_name: "F"},
+  2: {name: "Module", icon: "\uF0E8", short_name: "M"},
+  3: {name: "Namespace", icon: "\uF668", short_name: "N"},
+  4: {name: "Package", icon: "\uF487", short_name: "P"},
+  5: {name: "Class", icon: "\uF0E8", short_name: "C"},
+  6: {name: "Method", icon: "\uE79B", short_name: "f"},
+  7: {name: "Property", icon: "\uFAB6", short_name: "p"},
+  8: {name: "Field", icon: "\uF9BE", short_name: "m"},
+  9: {name: "Constructor", icon: "\uF425", short_name: "c"},
+  10: {name: "Enum", icon: "\uF435", short_name: "E"},
+  11: {name: "Interface", icon: "\uF417", short_name: "I"},
+  12: {name: "Function", icon: "\u0192", short_name: "f"},
+  13: {name: "Variable", icon: "\uE79B", short_name: "v"},
+  14: {name: "Constant", icon: "\uF8FE", short_name: "C"},
+  15: {name: "String", icon: "\uF672", short_name: "S"},
+  16: {name: "Number", icon: "\uF89F", short_name: "n"},
+  17: {name: "Boolean", icon: "", short_name: "b"},
+  18: {name: "Array", icon: "\uF669", short_name: "a"},
+  19: {name: "Object", icon: "\uF0E8", short_name: "O"},
+  20: {name: "Key", icon: "\uF805", short_name: "K"},
+  21: {name: "Null", icon: "\uFCE0", short_name: "n"},
+  22: {name: "EnumMember", icon: "\uF02B", short_name: "m"},
+  23: {name: "Struct", icon: "\uFB44", short_name: "S"},
+  24: {name: "Event", icon: "\uFACD", short_name: "e"},
+  25: {name: "Operator", icon: "\u03A8", short_name: "o"},
+  26: {name: "TypeParameter", icon: "\uF671", short_name: "T"}
 };
 async function getDocumentSymbols(bufnr0) {
   const {nvim} = import_coc12.workspace;
@@ -824,10 +824,13 @@ async function getCursorSymbolList() {
     ok = false;
     for (const s of slist) {
       if (positionInRange(pos, s.range)) {
+        let info = symbolKind2Info[s.kind];
         symList.push({
           name: s.name,
+          short_name: info.short_name,
           detail: s.detail,
-          kind: symbolKindName[s.kind]
+          kind: info.name,
+          icon: info.icon
         });
         slist = s.children;
         ok = true;
@@ -999,12 +1002,16 @@ async function getCursorSymbolInfo() {
     return;
   }
   let msg = "";
+  let space = " ";
   for (const i of infoList) {
-    const line = `[${i.kind[0]}] ${i.name}`;
-    if (msg.length != 0) {
-      msg += ` > `;
+    const line = `[${i.short_name}] ${i.name}`;
+    if (msg.length == 0) {
+      msg = `\uF0DA ${line}`;
+    } else {
+      msg += `
+${space}\uF0DA ${line}`;
+      space += " ";
     }
-    msg += line;
   }
   await popup(msg);
 }
