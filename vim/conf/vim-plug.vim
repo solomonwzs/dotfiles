@@ -31,10 +31,10 @@ Plug 'https://github.com/vim-erlang/vim-erlang-tags'
 " Plug 'https://github.com/klen/python-mode'
 
 " A nicer Python indentation style for vim.
-Plug 'https://github.com/hynek/vim-python-pep8-indent'
+" Plug 'https://github.com/hynek/vim-python-pep8-indent'
 
 " Go development plugin for Vim
-Plug 'https://github.com/fatih/vim-go'
+" Plug 'https://github.com/fatih/vim-go'
 
 " Vim plugin to diff two directories
 Plug 'https://github.com/will133/vim-dirdiff'
@@ -47,7 +47,7 @@ Plug 'https://github.com/will133/vim-dirdiff'
 Plug 'https://github.com/skywind3000/asyncrun.vim.git'
 
 " Asynchronous Lint Engine
-Plug 'https://github.com/w0rp/ale.git'
+" Plug 'https://github.com/w0rp/ale.git'
 
 " Show a diff using Vim its sign column.
 " Plug 'https://github.com/mhinz/vim-signify.git'
@@ -106,7 +106,7 @@ Plug 'https://github.com/Shougo/neocomplete.vim.git'
 Plug 'https://github.com/morhetz/gruvbox.git'
 
 " An arctic, north-bluish clean and elegant Vim theme.
-Plug 'https://github.com/arcticicestudio/nord-vim.git'
+" Plug 'https://github.com/arcticicestudio/nord-vim.git'
 
 " Rainbow Parentheses Improved, shorter code, no level limit,
 " smooth and fast, powerful configuration.
@@ -223,7 +223,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " Plug 'https://github.com/rhysd/vim-clang-format.git'
 
 " A Vim plugin for visually displaying indent levels in code.
-Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
+" Plug 'https://github.com/nathanaelkane/vim-indent-guides.git'
 
 " Display all accessible marks and their surrounding lines in a collapsible
 " sidebar.
@@ -241,6 +241,9 @@ Plug 'https://github.com/nvim-telescope/telescope.nvim'
 
 " lua `fork` of vim-web-devicons for neovim.
 Plug 'https://github.com/kyazdani42/nvim-web-devicons'
+
+" A fancy, configurable, notification manager for NeoVim.
+Plug 'https://github.com/rcarriga/nvim-notify'
 
 call plug#end()
 

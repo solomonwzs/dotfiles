@@ -83,7 +83,9 @@ let g:lightline.component_type = {
     \   'coc_fix'     : 'middle',
     \ }
 
-let g:lightline.colorscheme = 'gruvbox'
+if lib#bundle#has_loaded('gruvbox')
+  let g:lightline.colorscheme = 'gruvbox'
+endif
 let g:lightline.separator = { 'left': '', 'right': '' }
 let g:lightline.tabline_subseparator = { 'left': '', 'right': '|' }
 
@@ -105,8 +107,9 @@ function! LightlineIcon(n) abort
   let buflist = tabpagebuflist(a:n)
   let winnr = tabpagewinnr(a:n)
   let fn = expand('#'.buflist[winnr - 1].':t')
-  let ext = expand('#'.buflist[winnr - 1].':e')
-  let icon = lib#icons#file_node_ext_icon(ext, fn)
+  " let ext = expand('#'.buflist[winnr - 1].':e')
+  let filetype = getbufvar(buflist[winnr - 1], '&filetype')
+  let icon = lib#icons#file_node_ext_icon(filetype, fn)
   let icon = empty(icon) ? '' : icon.' '
   return icon
 endfunction

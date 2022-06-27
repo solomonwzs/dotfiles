@@ -103,8 +103,16 @@ var Commands = class {
 var commands_default = Commands;
 
 // src/lists/lists.ts
+var import_coc2 = __toModule(require("coc.nvim"));
+
+// src/utils/notify.ts
 var import_coc = __toModule(require("coc.nvim"));
-var ExtList = class extends import_coc.BasicList {
+function showNotification(content, title, hl) {
+  import_coc.window.showMessage(content);
+}
+
+// src/lists/lists.ts
+var ExtList = class extends import_coc2.BasicList {
   constructor(nvim) {
     super(nvim);
     this.name = "ext_list";
@@ -112,7 +120,7 @@ var ExtList = class extends import_coc.BasicList {
     this.defaultAction = "open";
     this.actions = [];
     this.addAction("open", (item) => {
-      import_coc.window.showMessage(`${item.label}, ${item.data.name}`);
+      showNotification(`${item.label}, ${item.data.name}`);
     });
   }
   async loadItems(context) {
@@ -161,17 +169,14 @@ var MapkeyList = class {
 var mapkey_default = MapkeyList;
 
 // src/utils/config.ts
-var import_coc2 = __toModule(require("coc.nvim"));
+var import_coc3 = __toModule(require("coc.nvim"));
 function getcfg(key, defaultValue) {
-  const config = import_coc2.workspace.getConfiguration("coc-ext");
+  const config = import_coc3.workspace.getConfiguration("coc-ext");
   return config.get(key, defaultValue);
 }
 
-// src/formatter/formatprovider.ts
-var import_coc10 = __toModule(require("coc.nvim"));
-
 // src/utils/logger.ts
-var import_coc3 = __toModule(require("coc.nvim"));
+var import_coc4 = __toModule(require("coc.nvim"));
 
 // src/utils/common.ts
 var import_path = __toModule(require("path"));
@@ -189,7 +194,7 @@ function stringify(value) {
 var import_path2 = __toModule(require("path"));
 var Logger = class {
   constructor() {
-    this.channel = import_coc3.window.createOutputChannel("coc-ext");
+    this.channel = import_coc4.window.createOutputChannel("coc-ext");
     this.detail = getcfg("log.detail", false) === true;
     this.level = getcfg("log.level", 1);
   }
@@ -241,7 +246,7 @@ var Logger = class {
 var logger = new Logger();
 
 // src/formatter/clfformatter.ts
-var import_coc4 = __toModule(require("coc.nvim"));
+var import_coc5 = __toModule(require("coc.nvim"));
 
 // src/formatter/baseformatter.ts
 var BaseFormatter = class {
@@ -328,7 +333,7 @@ var ClfFormatter = class extends BaseFormatter {
     if (range) {
       return [];
     }
-    const filepath = import_coc4.Uri.parse(document.uri).fsPath;
+    const filepath = import_coc5.Uri.parse(document.uri).fsPath;
     const setting = {};
     if (this.setting.args) {
       for (const k in this.setting.args) {
@@ -353,14 +358,14 @@ var ClfFormatter = class extends BaseFormatter {
     const exec = this.setting.exec ? this.setting.exec : "clang-format";
     const resp = await callShell(exec, args, document.getText());
     if (resp.exitCode != 0) {
-      import_coc4.window.showMessage(`clang-format fail, ret ${resp.exitCode}`);
+      showNotification(`clang-format fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
         logger.error(resp.error.toString());
       }
     } else if (resp.data) {
-      import_coc4.window.showMessage("clang-format ok");
+      showNotification("clang-format ok", "formatter");
       return [
-        import_coc4.TextEdit.replace({
+        import_coc5.TextEdit.replace({
           start: {line: 0, character: 0},
           end: {line: document.lineCount, character: 0}
         }, resp.data.toString())
@@ -371,10 +376,10 @@ var ClfFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/prettierformatter.ts
-var import_coc6 = __toModule(require("coc.nvim"));
+var import_coc7 = __toModule(require("coc.nvim"));
 
 // src/utils/helper.ts
-var import_coc5 = __toModule(require("coc.nvim"));
+var import_coc6 = __toModule(require("coc.nvim"));
 var import_path4 = __toModule(require("path"));
 var import_util = __toModule(require("util"));
 var import_fs = __toModule(require("fs"));
@@ -391,18 +396,18 @@ function positionInRange(pos, range) {
   return (range.start.line < pos.line || range.start.line == pos.line && range.start.character <= pos.character) && (pos.line < range.end.line || pos.line == range.end.line && pos.character <= range.end.character);
 }
 async function getText(mode) {
-  const doc = await import_coc5.workspace.document;
+  const doc = await import_coc6.workspace.document;
   let range = null;
   if (mode === "v") {
-    const text2 = (await import_coc5.workspace.nvim.call("lib#common#visual_selection", 1)).toString();
+    const text2 = (await import_coc6.workspace.nvim.call("lib#common#visual_selection", 1)).toString();
     return text2.trim();
   } else {
-    const pos = await import_coc5.window.getCursorPosition();
+    const pos = await import_coc6.window.getCursorPosition();
     range = doc.getWordRangeAtPosition(pos);
   }
   let text = "";
   if (!range) {
-    text = (await import_coc5.workspace.nvim.eval('expand("<cword>")')).toString();
+    text = (await import_coc6.workspace.nvim.eval('expand("<cword>")')).toString();
   } else {
     text = doc.textDocument.getText(range);
   }
@@ -426,7 +431,7 @@ ${content}` : content,
       filetype
     }
   ];
-  const win = new import_coc5.FloatFactory(import_coc5.workspace.nvim);
+  const win = new import_coc6.FloatFactory(import_coc6.workspace.nvim);
   await win.show(doc, cfg);
 }
 function fnvHash(data, seed = 0) {
@@ -454,7 +459,7 @@ function fnvHash(data, seed = 0) {
 }
 function getTempFileWithDocumentContents(document) {
   return new Promise((resolve, reject) => {
-    const fsPath = import_coc5.Uri.parse(document.uri).fsPath;
+    const fsPath = import_coc6.Uri.parse(document.uri).fsPath;
     const ext = import_path4.default.extname(fsPath);
     const fileName = `${fsPath}.${fnvHash(document.uri)}${ext}`;
     import_fs.default.writeFile(fileName, document.getText(), (ex) => {
@@ -490,14 +495,14 @@ var PrettierFormatter = class extends BaseFormatter {
     const resp = await callShell(exec, args);
     import_fs2.default.unlinkSync(filepath);
     if (resp.exitCode != 0) {
-      import_coc6.window.showMessage(`prettier fail, ret ${resp.exitCode}`);
+      showNotification(`prettier fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
         logger.error(resp.error.toString());
       }
     } else if (resp.data) {
-      import_coc6.window.showMessage("prettier ok");
+      showNotification("prettier ok", "formatter");
       return [
-        import_coc6.TextEdit.replace({
+        import_coc7.TextEdit.replace({
           start: {line: 0, character: 0},
           end: {line: document.lineCount, character: 0}
         }, resp.data.toString())
@@ -508,7 +513,7 @@ var PrettierFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/bazelformatter.ts
-var import_coc7 = __toModule(require("coc.nvim"));
+var import_coc8 = __toModule(require("coc.nvim"));
 var BazelFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -524,14 +529,14 @@ var BazelFormatter = class extends BaseFormatter {
     const exec = this.setting.exec ? this.setting.exec : "buildifier";
     const resp = await callShell(exec, [], document.getText());
     if (resp.exitCode != 0) {
-      import_coc7.window.showMessage(`buildifier fail, ret ${resp.exitCode}`);
+      showNotification(`buildifier fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
         logger.error(resp.error.toString());
       }
     } else if (resp.data) {
-      import_coc7.window.showMessage("buildifier ok");
+      showNotification("buildifier ok", "formatter");
       return [
-        import_coc7.TextEdit.replace({
+        import_coc8.TextEdit.replace({
           start: {line: 0, character: 0},
           end: {line: document.lineCount, character: 0}
         }, resp.data.toString())
@@ -542,7 +547,7 @@ var BazelFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/luaformatter.ts
-var import_coc8 = __toModule(require("coc.nvim"));
+var import_coc9 = __toModule(require("coc.nvim"));
 var LuaFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -582,14 +587,14 @@ var LuaFormatter = class extends BaseFormatter {
     const exec = this.setting.exec ? this.setting.exec : "lua-format";
     const resp = await callShell(exec, this.opts.concat(opts), document.getText());
     if (resp.exitCode != 0) {
-      import_coc8.window.showMessage(`lua-format fail, ret ${resp.exitCode}`);
+      showNotification(`lua-format fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
         logger.error(resp.error.toString());
       }
     } else if (resp.data) {
-      import_coc8.window.showMessage("lua-format ok");
+      showNotification("lua-format ok", "formatter");
       return [
-        import_coc8.TextEdit.replace({
+        import_coc9.TextEdit.replace({
           start: {line: 0, character: 0},
           end: {line: document.lineCount, character: 0}
         }, resp.data.toString())
@@ -600,7 +605,7 @@ var LuaFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/shellformatter.ts
-var import_coc9 = __toModule(require("coc.nvim"));
+var import_coc10 = __toModule(require("coc.nvim"));
 var ShellFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -620,14 +625,14 @@ var ShellFormatter = class extends BaseFormatter {
     const exec = this.setting.exec ? this.setting.exec : "shfmt";
     const resp = await callShell(exec, this.opts, document.getText());
     if (resp.exitCode != 0) {
-      import_coc9.window.showMessage(`shfmt fail, ret ${resp.exitCode}`);
+      showNotification(`shfmt fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
         logger.error(resp.error.toString());
       }
     } else if (resp.data) {
-      import_coc9.window.showMessage("shfmt ok");
+      showNotification("shfmt ok", "formatter");
       return [
-        import_coc9.TextEdit.replace({
+        import_coc10.TextEdit.replace({
           start: {line: 0, character: 0},
           end: {line: document.lineCount, character: 0}
         }, resp.data.toString())
@@ -657,7 +662,7 @@ var FormattingEditProvider = class {
   async _provideEdits(document, options, token, range) {
     if (!this.formatter) {
       logger.error("formatter was null");
-      import_coc10.window.showMessage("formatter was null");
+      showNotification("formatter was null", "formatter");
       return [];
     }
     return this.formatter.formatDocument(document, options, token, range);
@@ -763,33 +768,33 @@ var import_coc11 = __toModule(require("coc.nvim"));
 
 // src/utils/symbol.ts
 var import_coc12 = __toModule(require("coc.nvim"));
-var symbolKindName = {
-  1: "File",
-  2: "Module",
-  3: "Namespace",
-  4: "Package",
-  5: "Class",
-  6: "Method",
-  7: "Property",
-  8: "Field",
-  9: "Constructor",
-  10: "Enum",
-  11: "Interface",
-  12: "Function",
-  13: "Variable",
-  14: "Constant",
-  15: "String",
-  16: "Number",
-  17: "Boolean",
-  18: "Array",
-  19: "Object",
-  20: "Key",
-  21: "Null",
-  22: "EnumMember",
-  23: "Struct",
-  24: "Event",
-  25: "Operator",
-  26: "TypeParameter"
+var symbolKind2Info = {
+  1: {name: "File", icon: "\uF40E", short_name: "F"},
+  2: {name: "Module", icon: "\uF0E8", short_name: "M"},
+  3: {name: "Namespace", icon: "\uF668", short_name: "N"},
+  4: {name: "Package", icon: "\uF487", short_name: "P"},
+  5: {name: "Class", icon: "\uF0E8", short_name: "C"},
+  6: {name: "Method", icon: "\uE79B", short_name: "f"},
+  7: {name: "Property", icon: "\uFAB6", short_name: "p"},
+  8: {name: "Field", icon: "\uF9BE", short_name: "m"},
+  9: {name: "Constructor", icon: "\uF425", short_name: "c"},
+  10: {name: "Enum", icon: "\uF435", short_name: "E"},
+  11: {name: "Interface", icon: "\uF417", short_name: "I"},
+  12: {name: "Function", icon: "\u0192", short_name: "f"},
+  13: {name: "Variable", icon: "\uE79B", short_name: "v"},
+  14: {name: "Constant", icon: "\uF8FE", short_name: "C"},
+  15: {name: "String", icon: "\uF672", short_name: "S"},
+  16: {name: "Number", icon: "\uF89F", short_name: "n"},
+  17: {name: "Boolean", icon: "", short_name: "b"},
+  18: {name: "Array", icon: "\uF669", short_name: "a"},
+  19: {name: "Object", icon: "\uF0E8", short_name: "O"},
+  20: {name: "Key", icon: "\uF805", short_name: "K"},
+  21: {name: "Null", icon: "\uFCE0", short_name: "n"},
+  22: {name: "EnumMember", icon: "\uF02B", short_name: "m"},
+  23: {name: "Struct", icon: "\uFB44", short_name: "S"},
+  24: {name: "Event", icon: "\uFACD", short_name: "e"},
+  25: {name: "Operator", icon: "\u03A8", short_name: "o"},
+  26: {name: "TypeParameter", icon: "\uF671", short_name: "T"}
 };
 async function getDocumentSymbols(bufnr0) {
   const {nvim} = import_coc12.workspace;
@@ -819,10 +824,13 @@ async function getCursorSymbolList() {
     ok = false;
     for (const s of slist) {
       if (positionInRange(pos, s.range)) {
+        let info = symbolKind2Info[s.kind];
         symList.push({
           name: s.name,
+          short_name: info.short_name,
           detail: s.detail,
-          kind: symbolKindName[s.kind]
+          kind: info.name,
+          icon: info.icon
         });
         slist = s.children;
         ok = true;
@@ -994,12 +1002,16 @@ async function getCursorSymbolInfo() {
     return;
   }
   let msg = "";
+  let space = " ";
   for (const i of infoList) {
-    const line = `[${i.kind[0]}] ${i.name}`;
-    if (msg.length != 0) {
-      msg += ` > `;
+    const line = `[${i.short_name}] ${i.name}`;
+    if (msg.length == 0) {
+      msg = `\uF0DA ${line}`;
+    } else {
+      msg += `
+${space}\uF0DA ${line}`;
+      space += " ";
     }
-    msg += line;
   }
   await popup(msg);
 }

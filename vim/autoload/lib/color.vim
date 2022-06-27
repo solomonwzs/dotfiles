@@ -3,40 +3,28 @@
 " @date       2021-01-04
 " @license    MIT
 
-function! lib#color#vim_cterm_fg()
-  let i = 0
-  let prefix = 'xCterm_FG_'
 
-  let groups = []
-  while i < 256
-    let group_name = prefix.i
+function! lib#color#xcterm256_color() abort
+  let prefix_fg = 'xCtermFg_'
+  let prefix_bg = 'xCtermBg_'
+  let groups_bg = []
+  let groups_fg = []
+
+  for i in range(0, 255)
+    let group_name = prefix_fg.i
     exec 'hi '.group_name.' ctermfg='.i
     exec 'syn match '.group_name.' contained "'.i.'"'
-    call add(groups, group_name)
-    let i += 1
-  endwhile
-  call add(groups, 'vimHiNmbr')
+    call add(groups_fg, group_name)
 
-  let cluster_name = prefix.'Groups'
-  exec 'syn match vimHiTerm contained "\cctermfg="he=e-1 nextgroup=@'.cluster_name
-  exec 'syn cluster '.cluster_name.' contains='.join(groups, ',')
-endfunc
-
-function! lib#color#vim_cterm_bg()
-  let i = 0
-  let prefix = 'xCterm_BG_'
-
-  let groups = []
-  while i < 256
-    let group_name = prefix.i
-    exec 'hi '.group_name.' ctermfg=NONE ctermbg='.i
+    let group_name = prefix_bg.i
+    exec 'hi '.group_name.' ctermbg='.i
     exec 'syn match '.group_name.' contained "'.i.'"'
-    call add(groups, group_name)
-    let i += 1
-  endwhile
-  call add(groups, 'vimHiNmbr')
+    call add(groups_bg, group_name)
+  endfor
 
-  let cluster_name = prefix.'Groups'
-  exec 'syn match vimHiTerm contained "\cctermbg="he=e-1 nextgroup=@'.cluster_name
-  exec 'syn cluster '.cluster_name.' contains='.join(groups, ',')
-endfunc
+  let cluster_fg = 'Xcterm256_FG'
+  let cluster_bg = 'Xcterm256_BG'
+  exec 'syn cluster '.cluster_fg.' contains='.join(groups_fg, ',')
+  exec 'syn cluster '.cluster_bg.' contains='.join(groups_bg, ',')
+  return [cluster_fg, cluster_bg]
+endfunction

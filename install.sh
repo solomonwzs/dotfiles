@@ -21,6 +21,30 @@ function warn() {
     echo -e "\033[01;31m[WARN]\033[01;37m $1\033[0m"
 }
 
+function check_pkg() {
+    if _loc="$(type -p "$1")" && [[ -n $_loc ]]; then
+        return
+    else
+        warn "Missing $1"
+    fi
+}
+
+pkg_list=(
+    "fzf"
+    "git"
+    "lua"
+    "node"
+    "nvim"
+    "rg"
+    "tig"
+    "tmux"
+    "vim"
+    "yarn"
+)
+for p in "${pkg_list[@]}"; do
+    check_pkg "$p"
+done
+
 function make_link() {
     target="$1"
     link_name="$2"
@@ -61,6 +85,7 @@ info "Create terminfo"
     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
 copy_file "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
+make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
 info "Download 'oh-my-zsh'"
