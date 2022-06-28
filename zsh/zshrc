@@ -244,19 +244,24 @@ fi
 # Setting for fzf
 #####################
 
-pfzf() {
-    command fzf --preview '[[ $(file --mime {}) =~ binary ]] &&
-        echo {} is a binary file ||
+export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
+
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse'
+
+fzf_preview_file() {
+    printf '[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file ||
         (bat --style=numbers --color=always {} ||
         highlight -O ansi -l {} ||
         coderay {} ||
         rougify {} ||
-        cat {}) 2> /dev/null | head -500' \
+        cat {}) 2> /dev/null | head -%d' "$1"
+}
+
+pfzf() {
+    command fzf --preview "$(fzf_preview_file 200)" \
         --bind 'enter:execute(${EDITOR:-vim} {})' \
         --bind 'ctrl-o:execute(open {})'
 }
-
-export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
 
 # Use fd (https://github.com/sharkdp/fd) instead of the default find
 # command for listing path candidates.
@@ -269,4 +274,21 @@ _fzf_compgen_path() {
 # Use fd to generate the list for directory completion
 _fzf_compgen_dir() {
     fd --type d --hidden --follow --exclude ".git" . "$1"
+}
+
+# (EXPERIMENTAL) Advanced customization of fzf options via _fzf_comprun function
+# - The first argument to the function is the name of the command.
+# - You should make sure to pass the rest of the arguments to fzf.
+_fzf_comprun() {
+    local command=$1
+    shift
+
+    case "$command" in
+    cd) fzf "$@" --preview 'tree -C {} | head -200' ;;
+    export | unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
+    ssh) fzf "$@" --preview 'dig {}' ;;
+    tig) fzf "$@" --preview 'git log --graph {} | head -200' ;;
+    vim | nvim) fzf "$@" --preview "$(fzf_preview_file 200)" ;;
+    *) fzf "$@" ;;
+    esac
 }
