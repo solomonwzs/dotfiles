@@ -284,7 +284,7 @@ _fzf_comprun() {
     shift
 
     case "$command" in
-    cd) fzf "$@" --preview 'tree -C {} | head -200' ;;
+    # cd) fzf "$@" --preview 'tree -C {} | head -200' ;;
     export | unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
     ssh) fzf "$@" --preview 'dig {}' ;;
     tig) fzf "$@" --preview 'git log --graph {} | head -200' ;;
