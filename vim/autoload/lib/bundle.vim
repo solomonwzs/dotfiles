@@ -10,6 +10,7 @@ let s:bundle_list = [
     \ {'name': 'coc.nvim', 'priority': 2},
     \ {'name': 'defx-git', 'vim': 0, 'deps': ['defx.nvim']},
     \ {'name': 'defx.nvim', 'vim': 0},
+    \ {'name': 'defx-icons'},
     \ {'name': 'deol.nvim'},
     \ {'name': 'gruvbox', 'priority': 1},
     \ {'name': 'lightline.vim', 'priority': 2},

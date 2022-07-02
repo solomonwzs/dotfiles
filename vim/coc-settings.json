@@ -44,11 +44,13 @@
   "diagnostic.warningSign": "",
 
   "list.insertMappings": {
-    "<C-x>": "do:exit"
+    "<C-x>": "do:exit",
+    "<C-p>": "action:preview"
   },
   "list.normalMappings": {
     "<C-x>": "do:exit"
   },
+  "list.previewSplitRight": true,
 
   "coc-ext.erlang.erlangLsPath": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
   "coc-ext.erlang.traceServer": "off",
