@@ -199,7 +199,11 @@ let s:file_node_pattern_matches = {
         \ }
 
 function! lib#icons#file_node_ext_icon(filetype, filename)
-  let icon = get(s:file_node_exact_matches, tolower(a:filename), '')
-  if !empty(icon) | return icon | endif
-  return get(s:file_node_extensions, tolower(a:filetype), '')
+  if g:loaded_defx_icons == 0 | return '' | endif
+
+  let defx_icons = defx_icons#get()
+  let icon = get(defx_icons.icons.exact_matches, tolower(a:filename), '')
+  if !empty(icon) | return icon.icon | endif
+  let icon = get(defx_icons.icons.extensions, tolower(a:filetype), '')
+  if !empty(icon) | return icon.icon | else | return '' | endif
 endfunction

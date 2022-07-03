@@ -13,7 +13,7 @@ let s:bundle_list = [
     \ {'name': 'defx-icons'},
     \ {'name': 'deol.nvim'},
     \ {'name': 'gruvbox', 'priority': 1},
-    \ {'name': 'lightline.vim', 'priority': 2},
+    \ {'name': 'lightline.vim', 'priority': 2, 'deps': ['defx-icons', 'gruvbox']},
     \ {'name': 'nerdtree', 'nvim': 0},
     \ {'name': 'nvim-notify', 'vim': 0, 'nvim': 0, 'priority': -1},
     \ {'name': 'nvim-treesitter', 'vim': 0},

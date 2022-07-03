@@ -334,12 +334,15 @@ async function defx_init() {
   defx_icons = await nvim.eval("defx_icons#get()");
   let colors = new Set();
   for (const i of Object.values(defx_icons.icons.exact_matches)) {
+    i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
   for (const i of Object.values(defx_icons.icons.extensions)) {
+    i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
   for (const i of Object.values(defx_icons.icons.pattern_matches)) {
+    i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
   for (const i of colors) {
@@ -428,12 +431,12 @@ var RgList = class extends import_coc6.BasicList {
       items.push({
         label,
         data: {name: i, filetype: extname},
-        ansiHighlights: [
+        ansiHighlights: icon.hlGroup ? [
           {
             span: [0, Buffer.byteLength(icon.icon)],
-            hlGroup: `DefxIcoFg_${icon.term_color}`
+            hlGroup: icon.hlGroup
           }
-        ]
+        ] : void 0
       });
     }
     return items;
