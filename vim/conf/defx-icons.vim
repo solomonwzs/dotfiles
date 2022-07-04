@@ -24,6 +24,7 @@ let g:defx_icons_term_colors = {
 let g:defx_icons_extensions = {
     \ 'snippets':   {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ 'tigrc':      {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'leaderf':    {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ }
 
 let g:defx_icons_exact_matches = {
