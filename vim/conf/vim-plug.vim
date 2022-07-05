@@ -64,7 +64,7 @@ Plug 'https://github.com/tpope/vim-commentary'
 Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 
 " Vim plugin that displays tags in a window, ordered by scope
-" Plug 'https://github.com/majutsushi/tagbar'
+Plug 'https://github.com/majutsushi/tagbar'
 
 " Vim plugin for the Perl module / CLI script 'ack'
 Plug 'https://github.com/mileszs/ack.vim.git'

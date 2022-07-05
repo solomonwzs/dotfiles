@@ -20,7 +20,7 @@ let s:bundle_list = [
     \ {'name': 'plenary.nvim', 'vim': 0},
     \ {'name': 'rainbow'},
     \ {'name': 'tabular'},
-    \ {'name': 'tagbar'},
+    \ {'name': 'tagbar', 'priority': 2},
     \ {'name': 'telescope.nvim', 'vim': 0},
     \ {'name': 'ultisnips'},
     \ {'name': 'vim-commentary'},
