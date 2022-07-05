@@ -22,9 +22,18 @@ let g:defx_icons_term_colors = {
     \ }
 
 let g:defx_icons_extensions = {
-    \ 'snippets':   {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
-    \ 'tigrc':      {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'bzl':        {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'defx':       {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'nerdtree':   {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'coctree':    {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'help':       {'icon': 'ﬤ', 'color': '231', 'term_color': s:default_color[1]},
     \ 'leaderf':    {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'man':        {'icon': 'ﬤ', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'snippets':   {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'tagbar':     {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'text':       {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'tigrc':      {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'tmux':       {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ }
 
 let g:defx_icons_exact_matches = {
