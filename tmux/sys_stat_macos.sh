@@ -8,7 +8,7 @@
 set -euo pipefail
 
 # CURRENT_FILENAME=$(readlink -f "${BASH_SOURCE[0]}")
-EXECUTE_FILENAME=$(readlink -f "$0")
+EXECUTE_FILENAME=$(greadlink -f "$0")
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 source "$EXECUTE_DIRNAME/utils.sh"
 
