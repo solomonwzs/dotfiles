@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # svn setting
 MY_SVN_USER=""
 MY_SVN_PASS=""
