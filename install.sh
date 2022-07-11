@@ -30,6 +30,8 @@ function check_pkg() {
 }
 
 pkg_list=(
+    "bat"
+    "fd"
     "fzf"
     "git"
     "lua"
