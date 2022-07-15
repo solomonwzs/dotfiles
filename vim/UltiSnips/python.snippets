@@ -36,3 +36,10 @@ try:
 except ${2:Exception} as ${3:e}:
 	${4:raise $3}
 endsnippet
+
+snippet logconf "logging conf" b
+logging.basicConfig(
+    format="\033[3;32m(%(levelname).1s) %(asctime)s [%(filename)s:%(lineno)s - %(funcName)s]\033[0m %(message)s",
+    level=logging.DEBUG,
+)
+endsnippet
