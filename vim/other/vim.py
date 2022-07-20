@@ -9,6 +9,10 @@
 from typing import Callable, Any
 
 
+class Range:
+    pass
+
+
 class Buffer:
     """
     Buffer objects represent vim buffers.  You can obtain them in a number of ways:
@@ -70,6 +74,45 @@ class Buffer:
         corresponding buffer is wiped out.
         """
 
+    def __len__(self) -> int:
+        return 0
+
+    def __getitem__(self, i: int | slice) -> str | list[str] | None:
+        return None
+
+    def __setitem__(self, i: int | slice, val: str | list[str] | None) -> None:
+        pass
+
+    def __delitem__(self, i: int | slice) -> None:
+        pass
+
+    def append(self, s: str | list, nr: int = 0) -> None:
+        """
+        b.append(str)	Append a line to the buffer
+        b.append(str, nr)  Idem, below line "nr"
+        b.append(list)	Append a list of lines to the buffer
+                        Note that the option of supplying a list of strings to
+                        the append method differs from the equivalent method
+                        for Python's built-in list objects.
+        b.append(list, nr)  Idem, below line "nr"
+        """
+        pass
+
+    def mark(self, name: str) -> tuple[int, int]:
+        """
+        Return a tuple (row,col) representing the position
+        of the named mark (can also get the []"<> marks)
+        """
+        return (0, 0)
+
+    def range(self, s: int, e: int) -> Range:
+        """
+        Return a range object (see |python-range|) which
+        represents the part of the given buffer between line
+        numbers s and e |inclusive|.
+        """
+        return Range()
+
 
 def command(command: str) -> None:
     """
@@ -128,3 +171,19 @@ buffers: list[Buffer] = []
 """
 A mapping object providing access to the list of vim buffers.
 """
+
+if __name__ == "__main__":
+    b = Buffer()
+    print(b.name)  # write the buffer file name
+    b[0] = "hello!!!"  # replace the top line
+    b[:] = None  # delete the whole buffer
+    del b[:]  # delete the whole buffer
+    b[0:0] = ["a line"]  # add a line at the top
+    del b[2]  # delete a line (the third)
+    b.append("bottom")  # add a line at the bottom
+    n = len(b)  # number of lines
+    (row, col) = b.mark("a")  # named mark
+    r = b.range(1, 5)  # a sub-range of the buffer
+    b.vars["foo"] = "bar"  # assign b:foo variable
+    b.options["ff"] = "dos"  # set fileformat
+    del b.options["ar"]  # same as :set autoread<
