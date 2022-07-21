@@ -10,7 +10,165 @@ from typing import Callable, Any
 
 
 class Range:
-    pass
+    """
+    Range objects represent a part of a vim buffer.  You can obtain them in a
+    number of ways:
+            - via vim.current.range (|python-current|)
+            - from a buffer's range() method (|python-buffer|)
+
+    A range object is almost identical in operation to a buffer object.  However,
+    all operations are restricted to the lines within the range (this line range
+    can, of course, change as a result of slice assignments, line deletions, or
+    the range.append() method).
+    """
+
+    def __init__(self):
+        self.start: int
+        """
+        Index of first line into the buffer
+        """
+
+        self.end: int
+        """
+        Index of last line into the buffer
+        """
+
+    def append(self, s: str | list, nr: int = 0) -> None:
+        """
+        r.append(str)	Append a line to the range
+        r.append(str, nr)  Idem, after line "nr"
+        r.append(list)	Append a list of lines to the range
+                        Note that the option of supplying a list of strings to
+                        the append method differs from the equivalent method
+                        for Python's built-in list objects.
+        r.append(list, nr)  Idem, after line "nr"
+        """
+        pass
+
+
+class Window:
+    """
+    Window objects represent vim windows.  You can obtain them in a number of ways:
+            - via vim.current.window (|python-current|)
+            - from indexing vim.windows (|python-windows|)
+            - from indexing "windows" attribute of a tab page (|python-tabpage|)
+            - from the "window" attribute of a tab page (|python-tabpage|)
+
+    You can manipulate window objects only through their attributes.  They have no
+    methods, and no sequence or other interface.
+    """
+
+    def __init__(self):
+        self.buffer: Buffer
+        """
+        The buffer displayed in this window (RO)
+        """
+
+        self.cursor: tuple[int, int]
+        """
+        The current cursor position in the window
+        This is a tuple, (row,col) (RW)
+        """
+
+        self.height: int
+        """
+        The window height, in rows (RW)
+        """
+
+        self.width: int
+        """
+        The window width, in columns (RW)
+        """
+
+        self.vars: dict = {}
+        """
+        The window |w:| variables. Attribute is
+        unassignable, but you can change window
+        variables this way (RO)
+        """
+
+        self.options: dict = {}
+        """
+        The window-local options. Attribute is
+        unassignable, but you can change window
+        options this way. Provides access only to
+        window-local options, for buffer-local use
+        |python-buffer| and for global ones use
+        |python-options|. If option is |global-local|
+        and local value is missing getting it will
+        return None. (RO)
+        """
+
+        self.number: int
+        """
+        Window number.  The first window has number 1.
+        This is zero in case it cannot be determined
+        (e.g. when the window object belongs to other
+        tab page). (RO)
+        """
+
+        self.row: int
+        """
+        On-screen window position in display cells.
+        First position is zero. (RO)
+        """
+
+        self.col: int
+        """
+        On-screen window position in display cells.
+        First position is zero. (RO)
+        """
+
+        self.tabpage: TabPage
+        """
+        Window tab page. (RO)
+        """
+
+        self.valid: bool
+        """
+        True or False. Window object becomes invalid
+        when corresponding window is closed. (RW)
+        """
+
+
+class TabPage:
+    """
+    Tab page objects represent vim tab pages. You can obtain them in a number of
+    ways:
+            - via vim.current.tabpage (|python-current|)
+            - from indexing vim.tabpages (|python-tabpages|)
+
+    You can use this object to access tab page windows. They have no methods and
+    no sequence or other interfaces.
+    """
+
+    def __init__(self):
+        self.number: int
+        """
+        The tab page number like the one returned by
+        tabpagenr().
+        """
+
+        self.windows: list[Window]
+        """
+        Like python-windows, but for current tab page.
+        """
+
+        self.vars: dict = {}
+        """
+        The tab page t: variables.
+        """
+
+        self.window: Window
+        """
+        Current tabpage window.
+        """
+
+        self.valid: bool
+        """
+        True or False. Tab page object becomes invalid when
+        corresponding tab page is closed.
+        """
 
 
 class Buffer:
@@ -114,7 +272,7 @@ class Buffer:
         return Range()
 
 
-def command(command: str) -> None:
+def command(cmd: str) -> None:
     """
     Executes the vim (ex-mode) command str.  Returns None.
     """
@@ -161,6 +319,56 @@ def chdir(*args, **kwargs) -> None:
     pass
 
 
+def find_module(*args, **kwargs) -> object:
+    """
+    Methods or objects used to implement path loading as described above.
+    You should not be using any of these directly except for vim.path_hook
+    in case you need to do something with sys.meta_path. It is not
+    guaranteed that any of the objects will exist in the future vim
+    versions.
+    """
+    pass
+
+
+def path_hook(path: str) -> object:
+    """
+    Methods or objects used to implement path loading as described above.
+    You should not be using any of these directly except for vim.path_hook
+    in case you need to do something with sys.meta_path. It is not
+    guaranteed that any of the objects will exist in the future vim
+    versions.
+    """
+    pass
+
+
+class Current:
+    def __init__(self):
+        self.line: str
+        """
+        The current line (RW)
+        """
+
+        self.buffer: Buffer
+        """
+        The current buffer (RW)
+        """
+
+        self.window: Window
+        """
+        The current window (RW)
+        """
+
+        self.tabpage: TabPage
+        """
+        The current tab page (RW)
+        """
+
+        self.range: Range
+        """
+        The current line range (R0)
+        """
+
+
 error = Exception()
 """
 Upon encountering a Vim error, Python raises an exception of type
@@ -169,7 +377,90 @@ vim.error.
 
 buffers: list[Buffer] = []
 """
-A mapping object providing access to the list of vim buffers.
+A mapping object providing access to the list of vim buffers.  The
+object supports the following operations: >
+    :py b = vim.buffers[i]	# Indexing (read-only)
+    :py b in vim.buffers	# Membership test
+    :py n = len(vim.buffers)	# Number of elements
+    :py for b in vim.buffers:	# Iterating over buffer list
+"""
+
+windows: list[Window] = []
+"""
+A sequence object providing access to the list of vim windows.  The
+object supports the following operations: >
+    :py w = vim.windows[i]	# Indexing (read-only)
+    :py w in vim.windows	# Membership test
+    :py n = len(vim.windows)	# Number of elements
+    :py for w in vim.windows:	# Sequential access
+Note: vim.windows object always accesses current tab page.
+|python-tabpage|.windows objects are bound to parent |python-tabpage|
+object and always use windows from that tab page (or throw vim.error
+in case tab page was deleted). You can keep a reference to both
+without keeping a reference to vim module object or |python-tabpage|,
+they will not lose their properties in this case.
+"""
+
+current: Current
+"""
+An object providing access (via specific attributes) to various
+"current" objects available in vim:
+    vim.current.line	The current line (RW)		String
+    vim.current.buffer	The current buffer (RW)		Buffer
+    vim.current.window	The current window (RW)		Window
+    vim.current.tabpage	The current tab page (RW)	TabPage
+    vim.current.range	The current line range (RO)	Range
+
+The last case deserves a little explanation.  When the :python or
+:pyfile command specifies a range, this range of lines becomes the
+"current range".  A range is a bit like a buffer, but with all access
+restricted to a subset of lines.  See |python-range| for more details.
+
+Note: When assigning to vim.current.{buffer,window,tabpage} it expects
+valid |python-buffer|, |python-window| or |python-tabpage| objects
+respectively. Assigning triggers normal (with |autocommand|s)
+switching to given buffer, window or tab page. It is the only way to
+switch UI objects in python: you can't assign to
+|python-tabpage|.window attribute. To switch without triggering
+autocommands use >
+    py << EOF
+    saved_eventignore = vim.options['eventignore']
+    vim.options['eventignore'] = 'all'
+    try:
+        vim.current.buffer = vim.buffers[2] # Switch to buffer 2
+    finally:
+        vim.options['eventignore'] = saved_eventignore
+    EOF
+"""
+
+tabpages: list[TabPage] = []
+"""
+A sequence object providing access to the list of vim tab pages. The
+object supports the following operations: >
+    :py t = vim.tabpages[i]	# Indexing (read-only)
+    :py t in vim.tabpages	# Membership test
+    :py n = len(vim.tabpages)	# Number of elements
+    :py for t in vim.tabpages:	# Sequential access
+"""
+
+vars: dict = {}
+"""
+Dictionary-like objects holding dictionaries with global (|g:|) and
+vim (|v:|) variables respectively.
+"""
+
+vvars: dict = {}
+"""
+Dictionary-like objects holding dictionaries with global (|g:|) and
+vim (|v:|) variables respectively.
+"""
+
+VIM_SPECIAL_PATH: str = ""
+"""
+String constant used in conjunction with vim path hook. If path hook
+installed by vim is requested to handle anything but path equal to
+vim.VIM_SPECIAL_PATH constant it raises ImportError. In the only other
+case it uses special loader.
 """
 
 if __name__ == "__main__":

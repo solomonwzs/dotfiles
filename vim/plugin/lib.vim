@@ -32,7 +32,7 @@ command! -nargs=0 WindowsDebug
         \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-        \ call ui#float#test()
+        \ call lib#debug#bar()
 
 augroup my_plugin_lib
     autocmd!

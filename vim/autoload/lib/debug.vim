@@ -20,5 +20,8 @@ echo g:foo
 endfunction
 
 function! lib#debug#bar()
-  echo 'hello'
+  redir => tmp
+  silent verbose highlight
+  redir END
+  echo tmp
 endfunction
