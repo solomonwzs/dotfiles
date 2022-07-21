@@ -10,7 +10,9 @@ endfunction
 
 function! leaderf#rrg#files_with_matches_accept(line, args) abort
   let arr = split(a:line)
-  exec 'hide edit +/'.a:args.pattern.' '.arr[1]
+  exec 'silent edit '.arr[1]
+  let @/ = a:args.pattern
+  call feedkeys("/\<CR>")
 endfunction
 
 function! leaderf#rrg#files_with_matches_format_line(line, args) abort
@@ -30,3 +32,7 @@ EOF
   let icon = lib#icons#file_node_ext_icon(ext, fname)
   return icon.'  '.a:line
 endfunction
+
+" function! leaderf#rrg#files_with_matches_after_enter(orig_buf_nr, orig_cursor, args) abort
+"   echo a:orig_buf_nr."\n"
+" endfunction

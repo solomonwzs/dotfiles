@@ -64,14 +64,14 @@ function! ui#float#new(title, content)
     let win = popup_create(buf, {
         \ 'maxwidth': area_size[0] + 2,
         \ 'padding': [0, 1, 0, 1],
-        \ 'col': 'cursor+1',
+        \ 'col': 'cursor',
         \ 'line': 'cursor+1',
         \ })
   else
     let win = nvim_open_win(buf, v:false, {
         \ 'width': area_size[0] + 2,
         \ 'height': area_size[1],
-        \ 'col': 1,
+        \ 'col': 0,
         \ 'row': 1,
         \ 'relative': 'cursor',
         \ })
@@ -114,7 +114,7 @@ function! ui#float#close_all_float()
 endfunction
 
 augroup my_autoload_ui_float
-  " autocmd CursorMoved * call ui#float#close_all_float()
+  autocmd CursorMoved * call ui#float#close_all_float()
 
   autocmd FileType ui_float setlocal nonumber
   autocmd FileType ui_float setlocal nocursorline
@@ -125,7 +125,7 @@ augroup my_autoload_ui_float
   if !s:is_vim
     autocmd FileType ui_float setlocal foldcolumn=1
     autocmd FileType ui_float
-      \ setlocal winhl=Normal:UIFloat,NormalNC:UIFloat,FoldColumn:UIFloat
+      \ setlocal winhl=Normal:Pmenu,NormalNC:Pmenu,FoldColumn:Pmenu
     " there is a single space after '\ '
     autocmd FileType ui_float setlocal fillchars=eob:\ 
   endif
