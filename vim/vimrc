@@ -80,6 +80,7 @@ let g:tex_flavor='latex'
 augroup my_vimrc
   autocmd!
 
+  " autocmd SwapExists * let v:swapchoice = "o"
   autocmd CursorMovedI * if pumvisible() == 0 | pclose | endif
   autocmd InsertLeave * if pumvisible() == 0 | pclose | endif
 

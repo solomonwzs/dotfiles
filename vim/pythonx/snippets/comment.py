@@ -70,7 +70,9 @@ def exec_comment(filetype):
 
 
 def get_line_comment_symbol(filetype):
-    comment = lang_symbol_info.get(filetype, {}).get("comment", sh_style_comment_symbol)
+    comment = lang_symbol_info.get(filetype, {}).get(
+        "comment", sh_style_comment_symbol
+    )
     return comment.get("left", ""), comment.get("right", "")
 
 
@@ -144,12 +146,16 @@ def comment_line(snip):
     # Uncomment
     if first_line.strip().startswith(START):
         result = [
-            line.replace(START, "", 1).replace(END, "", 1) if line.strip() else line
+            line.replace(START, "", 1).replace(END, "", 1)
+            if line.strip()
+            else line
             for line in lines
         ]
     else:
         result = [
-            f"{spaces}{START}{line[len(spaces):]}{END}" if line.strip() else line
+            f"{spaces}{START}{line[len(spaces):]}{END}"
+            if line.strip()
+            else line
             for line in lines
         ]
 
@@ -182,7 +188,9 @@ def comment_block(snip, START, END):
     if text.strip().startswith(START):
         result = text.replace(START, "", 1).replace(END, "", 1)
     else:
-        result = text.replace(spaces, spaces + START, 1).rstrip("\n") + END + "\n"
+        result = (
+            text.replace(spaces, spaces + START, 1).rstrip("\n") + END + "\n"
+        )
 
     if initial_indent:
         result = result.replace(initial_indent, "", 1)

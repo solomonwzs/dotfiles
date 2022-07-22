@@ -71,8 +71,8 @@ let g:lightline.component_expand = {
     \   'filepath'    : 'LightLineFilePath',
     \   'vsstatus'    : 'LightlineVerCtrlStatus',
     \   'method'      : 'LightlineCocCurrentFunction',
-    \   'modifiedx'   : 'LightlineModified',
-    \   'readonlyx'   : 'LightlineReadonly',
+    \   '_modified'   : 'LightlineModified',
+    \   '_readonly'   : 'LightlineReadonly',
     \ }
 
 let g:lightline.component_type = {
