@@ -58,7 +58,12 @@ let g:ale_pattern_options = {
         \ '.*\.js$': {'ale_enabled': 0},
         \ }
 
-python3 << EOF
-from vconf.ale import set_cxx_gcc_options
-set_cxx_gcc_options()
-EOF
+let s:copts = lib#py#call('project', "get_cxx_gcc_options", v:null)
+if s:copts.error == 0
+  if has_key(s:copts.data, 'ale_c_cc_options')
+    let g:ale_c_cc_options = s:copts.data.ale_c_cc_options
+  endif
+  if has_key(s:copts.data, 'ale_cpp_cc_options')
+    let g:ale_cpp_cc_options = s:copts.data.ale_cpp_cc_options
+  endif
+endif

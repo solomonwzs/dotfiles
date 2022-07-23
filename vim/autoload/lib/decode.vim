@@ -5,40 +5,20 @@
 
 function! lib#decode#decode_utf8_bytes()
   let text = lib#common#visual_selection(0)
-  let ustr = ''
-  let ok = v:true
-python3 << EOF
-import vim
-import common
-
-ok, ustr = common.decode_utf8_str(vim.eval('text'))
-vim.command('let ustr = "%s"' % ustr)
-if not ok:
-  vim.command('let ok = v:false')
-EOF
-  if ok
-    call ui#float#message('UTF8 Decode', [ustr], {'visual': 1})
+  let res = lib#py#call('coder', 'decode_utf8_str', text)
+  if res.error == 0
+    call ui#float#message('UTF8 Decode', [res.data], {'visual': 1})
   else
-    call ui#float#message('UTF8 Decode Error', [ustr], {'visual': 1})
+    call ui#float#message('UTF8 Decode Error', [res.msg], {'visual': 1})
   endif
 endfunc
 
 function! lib#decode#decode_mime_str()
   let text = lib#common#visual_selection(0)
-  let ustr = ''
-  let ok = v:true
-python3 << EOF
-import vim
-import common
-
-ok, ustr = common.decode_mime_encode_str(vim.eval('text'))
-vim.command('let ustr = "%s"' % ustr)
-if not ok:
-  vim.command('let ok = v:false')
-EOF
-  if ok
-    call ui#float#message('Mime Decode', [ustr], {'visual': 1})
+  let res = lib#py#call('coder', 'decode_mime_encode_str', text)
+  if res.error == 0 && res.data[0] == 1
+    call ui#float#message('Mime Decode', [res.data[1]], {'visual': 1})
   else
-    call ui#float#message('Mime Decode Error', [ustr], {'visual': 1})
+    call ui#float#message('Mime Decode Error', [res.data[1]], {'visual': 1})
   endif
 endfunc

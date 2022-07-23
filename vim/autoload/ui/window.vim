@@ -58,10 +58,6 @@ function! ui#window#new(argv)
 endfunc
 
 function! ui#window#test()
-" python3 << EOF
-" argv = {'position': 'top'}
-" vim.command(f"call ui#window#new({argv})")
-" EOF
   let argv = {'position': 'top'}
   echo ui#window#new(argv)
 endfunc

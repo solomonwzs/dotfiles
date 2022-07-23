@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 #
 # @author   Solomon Ng <solomon.wzs@gmail.com>
-# @date     2018-10-10
+# @date     2022-07-22
 # @version  1.0
 # @license  MIT
 
 
-def foo():
-    print("bar")
+def foo(arg):
+    return "hello"
+    # return {"a": 1, "b": [], "c": "\"123\""}

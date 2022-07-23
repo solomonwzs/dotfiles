@@ -10,31 +10,11 @@ function! lib#translate#google(text)
     return
   endif
 
-python3 << EOF
-from translate import google
-import urllib
-import vim
-
-text = vim.eval("a:text")
-v = vim.vars
-
-res = google.translate(text, v["lib_translate_target_lang"], 2)
-if isinstance(res, str):
-    print(res)
-else:
-    lines = []
-    d = res.get("dict")
-    if d is not None:
-        for i in res.get("dict", []):
-            pos = i.get("pos", "")
-            term = ','.join(i.get("terms", []))
-            lines.append(f"{pos}: {term}")
-    else:
-        for i in res.get("sentences", []):
-            lines.append(i.get("trans"))
-    trans = '\n'.join(lines)
-    print(trans)
-EOF
+  let res = lib#py#call("translate", "google_translate",
+      \ {"text": a:text, "tl": g:lib_translate_target_lang})
+  if res.error == 0
+    echo res.data
+  endif
 endfunc
 
 function! s:show_message(data, ...)
@@ -48,7 +28,7 @@ function! lib#translate#google_async(text)
     return
   endif
 
-  let pys = g:vimhome.'/pythonx/translate/google.py'
+  let pys = g:vimhome.'/pythonx/VimExt/translate.py'
   let cmd = ['/usr/bin/python3', pys, '-t', g:lib_translate_target_lang, 
       \ a:text]
   call lib#async#async_call(cmd, {

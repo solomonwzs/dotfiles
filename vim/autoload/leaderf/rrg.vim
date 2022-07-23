@@ -16,20 +16,8 @@ function! leaderf#rrg#files_with_matches_accept(line, args) abort
 endfunction
 
 function! leaderf#rrg#files_with_matches_format_line(line, args) abort
-python3 << EOF
-import os
-import vim
-
-line = vim.eval("a:line")
-fname = os.path.basename(line)
-_, ext = os.path.splitext(line)
-if len(ext) > 0:
-  ext = ext[1:]
-
-vim.command(f"let fname = '{fname}'")
-vim.command(f"let ext = '{ext}'")
-EOF
-  let icon = lib#icons#file_node_ext_icon(ext, fname)
+  let res = lib#py#call("helper", "parse_filepath", a:line)
+  let icon = lib#icons#file_node_ext_icon(res.data.ext, res.data.name)
   return icon.'  '.a:line
 endfunction
 

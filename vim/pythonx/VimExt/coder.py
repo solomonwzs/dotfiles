@@ -8,22 +8,7 @@
 
 import base64
 import re
-import subprocess
-import typing
-
-
-def system_command(cmd: str) -> str:
-    """
-    Execute system command.
-    """
-    p = subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    output, err = p.communicate()
-    if len(err) != 0:
-        return err.decode("utf8")
-    else:
-        return output.decode("utf8")
+from typing import Tuple
 
 
 def utf8_str_width(s: str) -> int:
@@ -51,13 +36,10 @@ def utf8_str_width(s: str) -> int:
     return width
 
 
-def decode_utf8_str(s: str) -> typing.Tuple[bool, str]:
+def decode_utf8_str(s: str) -> str:
     res = re.findall(r"\\x(..)", s)
-    try:
-        b = bytes(map(lambda x: int(x, 16), res))
-        return True, b.decode("utf8")
-    except Exception as err:
-        return False, str(err)
+    b = bytes(map(lambda x: int(x, 16), res))
+    return b.decode("utf8")
 
 
 def swict_hex(matchobj) -> bytes:
@@ -66,7 +48,7 @@ def swict_hex(matchobj) -> bytes:
     return bytes([i])
 
 
-def decode_mime_encode_str(s: str) -> typing.Tuple[bool, str]:
+def decode_mime_encode_str(s: str) -> Tuple[bool, str]:
     res = re.findall(r"=\?(.*)\?([BbQq])\?(.*)\?=", s)
     if len(res) == 0:
         return False, "Error format"

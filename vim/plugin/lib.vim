@@ -13,30 +13,30 @@ command! -nargs=0 -bang VimMetaOpen call lib#terminal#meta_mode(<bang>0)
 command! -nargs=0 -bang VimMetaClose call lib#terminal#meta_mode(<bang>1)
 
 if has('cscope')
-    command! -nargs=0 CscopeTags call lib#cscope#gen_tags()
+  command! -nargs=0 CscopeTags call lib#cscope#gen_tags()
 endif
 
 command! -nargs=0 YcmCursorMovedAutoCmdsToggle
-        \ call lib#ycm#cursor_move_autocmds_toggle()
+    \ call lib#ycm#cursor_move_autocmds_toggle()
 
 command! -nargs=0 GenTernProject
-        \ call lib#javascript#tern_project()
+    \ call lib#javascript#tern_project()
 
 command! -nargs=0 GoInstallDeps
-        \ call lib#golang#comp_deps_pkgs(expand('%:p'))
+    \ call lib#golang#comp_deps_pkgs(expand('%:p'))
 
 command! -nargs=0 GoInstallImps
-        \ call lib#golang#comp_imps_pkgs(expand('%:p'))
+    \ call lib#golang#comp_imps_pkgs(expand('%:p'))
 
 command! -nargs=0 WindowsDebug
-        \ call lib#window#test()
+    \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-        \ call lib#debug#bar()
+    \ echo lib#py#call('project', 'get_cxx_gcc_options', v:null)
 
 augroup my_plugin_lib
-    autocmd!
+  autocmd!
 
-    autocmd FileType go
-            \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
+  autocmd FileType go
+      \ autocmd! BufWritePost <buffer> call lib#golang#update_pkg()
 augroup END

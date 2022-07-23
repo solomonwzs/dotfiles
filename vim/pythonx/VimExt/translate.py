@@ -62,16 +62,16 @@ def TL(a: str):
             e.append(m >> 6 & 63 | 128)
         g += 1
 
-    a = b
+    _a = b
     for f in e:
-        a += f
-        a = RL(a, _b)
-    a = RL(a, Zb)
-    a ^= b1 or 0
-    if 0 > a:
-        a = (a & 2147483647) + 2147483648
-    a %= 1000000
-    return f"{a}{jd}{a ^ b}"
+        _a += f
+        _a = RL(_a, _b)
+    _a = RL(_a, Zb)
+    _a ^= b1 or 0
+    if 0 > _a:
+        _a = (_a & 2147483647) + 2147483648
+    _a %= 1000000
+    return f"{_a}{jd}{_a ^ b}"
 
 
 def try_get(url, params, timeout):
@@ -129,10 +129,30 @@ def translate(text: str, tl="zh-CN", timeout=10):
     return try_get(url, params, timeout)
 
 
+def google_translate(args: dict[str, str]):
+    res = translate(args["text"], args["tl"], 2)
+    if isinstance(res, str):
+        print(res)
+    else:
+        lines = []
+        d = res.get("dict")
+        if d is not None:
+            for i in res.get("dict", []):
+                pos = i.get("pos", "")
+                term = ",".join(i.get("terms", []))
+                lines.append(f"{pos}: {term}")
+        else:
+            for i in res.get("sentences", []):
+                lines.append(i.get("trans"))
+        return "\n".join(lines)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="call google translate api")
     parser.add_argument("text", type=str, help="text")
-    parser.add_argument("-t", "--tl", type=str, default="zh-CN", help="target language")
+    parser.add_argument(
+        "-t", "--tl", type=str, default="zh-CN", help="target language"
+    )
     args = parser.parse_args()
 
     text = args.text
