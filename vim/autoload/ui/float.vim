@@ -80,15 +80,6 @@ function! ui#float#new(title, content)
   return {'m_buf': buf, 'm_win': win, 'f_close': function('s:f_close')}
 endfunction
 
-" function! s:foo(text)
-"     let x = 123
-" python3 << EOF
-" import vim
-" vim.command("let x = %s" % vim.api.strwidth(vim.eval("a:text")))
-" EOF
-"     echo x
-" endfunction
-
 function! ui#float#test()
   call ui#float#message('vim', ['hello world', 'just for test'])
   " call ui#float#message('vim', [a:text], {'visual': 1})

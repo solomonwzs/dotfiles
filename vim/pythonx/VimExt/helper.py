@@ -9,9 +9,10 @@
 import subprocess
 import os
 import logging
+import re
 
 logging.basicConfig(
-    format="\033[3;32m(%(levelname).1s) %(asctime)s [%(filename)s:%(lineno)s - %(funcName)s]\033[0m %(message)s",
+    format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
     level=logging.DEBUG,
 )
 
@@ -39,7 +40,42 @@ def parse_filepath(filepath: str) -> dict:
     return {"name": fname, "ext": ext, "dir": dirname}
 
 
+def parse_highlight_info(s: str):
+    lines = [re.split(r"\s+", x) for x in s.split("\n") if len(x) > 0]
+
+    group_name = ""
+    desc = ""
+    last_set_file = ""
+    lineno = 0
+    infos = []
+    max_glen = 0
+    for arr in lines:
+        if len(arr) > 0 and arr[0] != "":
+            if group_name != "":
+                infos.append((group_name, desc, last_set_file, lineno))
+            group_name = arr[0]
+            if len(arr) > 2:
+                desc = " ".join(arr[2:])
+            else:
+                desc = ""
+            last_set_file = ""
+            lineno = 0
+        elif len(arr) == 7 and arr[0] == "" and arr[1] == "Last":
+            last_set_file = arr[4]
+            lineno = int(arr[6])
+        elif len(arr) > 1 and arr[0] == "":
+            if desc != "":
+                desc += ", "
+            desc += " ".join(arr[1:])
+    if group_name != "":
+        infos.append((group_name, desc, last_set_file, lineno))
+    out = []
+    for i in infos:
+        out.append(f"{i[0]}\t{i[1]}")
+    return out
+
+
 if __name__ == "__main__":
-    logging.debug(
+    logging.info(
         parse_filepath("/home/solomon/dotfiles/vim/pythonx/VimExt/helper.py")
     )

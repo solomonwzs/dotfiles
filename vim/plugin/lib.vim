@@ -32,7 +32,7 @@ command! -nargs=0 WindowsDebug
     \ call lib#window#test()
 
 command! -nargs=0 MyDebug
-    \ echo lib#py#call('project', 'get_cxx_gcc_options', v:null)
+    \ call lib#debug#foo()
 
 augroup my_plugin_lib
   autocmd!

@@ -9,6 +9,25 @@
 from typing import Any
 import VimExt
 import json
+import logging
+from logging.handlers import RotatingFileHandler
+
+
+rfh = RotatingFileHandler(
+    filename="/tmp/vim_ext.log",
+    mode="a",
+    maxBytes=32 * 1024 * 1024,
+    backupCount=2,
+    encoding=None,
+)
+
+logging.basicConfig(
+        format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
+    datefmt="%y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+    force=True,
+    handlers=[rfh],
+)
 
 
 def call(m: str, f: str, a: Any) -> str:

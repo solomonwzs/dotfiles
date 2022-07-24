@@ -77,3 +77,7 @@ let g:Lf_Extensions.rrg = {
       \ {'name': ['pattern']}
       \ ],
       \ }
+
+let g:Lf_Extensions.highlight = {
+    \ 'source': 'leaderf#highlight#source',
+    \ }

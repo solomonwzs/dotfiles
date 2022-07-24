@@ -39,7 +39,8 @@ endsnippet
 
 snippet logconf "logging conf" b
 logging.basicConfig(
-    format="\033[3;32m(%(levelname).1s) %(asctime)s [%(filename)s:%(lineno)s - %(funcName)s]\033[0m %(message)s",
+    format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
     level=logging.DEBUG,
+    datefmt="%y-%m-%d %H:%M:%S",
 )
 endsnippet

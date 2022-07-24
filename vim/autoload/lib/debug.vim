@@ -1,25 +1,18 @@
-let kk = 321
+" @author     Solomon Ng <solomon.wzs@gmail.com>
+" @version    1.0
+" @date       2022-07-24
+" @license    MIT
 
-function! lib#debug#foo(arg)
-python3 << EOF
-from project.project import get_makefile_variable
-import vim
-
-# print(vim.current.line)
-# print(find_cxx_header_files_dir())
-# print(find('compile_commands.json', '.'))
-# d = vim.bindeval("g:ycm_semantic_triggers")
-# d.update({'foo': 'bar'})
-
-d = vim.vars
-d['foo'] = 'xx'
-vim.command("let kk = 123")
-EOF
-
-echo g:foo
+function! lib#debug#foo() abort
+  let current = bufnr("%")
+  setlocal nospell nofoldenable nowrap noswapfile
+  setlocal buftype=nofile bufhidden=hide
+  setfiletype log
+  execute bn.'bufdo file '.fnameescape("=log=")
+  echo bn
 endfunction
 
-function! lib#debug#bar()
+function! lib#debug#bar() abort
   redir => tmp
   silent verbose highlight
   redir END
