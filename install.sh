@@ -86,7 +86,7 @@ info "Create terminfo"
 [ -e "$HOME/.terminfo/x/xterm-256color-italic" ] ||
     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
-copy_file "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
+make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"

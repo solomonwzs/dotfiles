@@ -72,6 +72,7 @@ def parse_highlight_info(s: str):
     out = []
     for i in infos:
         out.append(f"{i[0]}\t{i[1]}")
+    logging.info(len(out))
     return out
 
 
