@@ -48,7 +48,6 @@ def parse_highlight_info(s: str):
     last_set_file = ""
     lineno = 0
     infos = []
-    max_glen = 0
     for arr in lines:
         if len(arr) > 0 and arr[0] != "":
             if group_name != "":
@@ -69,10 +68,14 @@ def parse_highlight_info(s: str):
             desc += " ".join(arr[1:])
     if group_name != "":
         infos.append((group_name, desc, last_set_file, lineno))
+
+    max_glen = max([len(x[0]) for x in infos])
+    logging.info(max_glen)
+
     out = []
     for i in infos:
-        out.append(f"{i[0]}\t{i[1]}")
-    logging.info(len(out))
+        space = " " * (max_glen - len(i[0]) + 2)
+        out.append(f"{i[0]}{space}{i[1]}  -> {i[2]}:{i[3]}")
     return out
 
 

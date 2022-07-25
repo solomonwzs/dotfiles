@@ -176,7 +176,7 @@ function component_download_speed() {
             get_net_stat
         fi
     fi
-    printf "%8s|" "$rs"
+    printf "%8s|" "$rs"
 }
 
 function component_upload_speed() {
@@ -189,7 +189,7 @@ function component_upload_speed() {
             get_net_stat
         fi
     fi
-    printf "%8s祝|" "$ts"
+    printf "%8s|" "$ts"
 }
 
 function component_temp() {
