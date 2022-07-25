@@ -23,16 +23,16 @@ function flow_digital() {
         i=$((i + 1))
     done
     u=${size_unit[$i]}
-    echo -n "${bps}${u}/s"
+    echo "${bps}${u}/s"
 }
 
 percent_block_list=("▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 function percent_block() {
     if [ "$1" == 100 ]; then
-        echo -n "${percent_block_list[7]}"
+        echo "${percent_block_list[7]}"
     else
         i=$(bc <<<"$1/12.5")
-        echo -n "${percent_block_list[$i]}"
+        echo "${percent_block_list[$i]}"
     fi
 }
 
@@ -49,8 +49,8 @@ function histogram() {
     while [ ${#str} -lt 8 ]; do
         str="${percent_block_list[0]}${str}"
     done
-    echo -n "$str" >"$fn"
-    echo -n "$str"
+    echo "$str" >"$fn"
+    echo "$str"
 }
 
 cpu=""
@@ -61,9 +61,9 @@ temp=""
 
 function get_cpu_cores() {
     if [ -z "$is_darwin" ]; then
-        echo -n "$(nproc)"
+        echo "$(nproc)"
     else
-        echo -n "$(sysctl hw.activecpu | cut -d' ' -f2)"
+        echo "$(sysctl hw.activecpu | cut -d' ' -f2)"
     fi
 }
 
@@ -147,7 +147,7 @@ function component_cpu() {
         fi
     fi
     cpu_htg="$(histogram "$cpu" "/tmp/.tmux_cpu_htg_$sess_idx")"
-    printf "%s%3d%%│" "$cpu_htg" "$cpu"
+    printf "%s%3d%%|" "$cpu_htg" "$cpu"
 }
 
 function component_mem() {
@@ -163,7 +163,7 @@ function component_mem() {
         fi
     fi
     mem_htg="$(histogram "$mem" "/tmp/.tmux_mem_htg_$sess_idx")"
-    printf "%s%3d%%│" "$mem_htg" "$mem"
+    printf "%s%3d%%|" "$mem_htg" "$mem"
 }
 
 function component_download_speed() {
@@ -176,7 +176,7 @@ function component_download_speed() {
             get_net_stat
         fi
     fi
-    printf "%8s│" "$rs"
+    printf "%8s|" "$rs"
 }
 
 function component_upload_speed() {
@@ -189,12 +189,12 @@ function component_upload_speed() {
             get_net_stat
         fi
     fi
-    printf "%8s│" "$ts"
+    printf "%8s祝|" "$ts"
 }
 
 function component_temp() {
     if [ -z "$temp" ]; then
         get_temp_stat
     fi
-    printf "%s│" "$temp"
+    printf "%s|" "$temp"
 }

@@ -8,7 +8,11 @@
 set -euo pipefail
 
 # CURRENT_FILENAME=$(readlink -f "${BASH_SOURCE[0]}")
-EXECUTE_FILENAME=$(readlink -f "$0")
+if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
+    EXECUTE_FILENAME=$(greadlink -f "$0")
+else
+    EXECUTE_FILENAME=$(readlink -f "$0")
+fi
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 source "$EXECUTE_DIRNAME/utils.sh"
 
@@ -23,8 +27,7 @@ while getopts "i:s:" opt; do
     esac
 done
 
-echo -n "│"
-
+printf "|"
 for i in "${MY_TMUX_COMPONENTS[@]}"; do
     if [ "$i" = "download" ]; then
         component_download_speed
