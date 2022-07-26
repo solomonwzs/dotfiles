@@ -95,7 +95,8 @@ function get_cpu_and_net_stat() {
         t0_list["$i"]=$t0
     done
 
-    cpu=$(vmstat -n "${MY_TMUX_STATUS_INTERVAL:-1}" 2 | tail -n 1 | awk '{print 100 - $15}')
+    local interval="${MY_TMUX_STATUS_INTERVAL:-1}"
+    cpu=$(vmstat -n "$interval" 2 | tail -n 1 | awk '{print 100 - $15}')
 
     for i in "${!netdev_list[@]}"; do
         local dev="${netdev_list[$i]}"
@@ -107,8 +108,8 @@ function get_cpu_and_net_stat() {
         local r0="${r0_list[$i]}"
         local t0="${t0_list[$i]}"
 
-        local rbps=$((r1 - r0))
-        local tbps=$((t1 - t0))
+        local rbps=$(((r1 - r0) / interval))
+        local tbps=$(((t1 - t0) / interval))
 
         rs_list["$i"]=$(flow_digital $rbps)
         ts_list["$i"]=$(flow_digital $tbps)
@@ -128,7 +129,8 @@ function get_net_stat() {
         t0_list["$i"]=$t0
     done
 
-    sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
+    local interval="${MY_TMUX_STATUS_INTERVAL:-1}"
+    sleep "$interval"
 
     for i in "${!netdev_list[@]}"; do
         local dev="${netdev_list[$i]}"
@@ -139,8 +141,8 @@ function get_net_stat() {
         local r0="${r0_list[$i]}"
         local t0="${t0_list[$i]}"
 
-        local rbps=$((r1 - r0))
-        local tbps=$((t1 - t0))
+        local rbps=$(((r1 - r0) / interval))
+        local tbps=$(((t1 - t0) / interval))
 
         rs_list["$i"]=$(flow_digital $rbps)
         ts_list["$i"]=$(flow_digital $tbps)
