@@ -81,3 +81,8 @@ let g:Lf_Extensions.rrg = {
 let g:Lf_Extensions.highlight = {
     \ 'source': 'leaderf#highlight#source',
     \ }
+
+let g:Lf_Extensions.debug = {
+    \ 'source': 'lib#debug#lf_source',
+    \ 'before_enter': 'lib#debug#lf_before_enter',
+    \ }

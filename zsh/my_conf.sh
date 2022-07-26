@@ -6,21 +6,20 @@
 # declare -A MY_SVN_ACCOUNT=(
 #     ["$MY_SVN_USER"]="$MY_SVN_PASS"
 # )
-# export MY_SVN_ACCOUNT
 
 # proxy setting
-export MY_OFFICE_PROXY=""
-export MY_SSR_PROXY=""
-export MY_V2RAY_PROXY=""
-export MY_CLASH_PROXY=""
+MY_OFFICE_PROXY=""
+MY_SSR_PROXY=""
+MY_V2RAY_PROXY=""
+MY_CLASH_PROXY=""
 
 # color setting
-export MY_ZSH_COLOR_NAME="63"
+MY_ZSH_COLOR_NAME="63"
 
 # tmux setting
-export MY_TMUX_ACTIVE_BG_COLOR="110"
-export MY_TMUX_STATUS_NETDEV="enp0s3"
-export MY_TMUX_COMPONENTS=("download" "upload" "cpu" "mem")
+MY_TMUX_ACTIVE_BG_COLOR="colour110"
+MY_TMUX_STATUS_INTERVAL=1
+MY_TMUX_COMPONENTS=("net:enp0s3" "cpu" "mem")
 
 # X display setting
 # export DISPLAY=localhost:10.0

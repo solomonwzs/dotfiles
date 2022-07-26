@@ -23,21 +23,26 @@ while getopts "i:s:" opt; do
         sess_idx=${OPTARG}
         ;;
     *) ;;
-
     esac
 done
 
+for i in "${!MY_TMUX_COMPONENTS[@]}"; do
+    dev="${MY_TMUX_COMPONENTS[$i]}"
+    if [ "${dev::4}" = "net:" ]; then
+        add_netdev "$i" "${dev:4}"
+    fi
+done
+
 printf "|"
-for i in "${MY_TMUX_COMPONENTS[@]}"; do
-    if [ "$i" = "download" ]; then
-        component_download_speed
-    elif [ "$i" = "upload" ]; then
-        component_upload_speed
-    elif [ "$i" = "cpu" ]; then
+for i in "${!MY_TMUX_COMPONENTS[@]}"; do
+    x="${MY_TMUX_COMPONENTS[$i]}"
+    if [ "${x::4}" = "net:" ]; then
+        component_net "$i"
+    elif [ "$x" = "cpu" ]; then
         component_cpu "$sess_idx"
-    elif [ "$i" = "mem" ]; then
+    elif [ "$x" = "mem" ]; then
         component_mem "$sess_idx"
-    elif [ "$i" = "temp" ]; then
+    elif [ "$x" = "temp" ]; then
         component_temp
     fi
 done

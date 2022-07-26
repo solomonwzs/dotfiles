@@ -293,17 +293,17 @@ _fzf_comprun() {
     esac
 }
 
-_tmux_set_active_bg_color() {
+_tmux_set_env() {
     if hash tmux 2>/dev/null; then
-        local color_env=$(tmux show-environment | grep '^MY_TMUX_ACTIVE_BG_COLOR=')
-        if [ -n "$color_env" ]; then
-            if [ "$2" -eq 1 ]; then
-                tmux set-environment 'MY_TMUX_ACTIVE_BG_COLOR' "colour${1}"
+        local env_val=$(tmux show-environment | grep "^${1}=")
+        if [ -n "$env_val" ]; then
+            if [ "$3" -eq 1 ]; then
+                tmux set-environment "$1" "$2"
             fi
         else
-            tmux set-environment 'MY_TMUX_ACTIVE_BG_COLOR' "colour${1}"
+            tmux set-environment "$1" "$2"
         fi
     fi
 }
 
-_tmux_set_active_bg_color "${MY_TMUX_ACTIVE_BG_COLOR:-120}" 1
+_tmux_set_env "MY_TMUX_ACTIVE_BG_COLOR" "${MY_TMUX_ACTIVE_BG_COLOR:-colour120}" 1

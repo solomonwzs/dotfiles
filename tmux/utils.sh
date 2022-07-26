@@ -12,8 +12,6 @@ if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
     is_darwin=1
 fi
 
-netdev="$MY_TMUX_STATUS_NETDEV"
-
 size_unit=("" "KB" "MB" "GB" "TB")
 function flow_digital() {
     local bps=$1
@@ -58,6 +56,14 @@ mem=""
 rs=""
 ts=""
 temp=""
+netdev_list=()
+netdev_id_list=()
+rs_list=()
+ts_list=()
+
+function add_netdev() {
+    netdev_list["$1"]="$2"
+}
 
 function get_cpu_cores() {
     if [ -z "$is_darwin" ]; then
@@ -76,46 +82,69 @@ function get_temp_stat() {
 }
 
 function get_cpu_and_net_stat() {
-    [ -d "/sys/class/net/${netdev}" ] && [ -n "$netdev" ] && netdev_ok=1
+    local r0_list=()
+    local t0_list=()
 
-    if [ -n "$netdev_ok" ]; then
-        r0=$(cat "/sys/class/net/${netdev}/statistics/rx_bytes")
-        t0=$(cat "/sys/class/net/${netdev}/statistics/tx_bytes")
-    fi
+    for i in "${!netdev_list[@]}"; do
+        local dev="${netdev_list[$i]}"
+        local r0
+        r0=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
+        local t0
+        t0=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
+        r0_list["$i"]=$r0
+        t0_list["$i"]=$t0
+    done
 
-    cpu=$(vmstat -n 1 2 | tail -n 1 | awk '{print 100 - $15}')
+    cpu=$(vmstat -n "${MY_TMUX_STATUS_INTERVAL:-1}" 2 | tail -n 1 | awk '{print 100 - $15}')
 
-    if [ -n "$netdev_ok" ]; then
-        r1=$(cat "/sys/class/net/${netdev}/statistics/rx_bytes")
-        t1=$(cat "/sys/class/net/${netdev}/statistics/tx_bytes")
+    for i in "${!netdev_list[@]}"; do
+        local dev="${netdev_list[$i]}"
+        local r1
+        r1=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
+        local t1
+        t1=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
 
-        rbps=$((r1 - r0))
-        tbps=$((t1 - t0))
+        local r0="${r0_list[$i]}"
+        local t0="${t0_list[$i]}"
 
-        rs=$(flow_digital $rbps)
-        ts=$(flow_digital $tbps)
-    else
-        rs="0/s"
-        ts="0/s"
-    fi
+        local rbps=$((r1 - r0))
+        local tbps=$((t1 - t0))
+
+        rs_list["$i"]=$(flow_digital $rbps)
+        ts_list["$i"]=$(flow_digital $tbps)
+    done
 }
 
 function get_net_stat() {
-    local rt=($(netstat -ib -I "$netdev" | awk 'NR == 2 {print $7, $10}'))
-    local r0="${rt[0]}"
-    local t0="${rt[1]}"
+    local r0_list=()
+    local t0_list=()
 
-    sleep 1
+    for i in "${!netdev_list[@]}"; do
+        local dev="${netdev_list[$i]}"
+        local rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
+        local r0="${rt[0]}"
+        local t0="${rt[1]}"
+        r0_list["$i"]=$r0
+        t0_list["$i"]=$t0
+    done
 
-    rt=($(netstat -ib -I "$netdev" | awk 'NR == 2 {print $7, $10}'))
-    local r1="${rt[0]}"
-    local t1="${rt[1]}"
+    sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
 
-    local rbps=$((r1 - r0))
-    local tbps=$((t1 - t0))
+    for i in "${!netdev_list[@]}"; do
+        local dev="${netdev_list[$i]}"
+        local rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
+        local r1="${rt[0]}"
+        local t1="${rt[1]}"
 
-    rs=$(flow_digital $rbps)
-    ts=$(flow_digital $tbps)
+        local r0="${r0_list[$i]}"
+        local t0="${t0_list[$i]}"
+
+        local rbps=$((r1 - r0))
+        local tbps=$((t1 - t0))
+
+        rs_list["$i"]=$(flow_digital $rbps)
+        ts_list["$i"]=$(flow_digital $tbps)
+    done
 }
 
 function get_mem_stat() {
@@ -137,12 +166,10 @@ function get_cpu_and_mem_stat() {
 function component_cpu() {
     local sess_idx="$1"
     local cpu_htg
-    if [ -z "$is_darwin" ]; then
-        if [ -z "$cpu" ]; then
+    if [ -z "$cpu" ]; then
+        if [ -z "$is_darwin" ]; then
             get_cpu_and_net_stat
-        fi
-    else
-        if [ -z "$cpu" ]; then
+        else
             get_cpu_and_mem_stat
         fi
     fi
@@ -153,12 +180,10 @@ function component_cpu() {
 function component_mem() {
     local sess_idx="$1"
     local mem_htg
-    if [ -z "$is_darwin" ]; then
-        if [ -z "$mem" ]; then
+    if [ -z "$mem" ]; then
+        if [ -z "$is_darwin" ]; then
             get_mem_stat
-        fi
-    else
-        if [ -z "$mem" ]; then
+        else
             get_cpu_and_mem_stat
         fi
     fi
@@ -166,30 +191,15 @@ function component_mem() {
     printf "%s%3d%%|" "$mem_htg" "$mem"
 }
 
-function component_download_speed() {
-    if [ -z "$is_darwin" ]; then
-        if [ -z "$rs" ]; then
+function component_net() {
+    if [ "${#rs_list[@]}" -eq 0 ]; then
+        if [ -z "$is_darwin" ]; then
             get_cpu_and_net_stat
-        fi
-    else
-        if [ -z "$ts" ]; then
+        else
             get_net_stat
         fi
     fi
-    printf "%8s|" "$rs"
-}
-
-function component_upload_speed() {
-    if [ -z "$is_darwin" ]; then
-        if [ -z "$ts" ]; then
-            get_cpu_and_net_stat
-        fi
-    else
-        if [ -z "$ts" ]; then
-            get_net_stat
-        fi
-    fi
-    printf "%8s|" "$ts"
+    printf "%8s %8s|" "${rs_list[$1]}" "${ts_list[$1]}"
 }
 
 function component_temp() {

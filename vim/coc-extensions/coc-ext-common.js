@@ -398,7 +398,7 @@ async function callPython(pythonDir, m, f, a) {
     if (!root_dir) {
       root_dir = ".";
     }
-    const script = import_path2.default.join(root_dir, pythonDir, "coc-ext.py");
+    const script = import_path2.default.join(root_dir, pythonDir, "coc_ext.py");
     const py = import_child_process.spawn("python3", [script], {stdio: ["pipe", "pipe", "pipe"]});
     py.stdin.write(msg);
     py.stdin.end();
