@@ -24,14 +24,10 @@ function flow_digital() {
     echo "${bps}${u}/s"
 }
 
-percent_block_list=("▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
+percent_block_list=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 function percent_block() {
-    if [ "$1" == 100 ]; then
-        echo "${percent_block_list[7]}"
-    else
-        i=$(bc <<<"$1/12.5")
-        echo "${percent_block_list[$i]}"
-    fi
+    i=$(bc <<<"$1/12.5")
+    echo "${percent_block_list[$i]}"
 }
 
 function histogram() {
