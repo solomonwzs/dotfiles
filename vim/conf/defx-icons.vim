@@ -36,6 +36,7 @@ let g:defx_icons_extensions = {
     \ 'tigrc':      {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ 'tmux':       {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ 'python':     {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'typescript': {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ }
 
 let g:defx_icons_exact_matches = {

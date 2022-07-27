@@ -10,7 +10,6 @@ import subprocess
 import os
 import logging
 import re
-import time
 
 logging.basicConfig(
     format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",

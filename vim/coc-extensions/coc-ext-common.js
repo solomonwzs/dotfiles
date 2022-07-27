@@ -28,7 +28,7 @@ __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
-var import_coc18 = __toModule(require("coc.nvim"));
+var import_coc19 = __toModule(require("coc.nvim"));
 
 // src/lists/commands.ts
 var Commands = class {
@@ -1163,9 +1163,9 @@ async function getCursorSymbolList() {
 }
 
 // src/utils/debug.ts
-async function debug() {
-  const x = await getCursorSymbolList();
-  logger.debug(x);
+async function debug(cmd, ...args) {
+  logger.debug(cmd);
+  logger.debug(args);
 }
 
 // src/utils/decoder.ts
@@ -1270,6 +1270,26 @@ async function googleTranslate(text, sl, tl) {
   return ret;
 }
 
+// src/leaderf/highlight.ts
+var import_coc18 = __toModule(require("coc.nvim"));
+async function highlight_source() {
+  const {nvim} = import_coc18.workspace;
+  let str = await nvim.commandOutput("verbose highlight");
+  const hiinfos = parse_highlight_info(str);
+  let lines = [];
+  for (const i of hiinfos) {
+    lines.push(`${i.group_name}  ${i.desc}  ${i.last_set_file}:${i.line}`);
+  }
+  nvim.setVar("coc_leader_highlight", lines);
+}
+
+// src/leaderf/leaderf.ts
+async function leader_recv(cmd, ...args) {
+  if (cmd == "highlight") {
+    await highlight_source();
+  }
+}
+
 // src/coc-ext-common.ts
 var cppFmtSetting = {
   provider: "clang-format",
@@ -1311,7 +1331,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc18.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc19.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -1366,8 +1386,8 @@ function decodeStrFn(enc) {
 function encodeStrFn(enc) {
   return async () => {
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc18.workspace.document;
-    const range = await import_coc18.workspace.getSelectedRange("v", doc);
+    const doc = await import_coc19.workspace.document;
+    const range = await import_coc19.workspace.getSelectedRange("v", doc);
     if (!range) {
       return;
     }
@@ -1379,15 +1399,15 @@ function encodeStrFn(enc) {
 function addFormatter(context, lang, setting) {
   const selector = [{scheme: "file", language: lang}];
   const provider = new FormattingEditProvider(setting);
-  context.subscriptions.push(import_coc18.languages.registerDocumentFormatProvider(selector, provider, 1));
+  context.subscriptions.push(import_coc19.languages.registerDocumentFormatProvider(selector, provider, 1));
   if (provider.supportRangeFormat()) {
-    context.subscriptions.push(import_coc18.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+    context.subscriptions.push(import_coc19.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
   }
 }
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc18.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc19.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -1402,24 +1422,24 @@ async function activate(context) {
       addFormatter(context, k, defaultFmtSetting[k]);
     }
   }
-  context.subscriptions.push(import_coc18.commands.registerCommand("ext-debug", debug, {sync: false}), import_coc18.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+  context.subscriptions.push(import_coc19.commands.registerCommand("ext-debug", debug, {sync: false}), import_coc19.commands.registerCommand("ext-leaderf", leader_recv, {sync: false}), import_coc19.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+  }), import_coc19.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc18.workspace.document;
-    const range = await import_coc18.workspace.getSelectedRange("v", doc);
+    const doc = await import_coc19.workspace.document;
+    const range = await import_coc19.workspace.getSelectedRange("v", doc);
     if (!range) {
       return;
     }
@@ -1430,11 +1450,11 @@ async function activate(context) {
     replaceExecText(doc, range, res);
   }, {
     sync: false
-  }), import_coc18.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decode_mime_encode_str(text);
     popup(tt, "[Mime decode]");
   }, {
     sync: false
-  }), import_coc18.listManager.registerList(new lists_default(import_coc18.workspace.nvim)), import_coc18.listManager.registerList(new commands_default(import_coc18.workspace.nvim)), import_coc18.listManager.registerList(new mapkey_default(import_coc18.workspace.nvim)), import_coc18.listManager.registerList(new rg_default(import_coc18.workspace.nvim)), import_coc18.listManager.registerList(new highlight_default(import_coc18.workspace.nvim)));
+  }), import_coc19.listManager.registerList(new lists_default(import_coc19.workspace.nvim)), import_coc19.listManager.registerList(new commands_default(import_coc19.workspace.nvim)), import_coc19.listManager.registerList(new mapkey_default(import_coc19.workspace.nvim)), import_coc19.listManager.registerList(new rg_default(import_coc19.workspace.nvim)), import_coc19.listManager.registerList(new highlight_default(import_coc19.workspace.nvim)));
 }
