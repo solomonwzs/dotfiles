@@ -49,11 +49,8 @@ function histogram() {
 
 cpu=""
 mem=""
-rs=""
-ts=""
 temp=""
 netdev_list=()
-netdev_id_list=()
 rs_list=()
 ts_list=()
 
@@ -172,7 +169,7 @@ function component_cpu() {
         fi
     fi
     cpu_htg="$(histogram "$cpu" "/tmp/.tmux_cpu_htg_$sess_idx")"
-    printf "%s%3d%%|" "$cpu_htg" "$cpu"
+    printf "%s%3d%%" "$cpu_htg" "$cpu"
 }
 
 function component_mem() {
@@ -186,7 +183,7 @@ function component_mem() {
         fi
     fi
     mem_htg="$(histogram "$mem" "/tmp/.tmux_mem_htg_$sess_idx")"
-    printf "%s%3d%%|" "$mem_htg" "$mem"
+    printf "%s%3d%%" "$mem_htg" "$mem"
 }
 
 function component_net() {
@@ -197,12 +194,12 @@ function component_net() {
             get_net_stat
         fi
     fi
-    printf "%8s %8s|" "${rs_list[$1]}" "${ts_list[$1]}"
+    printf "%8s %8s" "${rs_list[$1]}" "${ts_list[$1]}"
 }
 
 function component_temp() {
     if [ -z "$temp" ]; then
         get_temp_stat
     fi
-    printf "%s|" "$temp"
+    printf "%s" "$temp"
 }

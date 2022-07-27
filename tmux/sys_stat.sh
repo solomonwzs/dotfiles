@@ -33,7 +33,6 @@ for i in "${!MY_TMUX_COMPONENTS[@]}"; do
     fi
 done
 
-printf "|"
 for i in "${!MY_TMUX_COMPONENTS[@]}"; do
     x="${MY_TMUX_COMPONENTS[$i]}"
     if [ "${x::4}" = "net:" ]; then
@@ -44,5 +43,7 @@ for i in "${!MY_TMUX_COMPONENTS[@]}"; do
         component_mem "$sess_idx"
     elif [ "$x" = "temp" ]; then
         component_temp
+    else
+        printf "%s" "$x"
     fi
 done
