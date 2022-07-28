@@ -76,10 +76,16 @@ let g:Lf_Extensions.rrg = {
     \ 'arguments': [
       \ {'name': ['pattern']}
       \ ],
-      \ }
+    \ }
 
 let g:Lf_Extensions.highlight = {
     \ 'source': 'leaderf#highlight#source',
+    \ 'after_enter': 'leaderf#highlight#after_enter',
+    \ 'bang_enter': 'lib#common#coc_lf_bang_enter',
+    \ 'accept': 'leaderf#highlight#accept',
+    \ 'arguments': [
+      \ {'name': ['vname']}
+      \ ],
     \ }
 
 let g:Lf_Extensions.debug = {

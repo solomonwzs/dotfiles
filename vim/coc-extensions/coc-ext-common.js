@@ -497,6 +497,12 @@ function stringify(value) {
     return JSON.stringify(value, null, 2);
   }
 }
+function get_random_id(scope, sep = "-") {
+  const ts = new Date().getTime().toString(16).slice(-8);
+  let r = Math.floor(Math.random() * 65535).toString(16);
+  r = "0".repeat(4 - r.length) + r;
+  return scope && scope.length > 0 ? `${scope}${sep}${ts}${sep}${r}` : `${ts}${sep}${r}`;
+}
 
 // src/utils/logger.ts
 var import_path5 = __toModule(require("path"));
@@ -1276,11 +1282,20 @@ async function highlight_source() {
   const {nvim} = import_coc18.workspace;
   let str = await nvim.commandOutput("verbose highlight");
   const hiinfos = parse_highlight_info(str);
+  let max_gn_len = 0;
+  for (const i of hiinfos) {
+    if (i.group_name.length > max_gn_len) {
+      max_gn_len = i.group_name.length;
+    }
+  }
   let lines = [];
   for (const i of hiinfos) {
-    lines.push(`${i.group_name}  ${i.desc}  ${i.last_set_file}:${i.line}`);
+    const spaces = " ".repeat(max_gn_len - i.group_name.length + 2);
+    lines.push(`${i.group_name}${spaces}xxx  ${i.desc}  <${i.last_set_file}:${i.line}>`);
   }
-  nvim.setVar("coc_leader_highlight", lines);
+  const var_name = get_random_id("__coc_leader_highligt", "_");
+  await nvim.setVar(var_name, lines);
+  await nvim.command(`Leaderf! highlight ${var_name}`);
 }
 
 // src/leaderf/leaderf.ts
@@ -1422,7 +1437,7 @@ async function activate(context) {
       addFormatter(context, k, defaultFmtSetting[k]);
     }
   }
-  context.subscriptions.push(import_coc19.commands.registerCommand("ext-debug", debug, {sync: false}), import_coc19.commands.registerCommand("ext-leaderf", leader_recv, {sync: false}), import_coc19.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+  context.subscriptions.push(import_coc19.commands.registerCommand("ext-debug", debug, {sync: true}), import_coc19.commands.registerCommand("ext-leaderf", leader_recv, {sync: true}), import_coc19.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
     sync: false
   }), import_coc19.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false

@@ -70,3 +70,10 @@ function! lib#common#max(first, ...)
   endfor
   return val
 endfunction
+
+
+function! lib#common#coc_lf_bang_enter(orig_buf_nr, pos, args) abort
+  " coc.nvim call 'Leaderf' would hang up in vim,
+  " call 'Leaderf!' -> bang_enter -> press <Tab>
+  call feedkeys("\<Tab>")
+endfunction
