@@ -80,11 +80,11 @@ make_link "$EXECUTE_DIRNAME/vim/vimrc" "$HOME/.config/nvim/init.vim"
 make_link "$EXECUTE_DIRNAME/zsh/zshrc" "$HOME/.zshrc"
 copy_file "$EXECUTE_DIRNAME/zsh/my_conf.sh" "$HOME/.my_conf.sh"
 
-info "Create terminfo"
-[ -e "$HOME/.terminfo/t/tmux-256color" ] ||
-    tic -x "$EXECUTE_DIRNAME/tmux/tmux-256color.terminfo"
-[ -e "$HOME/.terminfo/x/xterm-256color-italic" ] ||
-    tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
+# info "Create terminfo"
+# [ -e "$HOME/.terminfo/t/tmux-256color" ] ||
+#     tic -x "$EXECUTE_DIRNAME/tmux/tmux-256color.terminfo"
+# [ -e "$HOME/.terminfo/x/xterm-256color-italic" ] ||
+#     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
 make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
