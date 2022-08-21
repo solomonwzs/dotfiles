@@ -199,6 +199,8 @@ vmap <silent> <leader>cn <Plug>(coc-ext-change-name-rule)
 
 nmap <silent> <leader>cs <Plug>(coc-ext-cursor-symbol)
 
+vmap <C-c> <Plug>(coc-ext-copy-xclip)
+
 augroup my_coc_nvim
   autocmd!
   autocmd FileType python let b:coc_root_patterns = ['.env']

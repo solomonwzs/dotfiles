@@ -139,15 +139,15 @@ nnoremap <silent> <F5> :let _s=@/ <Bar>
 " endif
 
 " Setting for C-c copy text
-vmap <C-c> "+y
-if $SSH_CLIENT !=? ''
-  " install `xclip` and set `X11Forwarding yes` in sshd_config"
-  if executable('xclip')
-    vmap <silent> "+y :call system('xclip -i -sel clip',
-        \ lib#common#visual_selection(0))<CR>
-    " map "+p :r!xclip -o -sel clip<CR>
-  endif
-endif
+" vmap <C-c> "+y
+" if $SSH_CLIENT !=? ''
+"   " install `xclip` and set `X11Forwarding yes` in sshd_config"
+"   if executable('xclip')
+"     vmap <silent> "+y :call system('xclip -i -sel clip',
+"         \ lib#common#visual_selection(0))<CR>
+"     " map "+p :r!xclip -o -sel clip<CR>
+"   endif
+" endif
 "================ MAP KEY ================
 
 

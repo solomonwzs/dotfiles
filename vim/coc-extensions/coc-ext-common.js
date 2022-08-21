@@ -1451,7 +1451,11 @@ async function activate(context) {
     sync: false
   }), import_coc19.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
     sync: false
-  }), import_coc19.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
+  }), import_coc19.workspace.registerKeymap(["v"], "ext-copy-xclip", async () => {
+    logger.debug("===");
+    const text = await getText("v");
+    await callShell("xclip", ["-selection", "clipboard", "-i"], text);
+  }, {sync: false}), import_coc19.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
     const pythonDir = getcfg("pythonDir", "");
     const doc = await import_coc19.workspace.document;
     const range = await import_coc19.workspace.getSelectedRange("v", doc);

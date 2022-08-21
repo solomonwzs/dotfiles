@@ -294,13 +294,13 @@ _fzf_comprun() {
 }
 
 _tmux_set_env() {
-    local env_val=$(tmux show-environment 2>/dev/null)
-    local var=$(echo "$env_val" | grep '^${1}=')
+    tmux_env_val=$(tmux show-environment 2>/dev/null)
+    local var=$(echo "$tmux_env_val" | grep '^${1}=')
     if [ -n "$var" ]; then
         if [ "$3" -eq 1 ]; then
             tmux set-environment "$1" "$2"
         fi
-    elif [ -n "$env_val" ]; then
+    elif [ -n "$tmux_env_val" ]; then
         tmux set-environment "$1" "$2"
     fi
 }
