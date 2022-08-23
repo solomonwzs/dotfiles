@@ -167,11 +167,11 @@ function defauleFloatWinConfig() {
 function positionInRange(pos, range) {
   return (range.start.line < pos.line || range.start.line == pos.line && range.start.character <= pos.character) && (pos.line < range.end.line || pos.line == range.end.line && pos.character <= range.end.character);
 }
-async function getText(mode) {
+async function getText(mode, e = 1) {
   const doc = await import_coc4.workspace.document;
   let range = null;
   if (mode === "v") {
-    const text2 = (await import_coc4.workspace.nvim.call("lib#common#visual_selection", 1)).toString();
+    const text2 = (await import_coc4.workspace.nvim.call("lib#common#visual_selection", [e])).toString();
     return text2.trim();
   } else {
     const pos = await import_coc4.window.getCursorPosition();
@@ -1453,7 +1453,7 @@ async function activate(context) {
     sync: false
   }), import_coc19.workspace.registerKeymap(["v"], "ext-copy-xclip", async () => {
     logger.debug("===");
-    const text = await getText("v");
+    const text = await getText("v", 0);
     await callShell("xclip", ["-selection", "clipboard", "-i"], text);
   }, {sync: false}), import_coc19.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
     const pythonDir = getcfg("pythonDir", "");
