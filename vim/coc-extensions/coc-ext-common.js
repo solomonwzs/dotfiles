@@ -569,7 +569,6 @@ var RgList = class extends import_coc8.BasicList {
     this.actions = [];
     this.addAction("open", async (item, context) => {
       await openFile(item.data["name"], {
-        open: "sp",
         key: context.args[0]
       });
     });
@@ -588,6 +587,28 @@ var RgList = class extends import_coc8.BasicList {
       let lines = resp.data.toString().split("\n");
       this.preview({filetype: item.data["filetype"], lines}, context);
     });
+    this.addAction("ctrl-x", this.actionOpenSplit);
+  }
+  async actionOpenSplit(item, context) {
+    await openFile(item.data["name"], {
+      open: "sp",
+      key: context.args[0]
+    });
+  }
+  async actionPreview(item, context) {
+    let resp = await callShell("rg", [
+      "-B",
+      "3",
+      "-C",
+      "3",
+      context.args[0],
+      item.data["name"]
+    ]);
+    if (resp.exitCode != 0 || !resp.data) {
+      return;
+    }
+    let lines = resp.data.toString().split("\n");
+    this.preview({filetype: item.data["filetype"], lines}, context);
   }
   async loadItems(context) {
     if (context.args.length == 0) {

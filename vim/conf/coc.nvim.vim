@@ -13,6 +13,23 @@ scriptencoding utf-8
 "         \ 'coc-vimlsp',
 "         \ ]
 
+hi CocListHeader ctermfg=16 ctermbg=108 cterm=bold
+
+hi CocListSep0 ctermfg=108 ctermbg=167
+hi CocListArgs ctermfg=16 ctermbg=167 cterm=bold
+
+hi CocListSep1 ctermfg=167 ctermbg=241
+hi CocListPath ctermfg=195 ctermbg=241
+
+hi CocListSep2 ctermfg=241 ctermbg=237
+hi CocListBg ctermbg=237
+hi CocListSep3 ctermfg=195 ctermbg=237
+
+hi CocListInfo ctermfg=16 ctermbg=195
+hi CocListSep4 ctermfg=149 ctermbg=195
+
+hi CocListTotal ctermfg=16 ctermbg=149
+
 let s:is_nvim = has('nvim')
 
 let g:coc_disable_transparent_cursor = 1

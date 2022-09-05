@@ -43,12 +43,23 @@
   "diagnostic.errorSign": "",
   "diagnostic.warningSign": "",
 
+  "list.statusLineSegments": [
+    "%#CocListHeader# CocList",
+    "%#CocListSep0# %#CocListArgs#%{coc#list#status(\"args\")}",
+    "%#CocListSep1# %#CocListPath#%{coc#list#status(\"cwd\")}",
+    "%#CocListSep2# %#CocListBg#",
+    "%=",
+    "%#CocListSep3#%#CocListInfo# %l/%L",
+    "%#CocListSep4#%#CocListTotal# Total: %{coc#list#status(\"total\")} %*"
+  ],
   "list.insertMappings": {
-    "<C-x>": "do:exit",
+    "<C-x>": "action:ctrl-x",
+    "<C-s>": "action:ctrl-s",
+
     "<C-p>": "action:preview"
   },
   "list.normalMappings": {
-    "<C-x>": "do:exit"
+    // "<C-x>": "do:exit"
   },
   "list.previewSplitRight": true,
 
