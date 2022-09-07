@@ -83,6 +83,7 @@ let g:Lf_Extensions.highlight = {
     \ 'after_enter': 'leaderf#highlight#after_enter',
     \ 'bang_enter': 'lib#common#coc_lf_bang_enter',
     \ 'accept': 'leaderf#highlight#accept',
+    \ 'before_exit': 'leaderf#highlight#before_exit',
     \ 'arguments': [
       \ {'name': ['vname']}
       \ ],

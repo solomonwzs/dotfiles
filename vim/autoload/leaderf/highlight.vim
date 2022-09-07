@@ -31,3 +31,7 @@ function! leaderf#highlight#accept(line, args) abort
     exec 'edit +'.line.' '.escape(fn, ' ')
   endif
 endfunction
+
+function! leaderf#highlight#before_exit(orig_buf_nr, pos, args) abort
+  call clearmatches()
+endfunction

@@ -824,7 +824,7 @@ var RgList = class extends import_coc10.BasicList {
       });
     });
     this.addAction("preview", async (item, context) => {
-      let resp = await callShell("rg", [
+      const resp = await callShell("rg", [
         "-B",
         "3",
         "-C",
@@ -835,8 +835,16 @@ var RgList = class extends import_coc10.BasicList {
       if (resp.exitCode != 0 || !resp.data) {
         return;
       }
-      let lines = resp.data.toString().split("\n");
+      const lines = resp.data.toString().split("\n");
       this.preview({filetype: item.data["filetype"], lines}, context);
+      const prew_wid = await this.nvim.call("coc#list#get_preview", 0);
+      await this.nvim.call("matchadd", [
+        "Search",
+        context.args[0],
+        9,
+        -1,
+        {window: prew_wid}
+      ]);
     });
     this.addAction("ctrl-x", this.actionOpenSplit);
   }
@@ -851,7 +859,7 @@ var RgList = class extends import_coc10.BasicList {
       return null;
     }
     const args = [context.args[0], "--files-with-matches", "--color", "never"];
-    let resp = await callShell("rg", args);
+    const resp = await callShell("rg", args);
     if (resp.exitCode != 0) {
       logger.error("rg fail");
       if (resp.error) {
