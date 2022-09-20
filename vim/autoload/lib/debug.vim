@@ -3,13 +3,14 @@
 " @date       2022-07-24
 " @license    MIT
 
-function! lib#debug#foo() abort
-  let current = bufnr("%")
-  setlocal nospell nofoldenable nowrap noswapfile
-  setlocal buftype=nofile bufhidden=hide
-  setfiletype log
-  execute bn.'bufdo file '.fnameescape("=log=")
-  echo bn
+function! lib#debug#foo(args) abort
+  " let current = bufnr("%")
+  " setlocal nospell nofoldenable nowrap noswapfile
+  " setlocal buftype=nofile bufhidden=hide
+  " setfiletype log
+  " execute bn.'bufdo file '.fnameescape("=log=")
+  " echo bn
+  call lib#py#call('helper', 'log', a:args)
 endfunction
 
 function! lib#debug#bar() abort

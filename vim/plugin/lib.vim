@@ -31,8 +31,8 @@ command! -nargs=0 GoInstallImps
 command! -nargs=0 WindowsDebug
     \ call lib#window#test()
 
-command! -nargs=0 MyDebug
-    \ call lib#debug#foo()
+command! -nargs=1 MyDebug
+    \ call lib#debug#foo(<q-args>)
 
 augroup my_plugin_lib
   autocmd!
