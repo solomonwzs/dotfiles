@@ -63,6 +63,13 @@ Plug 'https://github.com/tpope/vim-commentary'
 " locate files, buffers, mrus, tags, etc. in large project.
 Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 
+" A vim plugin to display the indention levels with thin vertical lines
+" Topics.
+" Plug 'https://github.com/Yggdroot/indentLine.git'
+
+" Indent guides for Neovim
+" Plug 'https://github.com/lukas-reineke/indent-blankline.nvim.git'
+
 " Vim plugin that displays tags in a window, ordered by scope
 Plug 'https://github.com/majutsushi/tagbar'
 

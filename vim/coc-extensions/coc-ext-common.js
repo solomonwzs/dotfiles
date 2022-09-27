@@ -629,12 +629,12 @@ var import_path6 = __toModule(require("path"));
 // src/utils/externalexec.ts
 var import_path3 = __toModule(require("path"));
 var import_child_process = __toModule(require("child_process"));
-async function callShell(cmd, args, input) {
+async function callShell(cmd, args, input, opts) {
   return new Promise((resolve) => {
     const stdin = input ? "pipe" : "ignore";
     const sh = import_child_process.spawn(cmd, args, {
       stdio: [stdin, "pipe", "pipe"],
-      shell: true
+      shell: opts == null ? void 0 : opts.shell
     });
     if (input && sh.stdin) {
       sh.stdin.write(input);
@@ -838,7 +838,7 @@ var RgfilesList = class extends import_coc10.BasicList {
         "\\\\n================\\\\n",
         context.args[0],
         item.data["name"]
-      ]);
+      ], void 0, {shell: true});
       if (resp.exitCode != 0 || !resp.data) {
         logger.error("rg fail");
         return;
@@ -874,7 +874,7 @@ var RgfilesList = class extends import_coc10.BasicList {
       "--count-matches",
       pattern
     ];
-    const resp = await callShell("rg", args);
+    const resp = await callShell("rg", args, void 0, {shell: true});
     if (resp.exitCode != 0) {
       logger.error("rg fail");
       if (resp.error) {
@@ -973,7 +973,7 @@ var RgwordsList = class extends import_coc11.BasicList {
     }
     const pattern = `"${context.args[0].replace(/"/g, '\\"')}"`;
     const args = ["--color", "never", "--json", pattern];
-    const resp = await callShell("rg", args);
+    const resp = await callShell("rg", args, void 0, {shell: true});
     if (resp.exitCode != 0) {
       logger.error("rg fail");
       if (resp.error) {
