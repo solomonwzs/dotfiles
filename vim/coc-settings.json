@@ -95,6 +95,7 @@
 
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["-l", "80"],
+  "pyright.inlayHints.enable": false,
 
   "sumneko-lua.enableNvimLuaDev": true,
   "Lua.hint.enable": false,

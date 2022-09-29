@@ -41,10 +41,16 @@ reuse.
 see detail at: https://developers.google.com/gmail/imap/xoauth2-libraries
 """
 
+import http.server
+import io
 import json
 import logging
 import optparse
+import os
+import select
+import socketserver
 import sys
+import threading
 import urllib.parse
 import urllib.request
 
@@ -101,7 +107,9 @@ def format_url_params(params: dict[str, str]) -> str:
 
 
 def generate_permission_url(
-    client_id: str, scope: str = "https://mail.google.com/"
+    client_id: str,
+    redirect_uri: str,
+    scope: str = "https://mail.google.com/",
 ) -> str:
     """Generates the URL for authorizing access.
 
@@ -116,14 +124,17 @@ def generate_permission_url(
     """
     params = {}
     params["client_id"] = client_id
-    params["redirect_uri"] = REDIRECT_URI
+    params["redirect_uri"] = redirect_uri
     params["scope"] = scope
     params["response_type"] = "code"
     return "%s?%s" % (accounts_url("o/oauth2/auth"), format_url_params(params))
 
 
 def authorize_tokens(
-    client_id: str, client_secret: str, authorization_code: str
+    client_id: str,
+    client_secret: str,
+    redirect_uri: str,
+    authorization_code: str,
 ) -> tuple[str, str, int] | None:
     """Obtains OAuth access token and refresh token.
 
@@ -143,7 +154,7 @@ def authorize_tokens(
     params["client_id"] = client_id
     params["client_secret"] = client_secret
     params["code"] = authorization_code
-    params["redirect_uri"] = REDIRECT_URI
+    params["redirect_uri"] = redirect_uri
     params["grant_type"] = "authorization_code"
     request_url = accounts_url("o/oauth2/token")
 
@@ -191,6 +202,113 @@ def refresh_token(
         return None
 
 
+class GetAuthCodeHandler(http.server.BaseHTTPRequestHandler):
+    def __init__(
+        self, opts: optparse.Values, redirect_uri: str, fd: int, *args, **kwargs
+    ):
+        self.opts = opts
+        self.redirect_uri = redirect_uri
+        self.fd = fd
+        super().__init__(*args, **kwargs)
+
+    def log_message(self, format, *args):
+        pass
+
+    def log_error(self, format, *args):
+        pass
+
+    def log_request(self, code="-", size="-"):
+        pass
+
+    def do_GET(self):
+        query = self.path
+        if "?" in query:
+            _, query = query.split("?", 1)
+        qs = urllib.parse.parse_qs(query)
+
+        [authorization_code] = qs.get("code", ["None"])
+        # os.write(self.fd, f"{authorization_code}\n".encode("utf8"))
+
+        res_json = {}
+        response = authorize_tokens(
+            opts.client_id,
+            opts.client_secret,
+            self.redirect_uri,
+            authorization_code,
+        )
+
+        if response is None:
+            res_json["message"] = "query fail"
+        else:
+            access_token, refr_token, expires_in = response
+            res_json["Refresh Token"] = refr_token
+            res_json["Access Token"] = access_token
+            res_json["Access Token Expiration Seconds"] = expires_in
+
+        self.send_response(200, "OK")
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(res_json).encode("utf8"))
+
+
+def handle_authorize_tokens_redirect(
+    opts: optparse.Values, redirect_uri: str, pipe_write: int
+):
+    socketserver.TCPServer.allow_reuse_address = True
+    httpd = socketserver.TCPServer(
+        ("", opts.redirect_port),
+        lambda *_: GetAuthCodeHandler(opts, redirect_uri, pipe_write, *_),
+    )
+    httpd.handle_request()
+    os.write(pipe_write, b".")
+
+
+def get_authorize_tokens(opts: optparse.Values):
+    redirect_uri = f"http://{opts.redirect_ip}:{opts.redirect_port}"
+    require_options(opts, "client_id", "client_secret")
+    permission_url = generate_permission_url(
+        opts.client_id,
+        redirect_uri,
+        opts.scope,
+    )
+
+    pipe_read, pipe_write = os.pipe()
+    # sys.stdin = io.FileIO(pipe_read)
+    t = threading.Thread(
+        target=handle_authorize_tokens_redirect,
+        args=(
+            opts,
+            redirect_uri,
+            pipe_write,
+        ),
+    )
+    t.daemon = True
+    t.start()
+
+    print("To authorize token, visit this url and follow the directions:")
+    print(f"    {permission_url}")
+    sys.stdout.write("Enter verification code: ")
+    sys.stdout.flush()
+
+    readable, _, _ = select.select([sys.stdin, pipe_read], [], [])
+    if pipe_read in readable:
+        return
+
+    authorization_code = sys.stdin.readline()
+    response = authorize_tokens(
+        opts.client_id,
+        opts.client_secret,
+        redirect_uri,
+        authorization_code,
+    )
+    if response is None:
+        sys.exit(-1)
+    access_token, refr_token, expires_in = response
+    print(f"Refresh Token: {refr_token}")
+    print(f"Access Token: {access_token}")
+    print(f"Access Token Expiration Seconds: {expires_in}")
+
+
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage=__doc__)
     parser.add_option(
@@ -224,22 +342,24 @@ if __name__ == "__main__":
         help="scope for the access token. Multiple scopes can be listed "
         "separated by spaces with the whole argument quoted.",
     )
+    parser.add_option(
+        "--redirect_ip",
+        type=str,
+        dest="redirect_ip",
+        default="127.0.0.1",
+        help="determines the IP how Google's authorization server sends a response",
+    )
+    parser.add_option(
+        "--redirect_port",
+        type=int,
+        dest="redirect_port",
+        default=8080,
+        help="determines the port how Google's authorization server sends a response",
+    )
     opts, _ = parser.parse_args()
 
     if opts.generate_oauth2_token:
-        require_options(opts, "client_id", "client_secret")
-        print("To authorize token, visit this url and follow the directions:")
-        print("    %s" % generate_permission_url(opts.client_id, opts.scope))
-        authorization_code = input("Enter verification code: ")
-        response = authorize_tokens(
-            opts.client_id, opts.client_secret, authorization_code
-        )
-        if response is None:
-            sys.exit(-1)
-        access_token, refr_token, expires_in = response
-        print(f"Refresh Token: {refr_token}")
-        print(f"Access Token: {access_token}")
-        print(f"Access Token Expiration Seconds: {expires_in}")
+        get_authorize_tokens(opts)
     elif opts.refresh_token:
         require_options(opts, "client_id", "client_secret")
         response = refresh_token(
