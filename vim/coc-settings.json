@@ -38,6 +38,23 @@
   "git.removedSign.hlGroup": "GitGutterDelete",
   "git.topRemovedSign.hlGroup": "GitGutterDelete",
 
+  "suggest.floatConfig": {
+    "border": true,
+    "borderhighlight": "CocFloatingBorder"
+  },
+  "diagnostic.floatConfig": {
+    "border": true,
+    "borderhighlight": "CocFloatingBorder"
+  },
+  "signature.floatConfig": {
+    "border": true,
+    "borderhighlight": "CocFloatingBorder"
+  },
+  "hover.floatConfig": {
+    "border": true,
+    "borderhighlight": "CocFloatingBorder"
+  },
+
   "diagnostic.infoSign": "",
   "diagnostic.hintSign": "",
   "diagnostic.errorSign": "",
