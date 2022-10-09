@@ -30,6 +30,7 @@ hi CocListSep4 ctermfg=149 ctermbg=195
 
 hi CocListTotal ctermfg=16 ctermbg=149
 
+hi CocFloating ctermbg=239
 hi CocFloatingBorder ctermfg=243
 
 let s:is_nvim = has('nvim')
