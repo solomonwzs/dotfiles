@@ -18,9 +18,7 @@ var __exportStar = (target, module2, desc) => {
   return target;
 };
 var __toModule = (module2) => {
-  if (module2 && module2.__esModule)
-    return module2;
-  return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", {value: module2, enumerable: true})), module2);
+  return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? {get: () => module2.default, enumerable: true} : {value: module2, enumerable: true})), module2);
 };
 
 // src/coc-ext-common.ts
@@ -308,10 +306,10 @@ var ExtList = class extends import_coc3.BasicList {
 var lists_default = ExtList;
 
 // src/lists/highlight.ts
-var import_coc6 = __toModule(require("coc.nvim"));
+var import_coc7 = __toModule(require("coc.nvim"));
 
 // src/utils/helper.ts
-var import_coc5 = __toModule(require("coc.nvim"));
+var import_coc6 = __toModule(require("coc.nvim"));
 var import_fs = __toModule(require("fs"));
 
 // src/utils/config.ts
@@ -322,33 +320,95 @@ function getcfg(key, defaultValue) {
 }
 
 // src/utils/helper.ts
-var import_path2 = __toModule(require("path"));
+var import_path3 = __toModule(require("path"));
 var import_util = __toModule(require("util"));
+
+// src/utils/logger.ts
+var import_coc5 = __toModule(require("coc.nvim"));
+var import_path2 = __toModule(require("path"));
+var Logger = class {
+  constructor() {
+    this.channel = import_coc5.window.createOutputChannel("coc-ext");
+    this.detail = getcfg("log.detail", false) === true;
+    this.level = getcfg("log.level", 1);
+  }
+  dispose() {
+    return this.channel.dispose();
+  }
+  logLevel(level, value) {
+    var _a;
+    const now = new Date();
+    const str = stringify(value);
+    if (this.detail) {
+      const stack = (_a = new Error().stack) == null ? void 0 : _a.split("\n");
+      if (stack && stack.length >= 4) {
+        const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
+        const expl = re.exec(stack[3]);
+        if (expl) {
+          const file = import_path2.default.basename(expl[3]);
+          const line = expl[4];
+          this.channel.appendLine(`${now.toISOString()} ${level} [${file}:${line}] ${str}`);
+          return;
+        }
+      }
+    }
+    const fn = import_path2.default.basename(__filename);
+    this.channel.appendLine(`${level} [${fn}] ${str}`);
+  }
+  debug(value) {
+    if (this.level > 0) {
+      return;
+    }
+    this.logLevel("D", value);
+  }
+  info(value) {
+    if (this.level > 1) {
+      return;
+    }
+    this.logLevel("I", value);
+  }
+  warn(value) {
+    if (this.level > 2) {
+      return;
+    }
+    this.logLevel("W", value);
+  }
+  error(message) {
+    this.logLevel("E", message);
+  }
+};
+var logger = new Logger();
+
+// src/utils/helper.ts
 function defauleFloatWinConfig() {
+  let conf = getcfg("floatConfig", {});
+  logger.debug(conf);
   return {
     autoHide: true,
-    border: getcfg("window.enableBorder", false) ? [1, 1, 1, 1] : [0, 0, 0, 0],
+    border: conf.border ? [1, 1, 1, 1] : [0, 0, 0, 0],
     close: false,
-    maxHeight: getcfg("window.maxHeight", void 0),
-    maxWidth: getcfg("window.maxWidth", void 0)
+    maxHeight: conf.maxHeight,
+    maxWidth: conf.maxWidth,
+    highlight: conf.highlight,
+    borderhighlight: conf.borderhighlight
   };
 }
 function positionInRange(pos, range) {
   return (range.start.line < pos.line || range.start.line == pos.line && range.start.character <= pos.character) && (pos.line < range.end.line || pos.line == range.end.line && pos.character <= range.end.character);
 }
 async function getText(mode, e = 1) {
-  const doc = await import_coc5.workspace.document;
+  const doc = await import_coc6.workspace.document;
   let range = null;
   if (mode === "v") {
-    const text2 = (await import_coc5.workspace.nvim.call("lib#common#visual_selection", [e])).toString();
+    const text2 = (await import_coc6.workspace.nvim.call("lib#common#visual_selection", [e])).toString();
     return text2.trim();
   } else {
-    const pos = await import_coc5.window.getCursorPosition();
+    const pos = await import_coc6.window.getCursorPosition();
     range = doc.getWordRangeAtPosition(pos);
   }
   let text = "";
   if (!range) {
-    text = (await import_coc5.workspace.nvim.eval('expand("<cword>")')).toString();
+    text = (await import_coc6.workspace.nvim.eval('expand("<cword>")')).toString();
   } else {
     text = doc.textDocument.getText(range);
   }
@@ -372,7 +432,7 @@ ${content}` : content,
       filetype
     }
   ];
-  const win = new import_coc5.FloatFactory(import_coc5.workspace.nvim);
+  const win = new import_coc6.FloatFactory(import_coc6.workspace.nvim);
   await win.show(doc, cfg);
 }
 function fnvHash(data, seed = 0) {
@@ -400,8 +460,8 @@ function fnvHash(data, seed = 0) {
 }
 function getTempFileWithDocumentContents(document) {
   return new Promise((resolve, reject) => {
-    const fsPath = import_coc5.Uri.parse(document.uri).fsPath;
-    const ext = import_path2.default.extname(fsPath);
+    const fsPath = import_coc6.Uri.parse(document.uri).fsPath;
+    const ext = import_path3.default.extname(fsPath);
     const fileName = `${fsPath}.${fnvHash(document.uri)}${ext}`;
     import_fs.default.writeFile(fileName, document.getText(), (ex) => {
       if (ex) {
@@ -412,7 +472,7 @@ function getTempFileWithDocumentContents(document) {
   });
 }
 async function openFile(filepath, opts) {
-  const {nvim} = import_coc5.workspace;
+  const {nvim} = import_coc6.workspace;
   let open = "edit";
   let cmd = "";
   if (opts) {
@@ -476,7 +536,7 @@ function parse_highlight_info(str) {
   }
   return res;
 }
-var HighlightList = class extends import_coc6.BasicList {
+var HighlightList = class extends import_coc7.BasicList {
   constructor(nvim) {
     super(nvim);
     this.name = "highlight";
@@ -531,7 +591,7 @@ var HighlightList = class extends import_coc6.BasicList {
 var highlight_default = HighlightList;
 
 // src/lists/mapkey.ts
-var import_coc7 = __toModule(require("coc.nvim"));
+var import_coc8 = __toModule(require("coc.nvim"));
 function parse_mapkey_info(str) {
   let lines = str.split("\n");
   let mode = "";
@@ -573,7 +633,7 @@ function parse_mapkey_info(str) {
   }
   return res;
 }
-var MapkeyList = class extends import_coc7.BasicList {
+var MapkeyList = class extends import_coc8.BasicList {
   constructor(nvim) {
     super(nvim);
     this.name = "mapkey";
@@ -627,12 +687,12 @@ var import_coc10 = __toModule(require("coc.nvim"));
 var import_path6 = __toModule(require("path"));
 
 // src/utils/externalexec.ts
-var import_path3 = __toModule(require("path"));
+var import_path4 = __toModule(require("path"));
 var import_child_process = __toModule(require("child_process"));
 async function callShell(cmd, args, input, opts) {
   return new Promise((resolve) => {
     const stdin = input ? "pipe" : "ignore";
-    const sh = import_child_process.spawn(cmd, args, {
+    const sh = (0, import_child_process.spawn)(cmd, args, {
       stdio: [stdin, "pipe", "pipe"],
       shell: opts == null ? void 0 : opts.shell
     });
@@ -672,8 +732,8 @@ async function callPython(pythonDir, m, f, a) {
     if (!root_dir) {
       root_dir = ".";
     }
-    const script = import_path3.default.join(root_dir, pythonDir, "coc_ext.py");
-    const py = import_child_process.spawn("python3", [script], {stdio: ["pipe", "pipe", "pipe"]});
+    const script = import_path4.default.join(root_dir, pythonDir, "coc_ext.py");
+    const py = (0, import_child_process.spawn)("python3", [script], {stdio: ["pipe", "pipe", "pipe"]});
     py.stdin.write(msg);
     py.stdin.end();
     let exitCode = 0;
@@ -699,14 +759,14 @@ async function callPython(pythonDir, m, f, a) {
 }
 
 // src/utils/icons.ts
-var import_coc8 = __toModule(require("coc.nvim"));
-var import_path4 = __toModule(require("path"));
+var import_coc9 = __toModule(require("coc.nvim"));
+var import_path5 = __toModule(require("path"));
 var defx_has_init = false;
 var defx_icons = void 0;
 var default_color;
 async function defx_init() {
   defx_has_init = true;
-  let {nvim} = import_coc8.workspace;
+  let {nvim} = import_coc9.workspace;
   default_color = await nvim.eval('synIDattr(hlID("Normal"), "fg")');
   let loaded_defx_icons = await nvim.eval('get(g:, "loaded_defx_icons")');
   if (loaded_defx_icons != 1) {
@@ -741,7 +801,7 @@ async function getDefxIcon(filetype, filepath) {
       color: default_color.toString()
     };
   }
-  const filename = import_path4.default.basename(filepath);
+  const filename = import_path5.default.basename(filepath);
   let info = defx_icons.icons.exact_matches[filename];
   if (info) {
     return info;
@@ -756,62 +816,6 @@ async function getDefxIcon(filetype, filepath) {
     color: default_color.toString()
   };
 }
-
-// src/utils/logger.ts
-var import_coc9 = __toModule(require("coc.nvim"));
-var import_path5 = __toModule(require("path"));
-var Logger = class {
-  constructor() {
-    this.channel = import_coc9.window.createOutputChannel("coc-ext");
-    this.detail = getcfg("log.detail", false) === true;
-    this.level = getcfg("log.level", 1);
-  }
-  dispose() {
-    return this.channel.dispose();
-  }
-  logLevel(level, value) {
-    var _a;
-    const now = new Date();
-    const str = stringify(value);
-    if (this.detail) {
-      const stack = (_a = new Error().stack) == null ? void 0 : _a.split("\n");
-      if (stack && stack.length >= 4) {
-        const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
-        const expl = re.exec(stack[3]);
-        if (expl) {
-          const file = import_path5.default.basename(expl[3]);
-          const line = expl[4];
-          this.channel.appendLine(`${now.toISOString()} ${level} [${file}:${line}] ${str}`);
-          return;
-        }
-      }
-    }
-    const fn = import_path5.default.basename(__filename);
-    this.channel.appendLine(`${level} [${fn}] ${str}`);
-  }
-  debug(value) {
-    if (this.level > 0) {
-      return;
-    }
-    this.logLevel("D", value);
-  }
-  info(value) {
-    if (this.level > 1) {
-      return;
-    }
-    this.logLevel("I", value);
-  }
-  warn(value) {
-    if (this.level > 2) {
-      return;
-    }
-    this.logLevel("W", value);
-  }
-  error(message) {
-    this.logLevel("E", message);
-  }
-};
-var logger = new Logger();
 
 // src/lists/rgfiles.ts
 var RgfilesList = class extends import_coc10.BasicList {
@@ -1669,9 +1673,9 @@ ${space}\uF0DA ${line}`;
 function translateFn(mode) {
   return async () => {
     const text = await getText(mode);
-    let trans = await googleTranslate(text, "auto", "zh-CN");
+    let trans = await bingTranslate(text, "auto", "zh-CN");
     if (!trans) {
-      trans = await bingTranslate(text, "auto", "zh-CN");
+      trans = await googleTranslate(text, "auto", "zh-CN");
     }
     if (trans) {
       await popup(trans.paraphrase, `[${trans.engine}]`);
@@ -1695,12 +1699,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc21.workspace.document;
-    const range = await import_coc21.workspace.getSelectedRange("v", doc);
+    const range = await import_coc21.window.getSelectedRange("v");
     if (!range) {
       return;
     }
+    const pythonDir = getcfg("pythonDir", "");
+    const doc = await import_coc21.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -1751,12 +1755,12 @@ async function activate(context) {
     const text = await getText("v", 0);
     await callShell("xclip", ["-selection", "clipboard", "-i"], text);
   }, {sync: false}), import_coc21.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
-    const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc21.workspace.document;
-    const range = await import_coc21.workspace.getSelectedRange("v", doc);
+    const range = await import_coc21.window.getSelectedRange("v");
     if (!range) {
       return;
     }
+    const pythonDir = getcfg("pythonDir", "");
+    const doc = await import_coc21.workspace.document;
     const name = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "common", "change_name_rule", [
       name

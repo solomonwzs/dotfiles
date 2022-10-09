@@ -30,14 +30,15 @@ hi CocListSep4 ctermfg=149 ctermbg=195
 
 hi CocListTotal ctermfg=16 ctermbg=149
 
-hi CocFloating ctermbg=239
+" hi CocFloating ctermbg=239
 hi CocFloatingBorder ctermfg=243
 
 let s:is_nvim = has('nvim')
 
 let g:coc_disable_transparent_cursor = 1
 
-let g:coc_borderchars = ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
+" let g:coc_borderchars = ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
+let g:coc_borderchars = ['─', '│', '─', '│', '┌', '┐', '┘', '└']
 
 let g:markdown_fenced_languages = [
     \ 'vim',
