@@ -1375,7 +1375,8 @@ async function bingTranslate(text, sl, tl) {
     logger.error(resp.error.message);
     return null;
   }
-  if (!resp.data) {
+  if (resp.statusCode != 200 || !resp.data || resp.data.length == 0) {
+    logger.error(`status: ${resp.statusCode}`);
     return null;
   }
   const ret = createTranslation("Bing", sl, tl, text);
@@ -1559,7 +1560,7 @@ async function googleTranslate(text, sl, tl) {
     logger.error(resp.error.message);
     return null;
   }
-  if (!resp.data || resp.statusCode != 200) {
+  if (resp.statusCode != 200 || !resp.data || resp.data.length == 0) {
     logger.error(`status: ${resp.statusCode}`);
     return null;
   }
