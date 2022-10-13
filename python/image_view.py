@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # @author   Solomon Ng <solomon.wzs@gmail.com>
@@ -7,7 +7,6 @@
 # @license  MIT
 
 from PIL import Image
-import argparse
 import optparse
 
 RESET_STYLE = "\x1b[0m"
