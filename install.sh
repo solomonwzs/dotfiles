@@ -88,7 +88,9 @@ copy_file "$EXECUTE_DIRNAME/zsh/my_conf.sh" "$HOME/.my_conf.sh"
 
 make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
-make_link "$EXECUTE_DIRNAME/zsh/fzf_preview_file.sh" "$HOME/bin/fzf_preview_file.sh"
+
+make_link "$EXECUTE_DIRNAME/zsh/fzf_preview_file.sh" "$HOME/bin/preview_file"
+make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
 info "Download 'oh-my-zsh'"

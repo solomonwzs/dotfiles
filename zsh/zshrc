@@ -231,10 +231,10 @@ tmux_set_title() {
 }
 
 if ! type "pbcopy" >/dev/null; then
-    if _loc="$(type -p "xclip")" && ! [[ -z $_loc ]]; then
+    if _loc="$(type -p "xclip")" && [[ -n $_loc ]]; then
         alias pbcopy='xclip -selection clipboard'
         alias pbpaste='xclip -selection clipboard -o'
-    elif _loc="$(type -p "xsel")" && ! [[ -z $_loc ]]; then
+    elif _loc="$(type -p "xsel")" && [[ -n $_loc ]]; then
         alias pbcopy='xsel --clipboard --input'
         alias pbpaste='xsel --clipboard --output'
     fi
@@ -248,7 +248,7 @@ export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always {} || cat
 
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse'
 
-fzf_preview_file() {
+_fzf_preview_file() {
     printf '[[ $(file --mime {}) =~ binary ]] && echo {} is a binary file ||
         (bat --style=numbers --color=always {} ||
         highlight -O ansi -l {} ||
@@ -258,7 +258,10 @@ fzf_preview_file() {
 }
 
 pfzf() {
-    command fzf --preview "$(fzf_preview_file 200)" \
+    command fzf \
+        --preview 'preview_file -w $FZF_PREVIEW_COLUMNS -h $FZF_PREVIEW_LINES {}' \
+        --preview-window '60%' \
+        --height 80% \
         --bind 'enter:execute(${EDITOR:-vim} {})' \
         --bind 'ctrl-o:execute(open {})'
 }
@@ -288,7 +291,7 @@ _fzf_comprun() {
     export | unset) fzf "$@" --preview "eval 'echo \$'{}" ;;
     ssh) fzf "$@" --preview 'dig {}' ;;
     tig) fzf "$@" --preview 'git log --graph {} | head -200' ;;
-    vim | nvim) fzf "$@" --preview "$(fzf_preview_file 200)" ;;
+    vim | nvim) fzf "$@" --preview "$(_fzf_preview_file 200)" ;;
     *) fzf "$@" ;;
     esac
 }

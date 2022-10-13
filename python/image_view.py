@@ -8,6 +8,7 @@
 
 from PIL import Image
 import argparse
+import optparse
 
 RESET_STYLE = "\x1b[0m"
 
@@ -56,13 +57,21 @@ def terminal_style_str(
 
 
 def resize_image(
-    image: Image.Image, new_width: int = 100, rate: float = 1.0
+    image: Image.Image,
+    new_width: int = 100,
+    new_height: int = 100,
+    rate: float = 1.0,
 ) -> Image.Image:
     ori_width, ori_height = image.size
-    aspect_ratio = ori_height / ori_width
-    new_height = int(new_width * aspect_ratio * rate)
+    aspect_ratio = ori_height / ori_width * rate
+    height = int(new_width * aspect_ratio)
 
-    new_image = image.resize((new_width, new_height))
+    width = new_width
+    if height > new_height:
+        height = new_height
+        width = int(height / aspect_ratio)
+
+    new_image = image.resize((width, height))
     return new_image
 
 
@@ -101,26 +110,28 @@ def image2tstr(image: Image.Image) -> list[str]:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="open image")
-    parser.add_argument("file", type=str, help="image file")
-    parser.add_argument(
-        "-w",
-        "--width",
+    parser = optparse.OptionParser(usage=__doc__)
+    parser.add_option(
+        "--width", type=int, default=120, help="max disply width (default: 120)"
+    )
+    parser.add_option(
+        "--height",
         type=int,
         default=120,
-        help="max disply width (default: 120)",
+        help="max disply height (default: 120)",
     )
-    parser.add_argument(
-        "-r",
+    parser.add_option(
         "--ratio",
         type=float,
         default=1.0,
         help="height ratio (default: 1.0)",
     )
-    args = parser.parse_args()
+    opt, arg = parser.parse_args()
 
-    img = Image.open(args.file)
-    img = resize_image(img, args.width, args.ratio)
+    img = Image.open(arg[0])
+    print(f"size: {img.width}x{img.height}, format: {img.format}")
+
+    img = resize_image(img, opt.width, opt.height, opt.ratio)
     img = img.convert("RGB")
     s = image2tstr(img)
     for i in s:
