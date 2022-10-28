@@ -153,11 +153,20 @@ function parse_git_dirty() {
             FLAGS+="--ignore-submodules=${GIT_STATUS_IGNORE_SUBMODULES:-dirty}"
             ;;
         esac
-        $(command git diff-files --no-ext-diff --quiet ${FLAGS} 2>/dev/null)
-        if [[ $? != 0 ]]; then
-            echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+        if [[ -n "$GIT_STATUS_IGNORE_UNTRACKED" ]]; then
+            $(command git diff-files --no-ext-diff --quiet ${FLAGS} 2>/dev/null)
+            if [[ $? != 0 ]]; then
+                echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+            else
+                echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+            fi
         else
-            echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+            STATUS=$(command git status --porcelain ${FLAGS} 2>/dev/null)
+            if [[ -n "$STATUS" ]]; then
+                echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+            else
+                echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+            fi
         fi
     else
         echo "$ZSH_THEME_GIT_PROMPT_UNKNOWN"
