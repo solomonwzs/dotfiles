@@ -138,7 +138,7 @@ ZSH_THEME_GIT_PROMPT_CLEAN=""
 function parse_git_dirty() {
     local STATUS
     local -a FLAGS
-    FLAGS=('--porcelain')
+    FLAGS=()
     if [[ "$(command git config --get host-$(hostname).hide-dirty)" != "1" ]]; then
         if [[ "$DISABLE_UNTRACKED_FILES_DIRTY" == "true" ]]; then
             FLAGS+='--untracked-files=no'
@@ -153,8 +153,8 @@ function parse_git_dirty() {
             FLAGS+="--ignore-submodules=${GIT_STATUS_IGNORE_SUBMODULES:-dirty}"
             ;;
         esac
-        STATUS=$(command git status ${FLAGS} 2>/dev/null | tail -n1)
-        if [[ -n $STATUS ]]; then
+        $(command git diff-files --no-ext-diff --quiet ${FLAGS} 2>/dev/null)
+        if [[ $? != 0 ]]; then
             echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
         else
             echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
