@@ -114,10 +114,12 @@
     }
   ],
 
+  // coc-pyright
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["-l", "80"],
-  "pyright.inlayHints.enable": false,
+  "inlayHint.enable": false,
 
+  // coc-sumneko-lua
   "sumneko-lua.enableNvimLuaDev": true,
   "Lua.hint.enable": false,
 
