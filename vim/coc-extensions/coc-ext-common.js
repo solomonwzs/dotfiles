@@ -33,6 +33,19 @@ var import_coc = __toModule(require("coc.nvim"));
 
 // src/utils/common.ts
 var import_path = __toModule(require("path"));
+var import_url = __toModule(require("url"));
+function getEnvHttpProxy(is_https) {
+  const proxy = process.env[is_https ? "https_proxy" : "http_proxy"];
+  if (proxy) {
+    try {
+      return new import_url.URL(proxy);
+    } catch (e) {
+      return void 0;
+    }
+  } else {
+    return void 0;
+  }
+}
 function stringify(value) {
   if (typeof value === "string") {
     return value;
@@ -42,13 +55,13 @@ function stringify(value) {
     return JSON.stringify(value, null, 2);
   }
 }
-function get_random_id(scope, sep = "-") {
+function getRandomId(scope, sep = "-") {
   const ts = new Date().getTime().toString(16).slice(-8);
   let r = Math.floor(Math.random() * 65535).toString(16);
   r = "0".repeat(4 - r.length) + r;
   return scope && scope.length > 0 ? `${scope}${sep}${ts}${sep}${r}` : `${ts}${sep}${r}`;
 }
-function str_find_first_of(str, ch) {
+function strFindFirstOf(str, ch) {
   for (let i = 0; i < str.length; ++i) {
     if (ch.has(str[i])) {
       return i;
@@ -56,7 +69,7 @@ function str_find_first_of(str, ch) {
   }
   return -1;
 }
-function str_find_first_not_of(str, ch) {
+function strFindFirstNotOf(str, ch) {
   for (let i = 0; i < str.length; ++i) {
     if (!ch.has(str[i])) {
       return i;
@@ -66,7 +79,7 @@ function str_find_first_not_of(str, ch) {
 }
 
 // src/lists/autocmd.ts
-function parse_autocmd_info(str) {
+function parseAutocmdInfo(str) {
   let lines = str.split("\n");
   let group = "";
   let event = "";
@@ -88,7 +101,7 @@ function parse_autocmd_info(str) {
   };
   const spaces = new Set([" ", "	"]);
   for (const l of lines) {
-    const sn = str_find_first_not_of(l, spaces);
+    const sn = strFindFirstNotOf(l, spaces);
     if (sn == 0) {
       let arr = l.split(/\s+/);
       if (arr.length == 2 && arr[0] != "") {
@@ -112,12 +125,12 @@ function parse_autocmd_info(str) {
       }
       setting = "";
       const ltmp = l.slice(sn);
-      const offset0 = str_find_first_of(ltmp, spaces);
+      const offset0 = strFindFirstOf(ltmp, spaces);
       if (offset0 == -1) {
         pattern = ltmp;
       } else {
         pattern = ltmp.slice(0, offset0);
-        const offset1 = str_find_first_not_of(ltmp.slice(offset0), spaces);
+        const offset1 = strFindFirstNotOf(ltmp.slice(offset0), spaces);
         if (offset1 != -1) {
           setting = ltmp.slice(offset0 + offset1);
         }
@@ -163,8 +176,8 @@ var AutocmdList = class extends import_coc.BasicList {
   }
   async loadItems(_context) {
     const {nvim} = this;
-    let str = await nvim.commandOutput("verbose autocmd");
-    const infos = parse_autocmd_info(str);
+    let str = await nvim.exec("verbose autocmd", true);
+    const infos = parseAutocmdInfo(str);
     let max_gn_len = 0;
     let max_en_len = 0;
     for (const i of infos) {
@@ -431,7 +444,7 @@ async function openFile(filepath, opts) {
 }
 
 // src/lists/highlight.ts
-function parse_highlight_info(str) {
+function parseHighlightInfo(str) {
   let lines = str.split("\n");
   let group_name = "";
   let desc = "";
@@ -497,8 +510,8 @@ var HighlightList = class extends import_coc6.BasicList {
   }
   async loadItems(_context) {
     const {nvim} = this;
-    let str = await nvim.commandOutput("verbose highlight");
-    const hiinfos = parse_highlight_info(str);
+    let str = await nvim.exec("verbose highlight", true);
+    const hiinfos = parseHighlightInfo(str);
     let max_gn_len = 0;
     for (const i of hiinfos) {
       if (i.group_name.length > max_gn_len) {
@@ -533,7 +546,7 @@ var highlight_default = HighlightList;
 
 // src/lists/mapkey.ts
 var import_coc7 = __toModule(require("coc.nvim"));
-function parse_mapkey_info(str) {
+function parseMapkeyInfo(str) {
   let lines = str.split("\n");
   let mode = "";
   let key = "";
@@ -594,8 +607,8 @@ var MapkeyList = class extends import_coc7.BasicList {
   }
   async loadItems(_context) {
     const {nvim} = this;
-    let str = await nvim.commandOutput("verbose map");
-    const mapinfos = parse_mapkey_info(str);
+    let str = await nvim.exec("verbose map", true);
+    const mapinfos = parseMapkeyInfo(str);
     let max_key_len = 0;
     for (const i of mapinfos) {
       if (i.key.length > max_key_len) {
@@ -1319,25 +1332,42 @@ function createTranslation(name, sl, tl, text) {
 
 // src/utils/http.ts
 var import_https = __toModule(require("https"));
-async function simpleHttpsRequest(opts, data) {
+var import_http = __toModule(require("http"));
+async function simpleHttpsProxy(host, port, target_host) {
   return new Promise((resolve) => {
-    const req = import_https.default.request(opts, (resp) => {
+    import_http.default.request({host, port, path: target_host, method: "CONNECT"}).on("connect", (resp, socket, _head) => {
+      if (resp.statusCode == 200) {
+        resolve({agent: new import_https.default.Agent({socket})});
+      } else {
+        resolve({error: {name: "ERR_CONN", message: "connect fail"}});
+      }
+    }).on("error", (error) => {
+      resolve({error});
+    }).end();
+  });
+}
+async function simpleHttpRequest(opts, is_https, data) {
+  const host = opts.hostname ? opts.hostname : opts.host;
+  const request = is_https ? import_https.default.request : import_http.default.request;
+  return new Promise((resolve) => {
+    const req = request(opts, (resp) => {
       const buf = [];
       resp.on("data", (chunk) => {
         buf.push(chunk);
-      });
-      resp.on("end", () => {
+      }).on("end", () => {
         resolve({
           statusCode: resp.statusCode,
-          data: Buffer.concat(buf),
-          error: void 0
+          headers: resp.headers,
+          body: Buffer.concat(buf)
         });
       });
-    }).on("error", (err) => {
+    }).on("error", (error) => {
       resolve({
-        statusCode: void 0,
-        data: void 0,
-        error: err
+        error
+      });
+    }).on("timeout", () => {
+      resolve({
+        error: {name: "ERR_TIMEOUT", message: `query ${host} timeout`}
       });
     });
     if (data) {
@@ -1345,6 +1375,39 @@ async function simpleHttpsRequest(opts, data) {
     }
     req.end();
   });
+}
+async function sendHttpRequest(req) {
+  const host = req.args.hostname ? req.args.hostname : req.args.host;
+  if (!host) {
+    return {error: {name: "ERR_PARA", message: "no host"}};
+  }
+  const is_https = req.args.protocol == "https:";
+  if (!req.proxy) {
+    return await simpleHttpRequest(req.args, is_https, req.data);
+  } else if (is_https) {
+    const agent = await simpleHttpsProxy(req.proxy.host, req.proxy.port, `${host}:${req.args.port ? req.args.port : 443}`);
+    if (agent.error) {
+      return {error: agent.error};
+    }
+    const opts = Object.assign({}, req.args);
+    opts.agent = agent.agent;
+    return await simpleHttpRequest(opts, is_https, req.data);
+  } else {
+    const opts = Object.assign({}, req.args);
+    opts.headers = Object.assign({}, req.args.headers);
+    var path8 = `${is_https ? "https" : "http"}://${host}`;
+    if (opts.port) {
+      path8 += `:${opts.port}`;
+    }
+    if (opts.path) {
+      path8 += opts.path;
+    }
+    opts.host = req.proxy.host;
+    opts.port = req.proxy.port;
+    opts.path = path8;
+    opts.headers.Host = host;
+    return await simpleHttpRequest(opts, is_https, req.data);
+  }
 }
 
 // src/translators/bing.ts
@@ -1358,29 +1421,34 @@ function getParaphrase(html) {
   }
   return paraphrase.join("\n");
 }
-async function bingTranslate(text, sl, tl) {
-  const opts = {
-    hostname: "cn.bing.com",
-    path: `/dict/SerpHoverTrans?q=${encodeURIComponent(text)}`,
-    method: "GET",
-    timeout: 1e3,
-    headers: {
-      Host: "cn.bing.com",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.5"
-    }
+async function bingTranslate(text, sl, tl, proxy_url) {
+  const proxy = proxy_url ? {host: proxy_url.hostname, port: parseInt(proxy_url.port)} : void 0;
+  const req = {
+    args: {
+      host: "cn.bing.com",
+      path: `/dict/SerpHoverTrans?q=${encodeURIComponent(text)}`,
+      method: "GET",
+      timeout: 1e3,
+      headers: {
+        Host: "cn.bing.com",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5"
+      },
+      protocol: "https:"
+    },
+    proxy
   };
-  const resp = await simpleHttpsRequest(opts);
+  const resp = await sendHttpRequest(req);
   if (resp.error) {
     logger.error(resp.error.message);
     return null;
   }
-  if (resp.statusCode != 200 || !resp.data || resp.data.length == 0) {
+  if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
     logger.error(`status: ${resp.statusCode}`);
     return null;
   }
   const ret = createTranslation("Bing", sl, tl, text);
-  ret.paraphrase = getParaphrase(resp.data.toString());
+  ret.paraphrase = getParaphrase(resp.body.toString());
   return ret;
 }
 
@@ -1473,7 +1541,7 @@ async function debug(cmd, ...args) {
 
 // src/utils/decoder.ts
 var import_util2 = __toModule(require("util"));
-function decode_mime_encode_str(str) {
+function decodeMimeEncodeStr(str) {
   const re = /=\?(.+?)\?([BbQq])\?(.+?)\?=/g;
   const res = [];
   let expl = re.exec(str);
@@ -1544,27 +1612,32 @@ function getParaphrase2(obj) {
   }
   return paraphrase.join("\n");
 }
-async function googleTranslate(text, sl, tl) {
-  const host = "translate.googleapis.com";
-  const opts = {
-    hostname: host,
-    path: `/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dj=1&q=${encodeURIComponent(text)}`,
-    method: "GET",
-    timeout: 1e3,
-    headers: {
-      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
-    }
+async function googleTranslate(text, sl, tl, proxy_url) {
+  const host = "translate.google.com";
+  const proxy = proxy_url ? {host: proxy_url.hostname, port: parseInt(proxy_url.port)} : void 0;
+  const req = {
+    args: {
+      host,
+      path: `/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dj=1&q=${encodeURIComponent(text)}`,
+      method: "GET",
+      timeout: 1e3,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36"
+      },
+      protocol: "https:"
+    },
+    proxy
   };
-  const resp = await simpleHttpsRequest(opts);
+  const resp = await sendHttpRequest(req);
   if (resp.error) {
     logger.error(resp.error.message);
     return null;
   }
-  if (resp.statusCode != 200 || !resp.data || resp.data.length == 0) {
+  if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
     logger.error(`status: ${resp.statusCode}`);
     return null;
   }
-  const obj = JSON.parse(resp.data.toString());
+  const obj = JSON.parse(resp.body.toString());
   if (!obj) {
     return null;
   }
@@ -1575,10 +1648,10 @@ async function googleTranslate(text, sl, tl) {
 
 // src/leaderf/highlight.ts
 var import_coc20 = __toModule(require("coc.nvim"));
-async function highlight_source() {
+async function highlightSource() {
   const {nvim} = import_coc20.workspace;
-  let str = await nvim.commandOutput("verbose highlight");
-  const hiinfos = parse_highlight_info(str);
+  let str = await nvim.exec("verbose highlight", true);
+  const hiinfos = parseHighlightInfo(str);
   let max_gn_len = 0;
   for (const i of hiinfos) {
     if (i.group_name.length > max_gn_len) {
@@ -1590,7 +1663,7 @@ async function highlight_source() {
     const spaces = " ".repeat(max_gn_len - i.group_name.length + 2);
     lines.push(`${i.group_name}${spaces}xxx  ${i.desc}  <${i.last_set_file}:${i.line}>`);
   }
-  const var_name = get_random_id("__coc_leader_highligt", "_");
+  const var_name = getRandomId("__coc_leader_highligt", "_");
   await nvim.setVar(var_name, lines);
   await nvim.command(`Leaderf! highlight ${var_name}`);
 }
@@ -1598,7 +1671,7 @@ async function highlight_source() {
 // src/leaderf/leaderf.ts
 async function leader_recv(cmd, ...args) {
   if (cmd == "highlight") {
-    await highlight_source();
+    await highlightSource();
   }
 }
 
@@ -1669,11 +1742,12 @@ ${space}\uF0DA ${line}`;
   await popup(msg);
 }
 function translateFn(mode) {
+  const proxy = getEnvHttpProxy(true);
   return async () => {
     const text = await getText(mode);
-    let trans = await bingTranslate(text, "auto", "zh-CN");
+    let trans = await bingTranslate(text, "auto", "zh-CN", proxy);
     if (!trans) {
-      trans = await googleTranslate(text, "auto", "zh-CN");
+      trans = await googleTranslate(text, "auto", "zh-CN", proxy);
     }
     if (trans) {
       await popup(trans.paraphrase, `[${trans.engine}]`);
@@ -1768,7 +1842,7 @@ async function activate(context) {
     sync: false
   }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
-    const tt = decode_mime_encode_str(text);
+    const tt = decodeMimeEncodeStr(text);
     popup(tt, "[Mime decode]");
   }, {
     sync: false
