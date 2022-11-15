@@ -158,26 +158,17 @@ function! s:pum_prev() abort
   return ''
 endfunction
 
-if coc#util#api_version() <= 30
-  inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-  inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-  inoremap <expr><CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-else
-  inoremap <silent><expr> <TAB>
-      \ coc#pum#visible() ? <SID>pum_next() :
-      \ <SID>check_back_space() ? "\<Tab>" :
-      \ coc#refresh()
-  inoremap <expr><S-TAB> coc#pum#visible() ? <SID>pum_prev() : "\<C-h>"
-  inoremap <silent><expr> <c-space> coc#refresh()
-  inoremap <silent><expr> <CR> coc#pum#visible() ? 
-      \ coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+inoremap <silent><expr> <TAB>
+    \ coc#pum#visible() ? <SID>pum_next() :
+    \ <SID>check_back_space() ? "\<Tab>" :
+    \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? <SID>pum_prev() : "\<C-h>"
+inoremap <silent><expr> <c-space> coc#refresh()
+inoremap <silent><expr> <CR> coc#pum#visible() ? 
+    \ coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
-  hi CocPumSearch ctermfg=255 cterm=bold
-  hi CocMenuSel ctermbg=109 ctermfg=239 cterm=bold
-endif
+hi CocPumSearch ctermfg=255 cterm=bold
+hi CocMenuSel ctermbg=109 ctermfg=239 cterm=bold
 
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 

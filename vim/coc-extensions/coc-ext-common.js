@@ -1377,15 +1377,11 @@ async function simpleHttpRequest(opts, is_https, data) {
   });
 }
 async function sendHttpRequest(req) {
-  const host = req.args.hostname ? req.args.hostname : req.args.host;
-  if (!host) {
-    return {error: {name: "ERR_PARA", message: "no host"}};
-  }
   const is_https = req.args.protocol == "https:";
   if (!req.proxy) {
     return await simpleHttpRequest(req.args, is_https, req.data);
   } else if (is_https) {
-    const agent = await simpleHttpsProxy(req.proxy.host, req.proxy.port, `${host}:${req.args.port ? req.args.port : 443}`);
+    const agent = await simpleHttpsProxy(req.proxy.host, req.proxy.port, `${req.args.host}:${req.args.port ? req.args.port : 443}`);
     if (agent.error) {
       return {error: agent.error};
     }
@@ -1395,7 +1391,7 @@ async function sendHttpRequest(req) {
   } else {
     const opts = Object.assign({}, req.args);
     opts.headers = Object.assign({}, req.args.headers);
-    var path8 = `${is_https ? "https" : "http"}://${host}`;
+    var path8 = `${is_https ? "https" : "http"}://${req.args.host}`;
     if (opts.port) {
       path8 += `:${opts.port}`;
     }
@@ -1405,7 +1401,7 @@ async function sendHttpRequest(req) {
     opts.host = req.proxy.host;
     opts.port = req.proxy.port;
     opts.path = path8;
-    opts.headers.Host = host;
+    opts.headers.Host = req.args.host;
     return await simpleHttpRequest(opts, is_https, req.data);
   }
 }

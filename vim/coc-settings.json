@@ -3,6 +3,7 @@
   "coc.preferences.currentFunctionSymbolAutoUpdate": true,
 
   "suggest.formatItems": ["abbr", "menu", "kind", "shortcut"],
+  "suggest.invalidInsertCharacters": [" ", "(", "<", "{", "[", "\r", "\n"],
   // "suggest.completionItemKindLabels": {
   //   "keyword": "\uf1de", // 
   //   "variable": "\ue79b", // 
