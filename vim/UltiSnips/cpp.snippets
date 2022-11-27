@@ -101,3 +101,8 @@ snippet #xmlog "macro log" b
          __FILE__, __func__, __LINE__, ##__VA_ARGS__)
 #endif
 endsnippet
+
+snippet delcpy "delete copy constructor" b
+${1:name}(const $1 &) = delete;
+$1 &operator=(const $1 &) = delete;
+endsnippet
