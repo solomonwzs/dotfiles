@@ -34,6 +34,8 @@ hi CocListTotal ctermfg=16 ctermbg=149
 hi CocFloatingBorder ctermfg=243
 
 let s:is_nvim = has('nvim')
+let s:hide_pum = has('nvim-0.6.1') || has('patch-8.2.3389')
+let s:is_vim = !s:is_nvim
 
 let g:coc_disable_transparent_cursor = 1
 
@@ -148,14 +150,11 @@ function! s:pum_next() abort
     endif
   endif
 
-  call coc#pum#next(1)
-  return ''
+  return coc#pum#next(1)
 endfunction
 
 function! s:pum_prev() abort
-  let s:pumid = coc#pum#winid()
-  call coc#pum#prev(1)
-  return ''
+  return coc#pum#prev(1)
 endfunction
 
 inoremap <silent><expr> <TAB>
