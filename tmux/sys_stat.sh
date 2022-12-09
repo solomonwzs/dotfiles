@@ -43,6 +43,8 @@ for i in "${!MY_TMUX_COMPONENTS[@]}"; do
         component_mem "$sess_idx"
     elif [ "$x" = "temp" ]; then
         component_temp
+    elif [ "$x" = "power" ]; then
+        component_power
     else
         printf "%s" "$x"
     fi

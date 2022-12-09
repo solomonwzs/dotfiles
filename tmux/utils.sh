@@ -12,6 +12,17 @@ if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
     is_darwin=1
 fi
 
+battery_power_list=("" "" "" "" "" "" "" "" "" "" "")
+function get_battery_icon() {
+    charging=$(cat "/sys/class/power_supply/BAT0/status")
+    if [ "$charging" = "Charging" ]; then
+        echo ""
+    else
+        i=$(bc <<<"$1/10")
+        echo "${battery_power_list[$i]}"
+    fi
+}
+
 size_unit=("" "KB" "MB" "GB" "TB")
 function flow_digital() {
     local bps=$1
@@ -60,9 +71,9 @@ function add_netdev() {
 
 function get_cpu_cores() {
     if [ -z "$is_darwin" ]; then
-        echo "$(nproc)"
+        nproc
     else
-        echo "$(sysctl hw.activecpu | cut -d' ' -f2)"
+        sysctl hw.activecpu | cut -d' ' -f2
     fi
 }
 
@@ -109,7 +120,7 @@ function get_cpu_and_net_stat() {
     done
 }
 
-function get_net_stat() {
+function darwin_get_net_stat() {
     local r0_list=()
     local t0_list=()
 
@@ -146,7 +157,7 @@ function get_mem_stat() {
     mem=$(free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}')
 }
 
-function get_cpu_and_mem_stat() {
+function darwin_get_cpu_and_mem_stat() {
     local cpu_mem=($(ps -A -o %cpu,%mem | awk '{c+=$1; m+=$2} END {print c, m}'))
     local cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
 
@@ -165,7 +176,7 @@ function component_cpu() {
         if [ -z "$is_darwin" ]; then
             get_cpu_and_net_stat
         else
-            get_cpu_and_mem_stat
+            darwin_get_cpu_and_mem_stat
         fi
     fi
     cpu_htg="$(histogram "$cpu" "/tmp/.tmux_cpu_htg_$sess_idx")"
@@ -179,7 +190,7 @@ function component_mem() {
         if [ -z "$is_darwin" ]; then
             get_mem_stat
         else
-            get_cpu_and_mem_stat
+            darwin_get_cpu_and_mem_stat
         fi
     fi
     mem_htg="$(histogram "$mem" "/tmp/.tmux_mem_htg_$sess_idx")"
@@ -191,7 +202,7 @@ function component_net() {
         if [ -z "$is_darwin" ]; then
             get_cpu_and_net_stat
         else
-            get_net_stat
+            darwin_get_net_stat
         fi
     fi
     printf "%8s %8s" "${rs_list[$1]}" "${ts_list[$1]}"
@@ -202,4 +213,12 @@ function component_temp() {
         get_temp_stat
     fi
     printf "%s" "$temp"
+}
+
+function component_power() {
+    full=$(cat "/sys/class/power_supply/BAT0/energy_full")
+    now=$(cat "/sys/class/power_supply/BAT0/energy_now")
+    percent=$((now * 100 / full))
+    icon=$(get_battery_icon $percent)
+    printf " %s %d%%" "$icon" "$percent"
 }
