@@ -7,39 +7,125 @@
 
 [ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 
-g_sess_index="x"
+g_SessionIndex="x"
 
-is_darwin=""
+g_PercentBlockList=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
+
+g_BatteryPowerList=("" "" "" "" "" "" "" "" "" "" "")
+
+g_IsDarwin=""
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
-    is_darwin=1
+    g_IsDarwin=1
 fi
+
+g_NetdevList=()
+for i in "${!MY_TMUX_COMPONENTS[@]}"; do
+    dev="${MY_TMUX_COMPONENTS[$i]}"
+    if [ "${dev::4}" = "net:" ]; then
+        g_NetdevList["$i"]="${dev:4}"
+    fi
+done
+
+g_NetRxList=()
+g_NetTxList=()
+g_CpuStat=()
+
+function init_cpu_stat() {
+    if [ ${#g_CpuStat[@]} -ne 0 ]; then
+        return
+    fi
+    if [ -z "$g_IsDarwin" ]; then
+        local stats=()
+        local cache=""
+        while read -r idle all; do
+            stats+=("$idle")
+            stats+=("$all")
+            cache="$cache $idle $all"
+        done <<<"$(awk '$1~/cpu/{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
+
+        local array
+        read -r -a array <<<"$(get_cache "cpus")"
+        set_cache "cpus" "$cache"
+
+        if [ ${#array[@]} -eq ${#stats[@]} ]; then
+            for i in $(seq 1 2 ${#stats[@]}); do
+                g_CpuStat+=("$((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i])))")
+            done
+        else
+            for i in $(seq 1 2 ${#stats[@]}); do
+                g_CpuStat+=(0)
+            done
+        fi
+    else
+        local cpu
+        local cpu_cores
+        cpu="$(ps -A -o %cpu | awk '{c+=$1; m+=$2} END {print c, m}')"
+        cpu=${cpu%.*}
+        cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+        g_CpuStat+=($((cpu / cpu_cores)))
+    fi
+}
+
+function init_net_stat() {
+    if [ ${#g_NetRxList[@]} -ne 0 ]; then
+        return
+    fi
+    local now
+    now=$(date +%s)
+    for i in "${!g_NetdevList[@]}"; do
+        local dev="${g_NetdevList[$i]}"
+
+        local rx_bytes
+        local tx_bytes
+        if [ -z "$g_IsDarwin" ]; then
+            read -r rx_bytes tx_bytes <<<"$(get_net_stat "$dev")"
+        else
+            read -r rx_bytes tx_bytes <<<"$(darwin_get_net_stat "$dev")"
+        fi
+
+        local key="net_$dev"
+        local array
+        read -r -a array <<<"$(get_cache "$key")"
+        if [ ${#array[@]} -eq 0 ]; then
+            g_NetRxList["$i"]=0
+            g_NetTxList["$i"]=0
+        else
+            g_NetRxList["$i"]=$(((rx_bytes - array[1]) / (now - array[0])))
+            g_NetTxList["$i"]=$(((tx_bytes - array[2]) / (now - array[0])))
+        fi
+        set_cache "$key" "$now $rx_bytes $tx_bytes"
+    done
+}
+
+function set_session_index() {
+    g_SessionIndex="$1"
+}
 
 function set_cache() {
     local key="$1"
-    local fn="/tmp/.tmux_${g_sess_index}_${key}"
+    local fn="/tmp/.tmux_${g_SessionIndex}_${key}"
     printf "%s" "$2" >"$fn"
 }
 
 function get_cache() {
     local key="$1"
-    local fn="/tmp/.tmux_${g_sess_index}_${key}"
+    local fn="/tmp/.tmux_${g_SessionIndex}_${key}"
     if [ -f "$fn" ]; then
         cat "$fn"
     fi
 }
 
-battery_power_list=("" "" "" "" "" "" "" "" "" "" "")
 function get_battery_icon() {
     charging=$(cat "/sys/class/power_supply/BAT0/status")
     if [ "$charging" = "Charging" ]; then
         echo ""
     else
         i=$(bc <<<"$1/10")
-        echo "${battery_power_list[$i]}"
+        echo "${g_BatteryPowerList[$i]}"
     fi
 }
 
-size_unit=("" "KB" "MB" "GB" "TB")
+g_SizeUnit=("" "KB" "MB" "GB" "TB")
 function flow_digital() {
     local bps=$1
     local i=0
@@ -47,14 +133,13 @@ function flow_digital() {
         bps=$((bps / 1024))
         i=$((i + 1))
     done
-    u=${size_unit[$i]}
+    u=${g_SizeUnit[$i]}
     echo "${bps}${u}/s"
 }
 
-percent_block_list=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 function percent_block() {
     i=$(bc <<<"$1/12.5")
-    echo "${percent_block_list[$i]}"
+    echo "${g_PercentBlockList[$i]}"
 }
 
 function histogram() {
@@ -66,36 +151,18 @@ function histogram() {
         str="${str:$((len - 8)):8}"
     fi
     while [ ${#str} -lt 8 ]; do
-        str="${percent_block_list[0]}${str}"
+        str="${g_PercentBlockList[0]}${str}"
     done
     set_cache "$key" "$str"
     echo "$str"
 }
 
 function get_cpu_cores() {
-    if [ -z "$is_darwin" ]; then
+    if [ -z "$g_IsDarwin" ]; then
         nproc
     else
         sysctl hw.activecpu | cut -d' ' -f2
     fi
-}
-
-function get_cpu_stat() {
-    read -r idle all <<<"$(awk 'NR==1{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
-    IFS=" " read -r -a array <<<"$(get_cache "cpu")"
-    if [ ${#array[@]} == 0 ]; then
-        echo 0
-    else
-        echo $((100 - (idle - array[0]) * 100 / (all - array[1])))
-    fi
-    set_cache "cpu" "$idle $all"
-}
-
-function darwin_get_cpu_stat() {
-    local cpu=($(ps -A -o %cpu | awk '{c+=$1; m+=$2} END {print c, m}'))
-    local cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
-    cpu=${cpu%.*}
-    echo $((cpu / cpu_cores))
 }
 
 function get_temp_stat() {
@@ -116,10 +183,9 @@ function get_net_stat() {
 }
 
 function darwin_get_net_stat() {
-    dev="$1"
-    rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
-    rx_bytes="${rt[0]}"
-    tx_bytes="${rt[1]}"
+    local rx_bytes
+    local tx_bytes
+    read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
     echo "$rx_bytes $tx_bytes"
 }
 
@@ -128,25 +194,17 @@ function get_mem_stat() {
 }
 
 function component_cpu_histogram() {
-    local cpu_htg
+    init_cpu_stat
     local cpu
-    if [ -z "$is_darwin" ]; then
-        cpu=$(get_cpu_stat)
-    else
-        cpu=$(darwin_get_cpu_stat)
-    fi
+    local cpu_htg
+    cpu="${g_CpuStat[0]}"
     cpu_htg="$(histogram "$cpu" "cpu")"
     printf "%s%3d%%" "$cpu_htg" "$cpu"
 }
 
 function component_cpu() {
-    local cpu
-    if [ -z "$is_darwin" ]; then
-        cpu=$(get_cpu_stat)
-    else
-        cpu=$(darwin_get_cpu_stat)
-    fi
-    printf "%s%3d%%" "$(percent_block "$cpu")" "$cpu"
+    init_cpu_stat
+    printf "%s%3d%%" "$(percent_block "${g_CpuStat[0]}")" "${g_CpuStat[0]}"
 }
 
 function component_mem_histogram() {
@@ -164,27 +222,12 @@ function component_mem() {
 }
 
 function component_net() {
-    local dev="$1"
-    local key="net_$dev"
-    local now
-    now=$(date +%s)
-    if [ -z "$is_darwin" ]; then
-        read -r rx_bytes tx_bytes <<<"$(get_net_stat "$1")"
-    else
-        read -r rx_bytes tx_bytes <<<"$(darwin_get_net_stat "$1")"
-    fi
-    IFS=" " read -r -a array <<<"$(get_cache "$key")"
-    if [ ${#array[@]} == 0 ]; then
-        printf "%8s %8s" 0 0
-    else
-        rbps=$(((rx_bytes - array[1]) / (now - array[0])))
-        tbps=$(((tx_bytes - array[2]) / (now - array[0])))
-        printf "%8s %8s" "$(flow_digital "$rbps")" "$(flow_digital "$tbps")"
-    fi
-    set_cache "$key" "$now $rx_bytes $tx_bytes"
+    init_net_stat
+    printf "%8s %8s" "$(flow_digital ${g_NetRxList[$1]})" "$(flow_digital ${g_NetTxList[$1]})"
 }
 
 function component_temp() {
+    local temp
     temp=$(get_temp_stat)
     printf "%s" "$temp"
 }
@@ -198,21 +241,9 @@ function component_power() {
 }
 
 function component_cpus() {
-    local stats=()
-    local cache=""
-    while read -r idle all; do
-        stats+=("$idle")
-        stats+=("$all")
-        cache="$cache $idle $all"
-    done <<<"$(awk '$1~/cpu/{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
-    read -r -a array <<<"$(get_cache "cpus")"
-    set_cache "cpus" "$cache"
-    if [ ${#array[@]} == ${#stats[@]} ]; then
-        for i in $(seq 3 2 ${#stats[@]}); do
-            printf "%s" "$(percent_block $((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i]))))"
-        done
-        printf "%3d%%" "$((100 - (stats[0] - array[0]) * 100 / (stats[1] - array[1])))"
-    else
-        printf "Nan"
-    fi
+    init_cpu_stat
+    for i in $(seq 1 $((${#g_CpuStat[@]} - 1))); do
+        printf "%s" "$(percent_block "${g_CpuStat[$i]}")"
+    done
+    printf "%3d%%" "${g_CpuStat[0]}"
 }
