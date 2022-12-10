@@ -7,10 +7,26 @@
 
 [ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 
+g_sess_index="x"
+
 is_darwin=""
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
     is_darwin=1
 fi
+
+function set_cache() {
+    local key="$1"
+    local fn="/tmp/.tmux_${g_sess_index}_${key}"
+    printf "%s" "$2" >"$fn"
+}
+
+function get_cache() {
+    local key="$1"
+    local fn="/tmp/.tmux_${g_sess_index}_${key}"
+    if [ -f "$fn" ]; then
+        cat "$fn"
+    fi
+}
 
 battery_power_list=("" "" "" "" "" "" "" "" "" "" "")
 function get_battery_icon() {
@@ -42,31 +58,18 @@ function percent_block() {
 }
 
 function histogram() {
-    local fn="$2"
-    local str=""
-
-    [ -f "$fn" ] && str=$(cat "$fn")
+    local key="htg_$2"
+    IFS=$'\t' read -r str <<<"$(get_cache "$key")"
     str="$str$(percent_block "$1")"
     len=${#str}
-    if [ ${#str} -gt 8 ]; then
+    if [ "${len}" -gt 8 ]; then
         str="${str:$((len - 8)):8}"
     fi
     while [ ${#str} -lt 8 ]; do
         str="${percent_block_list[0]}${str}"
     done
-    echo "$str" >"$fn"
+    set_cache "$key" "$str"
     echo "$str"
-}
-
-cpu=""
-mem=""
-temp=""
-netdev_list=()
-rs_list=()
-ts_list=()
-
-function add_netdev() {
-    netdev_list["$1"]="$2"
 }
 
 function get_cpu_cores() {
@@ -77,141 +80,112 @@ function get_cpu_cores() {
     fi
 }
 
+function get_cpu_stat() {
+    read -r idle all <<<"$(awk 'NR==1{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
+    IFS=" " read -r -a array <<<"$(get_cache "cpu")"
+    if [ ${#array[@]} == 0 ]; then
+        echo 0
+    else
+        echo $((100 - (idle - array[0]) * 100 / (all - array[1])))
+    fi
+    set_cache "cpu" "$idle $all"
+}
+
+function darwin_get_cpu_stat() {
+    local cpu=($(ps -A -o %cpu | awk '{c+=$1; m+=$2} END {print c, m}'))
+    local cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+    cpu=${cpu%.*}
+    echo $((cpu / cpu_cores))
+}
+
 function get_temp_stat() {
     if type "osx-cpu-temp" >/dev/null; then
-        temp=$(osx-cpu-temp)
+        osx-cpu-temp
     else
-        temp="Nan"
+        echo "Nan"
     fi
 }
 
-function get_cpu_and_net_stat() {
-    local r0_list=()
-    local t0_list=()
-
-    for i in "${!netdev_list[@]}"; do
-        local dev="${netdev_list[$i]}"
-        local r0
-        r0=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
-        local t0
-        t0=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
-        r0_list["$i"]=$r0
-        t0_list["$i"]=$t0
-    done
-
-    local interval="${MY_TMUX_STATUS_INTERVAL:-1}"
-    cpu=$(vmstat -n "$interval" 2 | tail -n 1 | awk '{print 100 - $15}')
-
-    for i in "${!netdev_list[@]}"; do
-        local dev="${netdev_list[$i]}"
-        local r1
-        r1=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
-        local t1
-        t1=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
-
-        local r0="${r0_list[$i]}"
-        local t0="${t0_list[$i]}"
-
-        local rbps=$(((r1 - r0) / interval))
-        local tbps=$(((t1 - t0) / interval))
-
-        rs_list["$i"]=$(flow_digital $rbps)
-        ts_list["$i"]=$(flow_digital $tbps)
-    done
+function get_net_stat() {
+    local dev="$1"
+    local rx_bytes
+    local tx_bytes
+    rx_bytes=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
+    tx_bytes=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
+    echo "$rx_bytes $tx_bytes"
 }
 
 function darwin_get_net_stat() {
-    local r0_list=()
-    local t0_list=()
-
-    for i in "${!netdev_list[@]}"; do
-        local dev="${netdev_list[$i]}"
-        local rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
-        local r0="${rt[0]}"
-        local t0="${rt[1]}"
-        r0_list["$i"]=$r0
-        t0_list["$i"]=$t0
-    done
-
-    local interval="${MY_TMUX_STATUS_INTERVAL:-1}"
-    sleep "$interval"
-
-    for i in "${!netdev_list[@]}"; do
-        local dev="${netdev_list[$i]}"
-        local rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
-        local r1="${rt[0]}"
-        local t1="${rt[1]}"
-
-        local r0="${r0_list[$i]}"
-        local t0="${t0_list[$i]}"
-
-        local rbps=$(((r1 - r0) / interval))
-        local tbps=$(((t1 - t0) / interval))
-
-        rs_list["$i"]=$(flow_digital $rbps)
-        ts_list["$i"]=$(flow_digital $tbps)
-    done
+    dev="$1"
+    rt=($(netstat -ib -I "$dev" | awk 'NR == 2 {print $7, $10}'))
+    rx_bytes="${rt[0]}"
+    tx_bytes="${rt[1]}"
+    echo "$rx_bytes $tx_bytes"
 }
 
 function get_mem_stat() {
-    mem=$(free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}')
+    free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}'
 }
 
-function darwin_get_cpu_and_mem_stat() {
-    local cpu_mem=($(ps -A -o %cpu,%mem | awk '{c+=$1; m+=$2} END {print c, m}'))
-    local cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
-
-    cpu="${cpu_mem[0]}"
-    mem="${cpu_mem[1]}"
-
-    cpu=${cpu%.*}
-    mem=${mem%.*}
-    cpu=$((cpu / cpu_cores))
-}
-
-function component_cpu() {
-    local sess_idx="$1"
+function component_cpu_histogram() {
     local cpu_htg
-    if [ -z "$cpu" ]; then
-        if [ -z "$is_darwin" ]; then
-            get_cpu_and_net_stat
-        else
-            darwin_get_cpu_and_mem_stat
-        fi
+    local cpu
+    if [ -z "$is_darwin" ]; then
+        cpu=$(get_cpu_stat)
+    else
+        cpu=$(darwin_get_cpu_stat)
     fi
-    cpu_htg="$(histogram "$cpu" "/tmp/.tmux_cpu_htg_$sess_idx")"
+    cpu_htg="$(histogram "$cpu" "cpu")"
     printf "%s%3d%%" "$cpu_htg" "$cpu"
 }
 
-function component_mem() {
-    local sess_idx="$1"
-    local mem_htg
-    if [ -z "$mem" ]; then
-        if [ -z "$is_darwin" ]; then
-            get_mem_stat
-        else
-            darwin_get_cpu_and_mem_stat
-        fi
+function component_cpu() {
+    local cpu
+    if [ -z "$is_darwin" ]; then
+        cpu=$(get_cpu_stat)
+    else
+        cpu=$(darwin_get_cpu_stat)
     fi
-    mem_htg="$(histogram "$mem" "/tmp/.tmux_mem_htg_$sess_idx")"
+    printf "%s%3d%%" "$(percent_block "$cpu")" "$cpu"
+}
+
+function component_mem_histogram() {
+    local mem_htg
+    local mem
+    mem="$(get_mem_stat)"
+    mem_htg="$(histogram "$mem" "mem")"
     printf "%s%3d%%" "$mem_htg" "$mem"
 }
 
+function component_mem() {
+    local mem
+    mem="$(get_mem_stat)"
+    printf "%s%3d%%" "$(percent_block "$mem")" "$mem"
+}
+
 function component_net() {
-    if [ "${#rs_list[@]}" -eq 0 ]; then
-        if [ -z "$is_darwin" ]; then
-            get_cpu_and_net_stat
-        else
-            darwin_get_net_stat
-        fi
+    local dev="$1"
+    local key="net_$dev"
+    local now
+    now=$(date +%s)
+    if [ -z "$is_darwin" ]; then
+        read -r rx_bytes tx_bytes <<<"$(get_net_stat "$1")"
+    else
+        read -r rx_bytes tx_bytes <<<"$(darwin_get_net_stat "$1")"
     fi
-    printf "%8s %8s" "${rs_list[$1]}" "${ts_list[$1]}"
+    IFS=" " read -r -a array <<<"$(get_cache "$key")"
+    if [ ${#array[@]} == 0 ]; then
+        printf "%8s %8s" 0 0
+    else
+        rbps=$(((rx_bytes - array[1]) / (now - array[0])))
+        tbps=$(((tx_bytes - array[2]) / (now - array[0])))
+        printf "%8s %8s" "$(flow_digital "$rbps")" "$(flow_digital "$tbps")"
+    fi
+    set_cache "$key" "$now $rx_bytes $tx_bytes"
 }
 
 function component_temp() {
-    if [ -z "$temp" ]; then
-        get_temp_stat
-    fi
+    temp=$(get_temp_stat)
     printf "%s" "$temp"
 }
 
@@ -221,4 +195,24 @@ function component_power() {
     percent=$((now * 100 / full))
     icon=$(get_battery_icon $percent)
     printf " %s %d%%" "$icon" "$percent"
+}
+
+function component_cpus() {
+    local stats=()
+    local cache=""
+    while read -r idle all; do
+        stats+=("$idle")
+        stats+=("$all")
+        cache="$cache $idle $all"
+    done <<<"$(awk '$1~/cpu/{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
+    read -r -a array <<<"$(get_cache "cpus")"
+    set_cache "cpus" "$cache"
+    if [ ${#array[@]} == ${#stats[@]} ]; then
+        for i in $(seq 3 2 ${#stats[@]}); do
+            printf "%s" "$(percent_block $((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i]))))"
+        done
+        printf "%3d%%" "$((100 - (stats[0] - array[0]) * 100 / (stats[1] - array[1])))"
+    else
+        printf "Nan"
+    fi
 }
