@@ -59,7 +59,7 @@ function init_cpu_stat() {
     else
         local cpu
         local cpu_cores
-        cpu="$(ps -A -o %cpu | awk '{c+=$1; m+=$2} END {print c, m}')"
+        cpu="$(ps -A -o %cpu | awk '{c+=$1} END {print c}')"
         cpu=${cpu%.*}
         cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
         g_CpuStat+=($((cpu / cpu_cores)))
@@ -77,11 +77,7 @@ function init_net_stat() {
 
         local rx_bytes
         local tx_bytes
-        if [ -z "$g_IsDarwin" ]; then
-            read -r rx_bytes tx_bytes <<<"$(get_net_stat "$dev")"
-        else
-            read -r rx_bytes tx_bytes <<<"$(darwin_get_net_stat "$dev")"
-        fi
+        read -r rx_bytes tx_bytes <<<"$(get_net_stat "$dev")"
 
         local key="net_$dev"
         local array
@@ -174,23 +170,27 @@ function get_temp_stat() {
 }
 
 function get_net_stat() {
-    local dev="$1"
-    local rx_bytes
-    local tx_bytes
-    rx_bytes=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
-    tx_bytes=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
-    echo "$rx_bytes $tx_bytes"
-}
-
-function darwin_get_net_stat() {
-    local rx_bytes
-    local tx_bytes
-    read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
-    echo "$rx_bytes $tx_bytes"
+    if [ -z "$g_IsDarwin" ]; then
+        local dev="$1"
+        local rx_bytes
+        local tx_bytes
+        rx_bytes=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
+        tx_bytes=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
+        echo "$rx_bytes $tx_bytes"
+    else
+        local rx_bytes
+        local tx_bytes
+        read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
+        echo "$rx_bytes $tx_bytes"
+    fi
 }
 
 function get_mem_stat() {
-    free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}'
+    if [ -z "$g_IsDarwin" ]; then
+        free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}'
+    else
+        ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
+    fi
 }
 
 function component_cpu_histogram() {
