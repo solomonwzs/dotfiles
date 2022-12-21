@@ -86,7 +86,7 @@ function init_net_stat() {
         local key="net_$dev"
         local array
         read -r -a array <<<"$(get_cache "$key")"
-        if [ ${#array[@]} -eq 0 ]; then
+        if [[ ${#array[@]} -eq 0 || "$now" -eq ${array[0]} ]]; then
             g_NetRxList["$i"]=0
             g_NetTxList["$i"]=0
         else
