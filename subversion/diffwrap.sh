@@ -18,16 +18,15 @@ function editdiff {
     RIGHT=$2
 
     options=("open" "exit")
-    select opt in "${options[@]}"
-    do
+    select opt in "${options[@]}"; do
         case $opt in
-            "open")
-                "$DIFF" "$LEFT" "$RIGHT"
-                break
-                ;;
-            "exit")
-                break
-                ;;
+        "open")
+            "$DIFF" "$LEFT" "$RIGHT"
+            break
+            ;;
+        "exit")
+            break
+            ;;
         esac
     done
 }

@@ -132,6 +132,8 @@ nnoremap <silent> <F5> :let _s=@/ <Bar>
     \ :let @/=_s <Bar>
     \ :nohl <Bar> :unlet _s <CR>
 
+imap <C-c> <ESC>
+
 " Setting for tmux && screen
 " if $TMUX !=? '' || $TERM[0:3] ==? 'tmux' || $TERM[0:5] ==? 'screen'
 "     map <esc>[1;5D <C-Left>
