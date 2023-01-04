@@ -28,7 +28,8 @@ EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 source "$EXECUTE_DIRNAME/utils.sh"
 
 while true; do
-    sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
+    # sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
+    sleep 2
 
     has_clients=$(tmux list-clients)
     if [ -z "$has_clients" ]; then
