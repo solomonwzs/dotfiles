@@ -319,3 +319,4 @@ _tmux_set_env() {
 
 _tmux_set_env "MY_TMUX_ACTIVE_BG_COLOR" "${MY_TMUX_ACTIVE_BG_COLOR:-colour120}" 1
 _tmux_set_env "MY_TMUX_STATUS_INTERVAL" "${MY_TMUX_STATUS_INTERVAL:-2}" 1
+_tmux_set_env "MY_TMUX_BASH" "${MY_TMUX_BASH:-/bin/bash}" 1

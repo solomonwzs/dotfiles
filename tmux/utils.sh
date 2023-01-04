@@ -7,7 +7,7 @@
 
 [ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 
-g_SessionIndex="x"
+g_StatusLine=""
 
 g_PercentBlockList=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 
@@ -29,6 +29,22 @@ done
 g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
+
+function init_status_line() {
+    g_NetRxList=()
+    g_NetTxList=()
+    g_CpuStat=()
+
+    g_StatusLine=""
+}
+
+function show_status_line() {
+    printf "%s" "$g_StatusLine"
+}
+
+function append_status_line() {
+    g_StatusLine="${g_StatusLine}${1}"
+}
 
 function init_cpu_stat() {
     if [ ${#g_CpuStat[@]} -ne 0 ]; then
@@ -93,19 +109,15 @@ function init_net_stat() {
     done
 }
 
-function set_session_index() {
-    g_SessionIndex="$1"
-}
-
 function set_cache() {
     local key="$1"
-    local fn="/tmp/.tmux_${g_SessionIndex}_${key}"
+    local fn="/tmp/.tmux_cache_${key}"
     printf "%s" "$2" >"$fn"
 }
 
 function get_cache() {
     local key="$1"
-    local fn="/tmp/.tmux_${g_SessionIndex}_${key}"
+    local fn="/tmp/.tmux_cache_${key}"
     if [ -f "$fn" ]; then
         cat "$fn"
     fi
@@ -199,12 +211,13 @@ function component_cpu_histogram() {
     local cpu_htg
     cpu="${g_CpuStat[0]}"
     cpu_htg="$(histogram "$cpu" "cpu")"
-    printf "%s%3d%%" "$cpu_htg" "$cpu"
+    append_status_line "$(printf "%s%3d%%" "$cpu_htg" "$cpu")"
 }
 
 function component_cpu() {
     init_cpu_stat
-    printf "%s%3d%%" "$(percent_block "${g_CpuStat[0]}")" "${g_CpuStat[0]}"
+    append_status_line "$(printf "%s%3d%%" \
+        "$(percent_block "${g_CpuStat[0]}")" "${g_CpuStat[0]}")"
 }
 
 function component_mem_histogram() {
@@ -212,24 +225,26 @@ function component_mem_histogram() {
     local mem
     mem="$(get_mem_stat)"
     mem_htg="$(histogram "$mem" "mem")"
-    printf "%s%3d%%" "$mem_htg" "$mem"
+    append_status_line "$(printf "%s%3d%%" "$mem_htg" "$mem")"
 }
 
 function component_mem() {
     local mem
     mem="$(get_mem_stat)"
-    printf "%s%3d%%" "$(percent_block "$mem")" "$mem"
+    append_status_line "$(printf "%s%3d%%" \
+        "$(percent_block "$mem")" "$mem")"
 }
 
 function component_net() {
     init_net_stat
-    printf "%8s %8s" "$(flow_digital ${g_NetRxList[$1]})" "$(flow_digital ${g_NetTxList[$1]})"
+    append_status_line "$(printf "%8s %8s" \
+        "$(flow_digital ${g_NetRxList[$1]})" "$(flow_digital ${g_NetTxList[$1]})")"
 }
 
 function component_temp() {
     local temp
     temp=$(get_temp_stat)
-    printf "%s" "$temp"
+    append_status_line "$(printf "%s" "$temp")"
 }
 
 function component_power() {
@@ -237,13 +252,15 @@ function component_power() {
     now=$(cat "/sys/class/power_supply/BAT0/energy_now")
     percent=$((now * 100 / full))
     icon=$(get_battery_icon $percent)
-    printf " %s %d%%" "$icon" "$percent"
+
+    append_status_line "$(printf " %s %d%%" "$icon" "$percent")"
 }
 
 function component_cpus() {
     init_cpu_stat
     for i in $(seq 1 $((${#g_CpuStat[@]} - 1))); do
-        printf "%s" "$(percent_block "${g_CpuStat[$i]}")"
+        append_status_line "$(printf "%s" \
+            "$(percent_block "${g_CpuStat[$i]}")")"
     done
-    printf "%3d%%" "${g_CpuStat[0]}"
+    append_status_line "$(printf "%3d%%" "${g_CpuStat[0]}")"
 }
