@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-pid_file="/tmp/.tmux_status.pid"
+pid_file="/tmp/.tmux_status_test.pid"
 if [ -f "$pid_file" ]; then
     exit
 fi
@@ -30,7 +30,7 @@ source "$EXECUTE_DIRNAME/utils.sh"
 init_net_dev_list
 while true; do
     # sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
-    sleep 2
+    sleep 1
 
     has_clients=$(tmux list-clients)
     if [ -z "$has_clients" ]; then
@@ -38,6 +38,9 @@ while true; do
     fi
 
     init_status_line
+    for key in "${!g_Cache[@]}"; do
+        echo "$key"
+    done
     for i in "${!MY_TMUX_COMPONENTS[@]}"; do
         x="${MY_TMUX_COMPONENTS[$i]}"
         if [ "${x::4}" = "net:" ]; then
@@ -60,5 +63,8 @@ while true; do
             append_status_line "$x"
         fi
     done
-    tmux set-environment "MY_TMUX_STATUS" "$(show_status_line)"
+    echo "$(show_status_line)"
+    for key in "${!g_Cache[@]}"; do
+        echo "> $key"
+    done
 done

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # svn setting
 # MY_SVN_USER="user"

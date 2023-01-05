@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2022-07-11
@@ -19,16 +19,33 @@ if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
 fi
 
 g_NetdevList=()
-for i in "${!MY_TMUX_COMPONENTS[@]}"; do
-    dev="${MY_TMUX_COMPONENTS[$i]}"
-    if [ "${dev::4}" = "net:" ]; then
-        g_NetdevList["$i"]="${dev:4}"
-    fi
-done
-
 g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
+
+declare -A g_Cache
+
+function set_cache() {
+    g_Cache["$1"]="$2"
+}
+
+function get_cache() {
+    if [ -z "${g_Cache[$1]:+x}" ]; then
+        echo ""
+    else
+        echo "${g_Cache[$1]}"
+    fi
+}
+
+function init_net_dev_list() {
+    g_NetdevList=()
+    for i in "${!MY_TMUX_COMPONENTS[@]}"; do
+        dev="${MY_TMUX_COMPONENTS[$i]}"
+        if [ "${dev::4}" = "net:" ]; then
+            g_NetdevList["$i"]="${dev:4}"
+        fi
+    done
+}
 
 function init_status_line() {
     g_NetRxList=()
@@ -98,7 +115,7 @@ function init_net_stat() {
         local key="net_$dev"
         local array
         read -r -a array <<<"$(get_cache "$key")"
-        if [[ ${#array[@]} -eq 0 || "$now" -eq ${array[0]} ]]; then
+        if [[ ${#array[@]} -eq 0 || "$now" -eq "${array[0]}" ]]; then
             g_NetRxList["$i"]=0
             g_NetTxList["$i"]=0
         else
@@ -107,20 +124,6 @@ function init_net_stat() {
         fi
         set_cache "$key" "$now $rx_bytes $tx_bytes"
     done
-}
-
-function set_cache() {
-    local key="$1"
-    local fn="/tmp/.tmux_cache_${key}"
-    printf "%s" "$2" >"$fn"
-}
-
-function get_cache() {
-    local key="$1"
-    local fn="/tmp/.tmux_cache_${key}"
-    if [ -f "$fn" ]; then
-        cat "$fn"
-    fi
 }
 
 function get_battery_icon() {
@@ -151,7 +154,7 @@ function percent_block() {
 }
 
 function histogram() {
-    local key="htg_$2"
+    local key="$2"
     IFS=$'\t' read -r str <<<"$(get_cache "$key")"
     str="$str$(percent_block "$1")"
     len=${#str}
@@ -162,7 +165,6 @@ function histogram() {
         str="${g_PercentBlockList[0]}${str}"
     done
     set_cache "$key" "$str"
-    echo "$str"
 }
 
 function get_cpu_cores() {
@@ -210,7 +212,10 @@ function component_cpu_histogram() {
     local cpu
     local cpu_htg
     cpu="${g_CpuStat[0]}"
-    cpu_htg="$(histogram "$cpu" "cpu")"
+
+    histogram "$cpu" "htg_cpu"
+    cpu_htg="$(get_cache "htg_cpu")"
+
     append_status_line "$(printf "%s%3d%%" "$cpu_htg" "$cpu")"
 }
 
@@ -224,7 +229,10 @@ function component_mem_histogram() {
     local mem_htg
     local mem
     mem="$(get_mem_stat)"
-    mem_htg="$(histogram "$mem" "mem")"
+
+    histogram "$mem" "htg_mem"
+    mem_htg="$(get_cache "htg_mem")"
+
     append_status_line "$(printf "%s%3d%%" "$mem_htg" "$mem")"
 }
 

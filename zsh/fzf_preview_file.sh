@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2022-10-12
