@@ -389,42 +389,6 @@ ${content}` : content,
   const win = new import_coc5.FloatFactory(import_coc5.workspace.nvim);
   await win.show(doc, cfg);
 }
-function fnvHash(data, seed = 0) {
-  const fnvPrime = BigInt(2166136261);
-  let hash = BigInt(seed);
-  const func = function(x) {
-    hash = BigInt.asUintN(32, hash * fnvPrime);
-    hash ^= BigInt(x);
-  };
-  if (typeof data === "string") {
-    const enc = new import_util.TextEncoder();
-    const bytes = enc.encode(data);
-    bytes.forEach(func);
-  } else if (data instanceof String) {
-    const enc = new import_util.TextEncoder();
-    const bytes = enc.encode(data.toString());
-    bytes.forEach(func);
-  } else {
-    data.forEach(function(x) {
-      hash = BigInt.asUintN(32, hash * fnvPrime);
-      hash ^= BigInt(x);
-    });
-  }
-  return Number(hash);
-}
-function getTempFileWithDocumentContents(document) {
-  return new Promise((resolve, reject) => {
-    const fsPath = import_coc5.Uri.parse(document.uri).fsPath;
-    const ext = import_path2.default.extname(fsPath);
-    const fileName = `${fsPath}.${fnvHash(document.uri)}${ext}`;
-    import_fs.default.writeFile(fileName, document.getText(), (ex) => {
-      if (ex) {
-        reject(new Error(`Failed to create a temporary file, ${ex.message}`));
-      }
-      resolve(fileName);
-    });
-  });
-}
 async function openFile(filepath, opts) {
   const {nvim} = import_coc5.workspace;
   let open = "edit";
@@ -1108,7 +1072,9 @@ var ClfFormatter = class extends BaseFormatter {
 
 // src/formatter/prettierformatter.ts
 var import_coc13 = __toModule(require("coc.nvim"));
-var import_fs2 = __toModule(require("fs"));
+var filetype2Parser = {
+  javascript: "babel-flow"
+};
 var PrettierFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1121,15 +1087,20 @@ var PrettierFormatter = class extends BaseFormatter {
     if (range) {
       return [];
     }
-    const filepath = await getTempFileWithDocumentContents(document);
     const args = [];
     if (this.setting.args) {
       args.push(...this.setting.args);
     }
-    args.push(filepath);
+    const {nvim} = import_coc13.workspace;
+    const filetype = await nvim.eval("&filetype");
+    const parser = filetype2Parser[filetype];
+    if (parser) {
+      args.push(`--parser=${parser}`);
+    } else {
+      args.push(`--parser=${filetype}`);
+    }
     const exec = this.setting.exec ? this.setting.exec : "prettier";
-    const resp = await callShell(exec, args);
-    import_fs2.default.unlinkSync(filepath);
+    const resp = await callShell(exec, args, document.getText());
     if (resp.exitCode != 0) {
       showNotification(`prettier fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
@@ -1682,7 +1653,7 @@ var cppFmtSetting = {
     Standard: "C++11"
   }
 };
-var jsFmtSetting = {
+var prettierFmtSetting = {
   provider: "prettier",
   args: ["--config-precedence", "cli-override", "--print-width", "80"]
 };
@@ -1698,15 +1669,17 @@ var shFmtSetting = {
   args: ["-i", "4"]
 };
 var defaultFmtSetting = {
+  bzl: bzlFmtSteeing,
   c: cppFmtSetting,
   cpp: cppFmtSetting,
-  typescript: jsFmtSetting,
-  json: jsFmtSetting,
-  javascript: jsFmtSetting,
-  html: jsFmtSetting,
-  bzl: bzlFmtSteeing,
+  html: prettierFmtSetting,
+  javascript: prettierFmtSetting,
+  json: prettierFmtSetting,
   lua: luaFmtSteeing,
+  markdown: prettierFmtSetting,
   sh: shFmtSetting,
+  typescript: prettierFmtSetting,
+  yaml: prettierFmtSetting,
   zsh: shFmtSetting
 };
 async function replaceExecText(doc, range, res) {
