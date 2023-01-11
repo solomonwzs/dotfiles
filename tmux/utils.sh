@@ -19,11 +19,22 @@ if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
 fi
 
 g_NetdevList=()
+g_CpuStatStr="0000000000000000"
+g_MemStatStr="0000000000000000"
+
 g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
 
 declare -A g_Cache
+
+declare -A g_DotList=(
+    ["00"]=" " ["01"]="⢀" ["02"]="⢠" ["03"]="⢰" ["04"]="⢸"
+    ["10"]="⡀" ["11"]="⣀" ["12"]="⣠" ["13"]="⣰" ["14"]="⣸"
+    ["20"]="⡄" ["21"]="⣄" ["22"]="⣤" ["23"]="⣴" ["24"]="⣼"
+    ["30"]="⡆" ["31"]="⣆" ["32"]="⣦" ["33"]="⣶" ["34"]="⣾"
+    ["40"]="⡇" ["41"]="⣇" ["42"]="⣧" ["43"]="⣷" ["44"]="⣿"
+)
 
 function set_cache() {
     g_Cache["$1"]="$2"
@@ -201,18 +212,54 @@ function get_net_stat() {
 
 function get_mem_stat() {
     if [ -z "$g_IsDarwin" ]; then
-        free | awk '$1 == "Mem:" {printf("%d", ($2 - $7) / $2 * 100)}'
+        awk '$1=="MemTotal:"{a=$2} $1=="MemAvailable:"{b=$2} END{print int((1-b/a)*100)}' \
+            /proc/meminfo
     else
         ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
     fi
 }
 
-function component_cpu_histogram() {
-    init_cpu_stat
+function dot_histogram() {
+    local str=""
+    for i in $(seq 0 2 $((${#1} - 1))); do
+        str="${str}${g_DotList[${1:$i:2}]}"
+    done
+    set_cache "$2" "$str"
+}
+
+function component_cpu_dot_histogram() {
     local cpu
     local cpu_htg
-    cpu="${g_CpuStat[0]}"
 
+    init_cpu_stat
+    cpu="${g_CpuStat[0]}"
+    g_CpuStatStr="${g_CpuStatStr:1:15}$((cpu / 25))"
+
+    dot_histogram "$g_CpuStatStr" "dot_htg_cpu"
+    cpu_htg="$(get_cache "dot_htg_cpu")"
+
+    append_status_line "$(printf "%s%3d%%" "$cpu_htg" "$cpu")"
+}
+
+function component_mem_dot_histogram() {
+    local mem
+    local mem_htg
+
+    mem="$(get_mem_stat)"
+    g_MemStatStr="${g_MemStatStr:1:15}$((mem / 25))"
+
+    dot_histogram "$g_MemStatStr" "dot_htg_mem"
+    mem_htg="$(get_cache "dot_htg_mem")"
+
+    append_status_line "$(printf "%s%3d%%" "$mem_htg" "$mem")"
+}
+
+function component_cpu_histogram() {
+    local cpu
+    local cpu_htg
+
+    init_cpu_stat
+    cpu="${g_CpuStat[0]}"
     histogram "$cpu" "htg_cpu"
     cpu_htg="$(get_cache "htg_cpu")"
 
@@ -228,8 +275,8 @@ function component_cpu() {
 function component_mem_histogram() {
     local mem_htg
     local mem
-    mem="$(get_mem_stat)"
 
+    mem="$(get_mem_stat)"
     histogram "$mem" "htg_mem"
     mem_htg="$(get_cache "htg_mem")"
 

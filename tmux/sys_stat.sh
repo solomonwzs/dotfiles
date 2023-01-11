@@ -48,10 +48,14 @@ while true; do
             component_cpus
         elif [ "$x" = "cpu_htg" ]; then
             component_cpu_histogram
+        elif [ "$x" = "cpu_dot_htg" ]; then
+            component_cpu_dot_histogram
         elif [ "$x" = "mem" ]; then
             component_mem
         elif [ "$x" = "mem_htg" ]; then
             component_mem_histogram
+        elif [ "$x" = "mem_dot_htg" ]; then
+            component_mem_dot_histogram
         elif [ "$x" = "temp" ]; then
             component_temp
         elif [ "$x" = "power" ]; then

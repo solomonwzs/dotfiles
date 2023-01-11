@@ -38,9 +38,9 @@ while true; do
     fi
 
     init_status_line
-    for key in "${!g_Cache[@]}"; do
-        echo "$key"
-    done
+    # for key in "${!g_Cache[@]}"; do
+    #     echo "$key"
+    # done
     for i in "${!MY_TMUX_COMPONENTS[@]}"; do
         x="${MY_TMUX_COMPONENTS[$i]}"
         if [ "${x::4}" = "net:" ]; then
@@ -51,10 +51,14 @@ while true; do
             component_cpus
         elif [ "$x" = "cpu_htg" ]; then
             component_cpu_histogram
+        elif [ "$x" = "cpu_dot_htg" ]; then
+            component_cpu_dot_histogram
         elif [ "$x" = "mem" ]; then
             component_mem
         elif [ "$x" = "mem_htg" ]; then
             component_mem_histogram
+        elif [ "$x" = "mem_dot_htg" ]; then
+            component_mem_dot_histogram
         elif [ "$x" = "temp" ]; then
             component_temp
         elif [ "$x" = "power" ]; then
@@ -63,8 +67,9 @@ while true; do
             append_status_line "$x"
         fi
     done
-    echo "$(show_status_line)"
-    for key in "${!g_Cache[@]}"; do
-        echo "> $key"
-    done
+    show_status_line
+    echo ""
+    # for key in "${!g_Cache[@]}"; do
+    #     echo "> $key"
+    # done
 done
