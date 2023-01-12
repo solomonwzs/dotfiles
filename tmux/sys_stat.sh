@@ -27,10 +27,11 @@ fi
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 source "$EXECUTE_DIRNAME/utils.sh"
 
+sleep_secs=$(tmux show-options -g status-interval | cut -d' ' -f2)
+
 init_net_dev_list
 while true; do
-    # sleep "${MY_TMUX_STATUS_INTERVAL:-1}"
-    sleep 2
+    sleep "$sleep_secs"
 
     has_clients=$(tmux list-clients)
     if [ -z "$has_clients" ]; then
