@@ -26,9 +26,21 @@ g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
 
+g_DotList=(
+    " " "⢀" "⣀" "⠠" "⢠" "⣠" "⠤" "⢤" "⣤"
+    "⠐" "⢐" "⣐" "⠰" "⢰" "⣰" "⠴" "⢴" "⣴"
+    "⠒" "⢒" "⣒" "⠲" "⢲" "⣲" "⠶" "⢶" "⣶"
+    "⠈" "⢈" "⣈" "⠨" "⢨" "⣨" "⠬" "⢬" "⣬"
+    "⠘" "⢘" "⣘" "⠸" "⢸" "⣸" "⠼" "⢼" "⣼"
+    "⠚" "⢚" "⣚" "⠺" "⢺" "⣺" "⠾" "⢾" "⣾"
+    "⠉" "⢉" "⣉" "⠩" "⢩" "⣩" "⠭" "⢭" "⣭"
+    "⠙" "⢙" "⣙" "⠹" "⢹" "⣹" "⠽" "⢽" "⣽"
+    "⠛" "⢛" "⣛" "⠻" "⢻" "⣻" "⠿" "⢿" "⣿"
+)
+
 declare -A g_Cache
 
-declare -A g_DotList=(
+declare -A g_DotMap=(
     ["00"]=" " ["01"]="⢀" ["02"]="⢠" ["03"]="⢰" ["04"]="⢸"
     ["10"]="⡀" ["11"]="⣀" ["12"]="⣠" ["13"]="⣰" ["14"]="⣸"
     ["20"]="⡄" ["21"]="⣄" ["22"]="⣤" ["23"]="⣴" ["24"]="⣼"
@@ -142,7 +154,7 @@ function get_battery_icon() {
     if [ "$charging" = "Charging" ]; then
         echo ""
     else
-        i=$(bc <<<"$1/10")
+        i=$(($1 / 10))
         echo "${g_BatteryPowerList[$i]}"
     fi
 }
@@ -160,7 +172,7 @@ function flow_digital() {
 }
 
 function percent_block() {
-    i=$(bc <<<"$1/12.5")
+    i=$(($1 * 10 / 125))
     echo "${g_PercentBlockList[$i]}"
 }
 
@@ -222,7 +234,7 @@ function get_mem_stat() {
 function dot_histogram() {
     local str=""
     for i in $(seq 0 2 $((${#1} - 1))); do
-        str="${str}${g_DotList[${1:$i:2}]}"
+        str="${str}${g_DotMap[${1:$i:2}]}"
     done
     set_cache "$2" "$str"
 }

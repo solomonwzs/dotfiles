@@ -59,6 +59,10 @@
     "border": true,
     "borderhighlight": "CocFloatingBorder"
   },
+  "git.floatConfig": {
+    "border": true,
+    "borderhighlight": "CocFloatingBorder"
+  },
 
   "diagnostic.infoSign": "",
   "diagnostic.hintSign": "",
