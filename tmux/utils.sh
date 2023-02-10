@@ -117,7 +117,9 @@ function init_cpu_stat() {
         local cpu_cores
         cpu="$(ps -A -o %cpu | awk '{c+=$1} END {print c}')"
         cpu=${cpu%.*}
-        cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+        # cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+        cpu_cores=$(sysctl hw.activecpu)
+        cpu_cores=${cpu_cores#* }
         g_CpuStat+=($((cpu / cpu_cores)))
     fi
 }
@@ -194,7 +196,10 @@ function get_cpu_cores() {
     if [ -z "$g_IsDarwin" ]; then
         nproc
     else
-        sysctl hw.activecpu | cut -d' ' -f2
+        # sysctl hw.activecpu | cut -d' ' -f2
+        local cores
+        cores=$(sysctl hw.activecpu)
+        echo "${cores#* }"
     fi
 }
 

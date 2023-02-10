@@ -39,6 +39,8 @@
   "git.removedSign.hlGroup": "GitGutterDelete",
   "git.topRemovedSign.hlGroup": "GitGutterDelete",
 
+  "rust-analyzer.server.path": "/home/solomon/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rust-analyzer",
+
   "suggest.floatConfig": {
     "border": true,
     "borderhighlight": "CocFloatingBorder"

@@ -27,7 +27,8 @@ fi
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 source "$EXECUTE_DIRNAME/utils.sh"
 
-sleep_secs=$(tmux show-options -g status-interval | cut -d' ' -f2)
+sleep_secs=$(tmux show-options -g status-interval)
+sleep_secs=${sleep_secs#* }
 
 init_net_dev_list
 while true; do
