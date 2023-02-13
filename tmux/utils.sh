@@ -26,17 +26,17 @@ g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
 
-g_DotList=(
-    " " "⢀" "⣀" "⠠" "⢠" "⣠" "⠤" "⢤" "⣤"
-    "⠐" "⢐" "⣐" "⠰" "⢰" "⣰" "⠴" "⢴" "⣴"
-    "⠒" "⢒" "⣒" "⠲" "⢲" "⣲" "⠶" "⢶" "⣶"
-    "⠈" "⢈" "⣈" "⠨" "⢨" "⣨" "⠬" "⢬" "⣬"
-    "⠘" "⢘" "⣘" "⠸" "⢸" "⣸" "⠼" "⢼" "⣼"
-    "⠚" "⢚" "⣚" "⠺" "⢺" "⣺" "⠾" "⢾" "⣾"
-    "⠉" "⢉" "⣉" "⠩" "⢩" "⣩" "⠭" "⢭" "⣭"
-    "⠙" "⢙" "⣙" "⠹" "⢹" "⣹" "⠽" "⢽" "⣽"
-    "⠛" "⢛" "⣛" "⠻" "⢻" "⣻" "⠿" "⢿" "⣿"
-)
+# g_DotList=(
+#     " " "⢀" "⣀" "⠠" "⢠" "⣠" "⠤" "⢤" "⣤"
+#     "⠐" "⢐" "⣐" "⠰" "⢰" "⣰" "⠴" "⢴" "⣴"
+#     "⠒" "⢒" "⣒" "⠲" "⢲" "⣲" "⠶" "⢶" "⣶"
+#     "⠈" "⢈" "⣈" "⠨" "⢨" "⣨" "⠬" "⢬" "⣬"
+#     "⠘" "⢘" "⣘" "⠸" "⢸" "⣸" "⠼" "⢼" "⣼"
+#     "⠚" "⢚" "⣚" "⠺" "⢺" "⣺" "⠾" "⢾" "⣾"
+#     "⠉" "⢉" "⣉" "⠩" "⢩" "⣩" "⠭" "⢭" "⣭"
+#     "⠙" "⢙" "⣙" "⠹" "⢹" "⣹" "⠽" "⢽" "⣽"
+#     "⠛" "⢛" "⣛" "⠻" "⢻" "⣻" "⠿" "⢿" "⣿"
+# )
 
 declare -A g_Cache
 
@@ -105,7 +105,10 @@ function init_cpu_stat() {
 
         if [ ${#array[@]} -eq ${#stats[@]} ]; then
             for i in $(seq 1 2 ${#stats[@]}); do
-                g_CpuStat+=("$((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i])))")
+                g_CpuStat+=("$((\
+                    a = stats[i - 1] - array[i - 1], \
+                    b = stats[i] - array[i], \
+                    100 - a * 100 / b))")
             done
         else
             for i in $(seq 1 2 ${#stats[@]}); do
@@ -144,8 +147,8 @@ function init_net_stat() {
             g_NetRxList["$i"]=0
             g_NetTxList["$i"]=0
         else
-            g_NetRxList["$i"]=$(((rx_bytes - array[1]) / (now - array[0])))
-            g_NetTxList["$i"]=$(((tx_bytes - array[2]) / (now - array[0])))
+            g_NetRxList["$i"]="$((a = rx_bytes - array[1], b = now - array[0], a / b))"
+            g_NetTxList["$i"]="$((a = tx_bytes - array[2], a / b))"
         fi
         set_cache "$key" "$now $rx_bytes $tx_bytes"
     done
@@ -194,7 +197,8 @@ function histogram() {
 
 function get_cpu_cores() {
     if [ -z "$g_IsDarwin" ]; then
-        nproc
+        init_cpu_stat
+        echo $(("${#g_CpuStat[@]}" - 1))
     else
         # sysctl hw.activecpu | cut -d' ' -f2
         local cores
@@ -310,7 +314,7 @@ function component_mem() {
 function component_net() {
     init_net_stat
     append_status_line "$(printf "%8s %8s" \
-        "$(flow_digital ${g_NetRxList[$1]})" "$(flow_digital ${g_NetTxList[$1]})")"
+        "$(flow_digital "${g_NetRxList[$1]}")" "$(flow_digital "${g_NetTxList[$1]}")")"
 }
 
 function component_temp() {
