@@ -29,6 +29,7 @@ source "$EXECUTE_DIRNAME/utils.sh"
 
 sleep_secs=$(tmux show-options -g status-interval)
 sleep_secs=${sleep_secs#* }
+set_interval "$sleep_secs"
 
 init_net_dev_list
 while true; do

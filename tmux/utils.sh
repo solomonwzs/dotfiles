@@ -7,15 +7,25 @@
 
 [ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 
+g_Interval=1
+
 g_StatusLine=""
 
 g_PercentBlockList=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 
 g_BatteryPowerList=("" "" "" "" "" "" "" "" "" "" "")
 
-g_IsDarwin=""
-if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
-    g_IsDarwin=1
+# g_IsDarwin=""
+# if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
+#     g_IsDarwin=1
+# fi
+
+g_IsLinux=0
+if [ -f "/proc/sys/kernel/ostype" ]; then
+    read -r _ostype <"/proc/sys/kernel/ostype"
+    if [[ "$_ostype" == "Linux" ]]; then
+        g_IsLinux=1
+    fi
 fi
 
 g_NetdevList=()
@@ -47,6 +57,10 @@ declare -A g_DotMap=(
     ["30"]="⡆" ["31"]="⣆" ["32"]="⣦" ["33"]="⣶" ["34"]="⣾"
     ["40"]="⡇" ["41"]="⣇" ["42"]="⣧" ["43"]="⣷" ["44"]="⣿"
 )
+
+function set_interval {
+    g_Interval="$1"
+}
 
 function set_cache() {
     g_Cache["$1"]="$2"
@@ -90,7 +104,7 @@ function init_cpu_stat() {
     if [ ${#g_CpuStat[@]} -ne 0 ]; then
         return
     fi
-    if [ -z "$g_IsDarwin" ]; then
+    if [ "$g_IsLinux" -eq 1 ]; then
         local stats=()
         local cache=""
         while read -r idle all; do
@@ -131,8 +145,8 @@ function init_net_stat() {
     if [ ${#g_NetRxList[@]} -ne 0 ]; then
         return
     fi
-    local now
-    now=$(date +%s)
+    # local now
+    # now=$(date +%s%3N)
     for i in "${!g_NetdevList[@]}"; do
         local dev="${g_NetdevList[$i]}"
 
@@ -143,19 +157,21 @@ function init_net_stat() {
         local key="net_$dev"
         local array
         read -r -a array <<<"$(get_cache "$key")"
-        if [[ ${#array[@]} -eq 0 || "$now" -eq "${array[0]}" ]]; then
+        if [[ ${#array[@]} -eq 0 || "$g_Interval" -eq 0 ]]; then
             g_NetRxList["$i"]=0
             g_NetTxList["$i"]=0
         else
-            g_NetRxList["$i"]="$((a = rx_bytes - array[1], b = now - array[0], a / b))"
-            g_NetTxList["$i"]="$((a = tx_bytes - array[2], a / b))"
+            g_NetRxList["$i"]="$((a = rx_bytes - array[0], \
+                a / g_Interval))"
+            g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
+                a / g_Interval))"
         fi
-        set_cache "$key" "$now $rx_bytes $tx_bytes"
+        set_cache "$key" "$rx_bytes $tx_bytes"
     done
 }
 
 function get_battery_icon() {
-    charging=$(cat "/sys/class/power_supply/BAT0/status")
+    read -r charging <"/sys/class/power_supply/BAT0/status"
     if [ "$charging" = "Charging" ]; then
         echo ""
     else
@@ -196,7 +212,7 @@ function histogram() {
 }
 
 function get_cpu_cores() {
-    if [ -z "$g_IsDarwin" ]; then
+    if [ "$g_IsLinux" -eq 1 ]; then
         init_cpu_stat
         echo $(("${#g_CpuStat[@]}" - 1))
     else
@@ -216,12 +232,9 @@ function get_temp_stat() {
 }
 
 function get_net_stat() {
-    if [ -z "$g_IsDarwin" ]; then
-        local dev="$1"
-        local rx_bytes
-        local tx_bytes
-        rx_bytes=$(cat "/sys/class/net/${dev}/statistics/rx_bytes")
-        tx_bytes=$(cat "/sys/class/net/${dev}/statistics/tx_bytes")
+    if [ "$g_IsLinux" -eq 1 ]; then
+        read -r rx_bytes <"/sys/class/net/${1}/statistics/rx_bytes"
+        read -r tx_bytes <"/sys/class/net/${1}/statistics/tx_bytes"
         echo "$rx_bytes $tx_bytes"
     else
         local rx_bytes
@@ -232,7 +245,7 @@ function get_net_stat() {
 }
 
 function get_mem_stat() {
-    if [ -z "$g_IsDarwin" ]; then
+    if [ "$g_IsLinux" -eq 1 ]; then
         awk '$1=="MemTotal:"{a=$2} $1=="MemAvailable:"{b=$2} END{print int((1-b/a)*100)}' \
             /proc/meminfo
     else
@@ -324,8 +337,8 @@ function component_temp() {
 }
 
 function component_power() {
-    full=$(cat "/sys/class/power_supply/BAT0/energy_full")
-    now=$(cat "/sys/class/power_supply/BAT0/energy_now")
+    read -r full <"/sys/class/power_supply/BAT0/energy_full"
+    read -r now <"/sys/class/power_supply/BAT0/energy_now"
     percent=$((now * 100 / full))
     icon=$(get_battery_icon $percent)
 
