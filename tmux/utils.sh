@@ -100,6 +100,15 @@ function append_status_line() {
     g_StatusLine="${g_StatusLine}${1}"
 }
 
+function parse_cpu_stat() {
+    while read -r -a a; do
+        if [ "${a[0]:0:3}" != "cpu" ]; then
+            break
+        fi
+        echo "${a[4]} $((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
+    done </proc/stat
+}
+
 function init_cpu_stat() {
     if [ ${#g_CpuStat[@]} -ne 0 ]; then
         return
@@ -111,7 +120,7 @@ function init_cpu_stat() {
             stats+=("$idle")
             stats+=("$all")
             cache="$cache $idle $all"
-        done <<<"$(awk '$1~/cpu/{print $5, $2+$3+$4+$5+$6+$7+$8}' /proc/stat)"
+        done <<<"$(parse_cpu_stat)"
 
         local array
         read -r -a array <<<"$(get_cache "cpus")"
@@ -246,8 +255,16 @@ function get_net_stat() {
 
 function get_mem_stat() {
     if [ "$g_IsLinux" -eq 1 ]; then
-        awk '$1=="MemTotal:"{a=$2} $1=="MemAvailable:"{b=$2} END{print int((1-b/a)*100)}' \
-            /proc/meminfo
+        local total=1
+        local available=0
+        while read -r -a a; do
+            if [ "${a[0]}" == "MemTotal:" ]; then
+                total=${a[1]}
+            elif [ "${a[0]}" == "MemAvailable:" ]; then
+                available=${a[1]}
+            fi
+        done </proc/meminfo
+        echo $((100 - available * 100 / total))
     else
         ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
     fi
