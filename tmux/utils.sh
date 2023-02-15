@@ -253,34 +253,64 @@ function get_net_stat() {
     fi
 }
 
+function parse_mem_info() {
+    local total=1
+    local freemem=0
+    local cached=0
+    local buffers=0
+    local sreclaimable=0
+    local used=0
+    while read -r -a a; do
+        if [ "${a[0]}" == "MemTotal:" ]; then
+            total=${a[1]}
+        elif [ "${a[0]}" == "MemFree:" ]; then
+            freemem=${a[1]}
+        elif [ "${a[0]}" == "Cached:" ]; then
+            cached=${a[1]}
+        elif [ "${a[0]}" == "Buffers:" ]; then
+            buffers=${a[1]}
+        elif [ "${a[0]}" == "SReclaimable:" ]; then
+            sreclaimable=${a[1]}
+        fi
+    done </proc/meminfo
+    ((\
+    cached = cached + sreclaimable, \
+    used = total - freemem - buffers - cached))
+    echo "$total $used $cached $buffers"
+}
+
 function get_mem_stat() {
     if [ "$g_IsLinux" -eq 1 ]; then
-        local total=1
-        local freemem=0
-        local cached=0
-        local buffers=0
-        local sreclaimable=0
-        local used=0
-        while read -r -a a; do
-            if [ "${a[0]}" == "MemTotal:" ]; then
-                total=${a[1]}
-            elif [ "${a[0]}" == "MemFree:" ]; then
-                freemem=${a[1]}
-            elif [ "${a[0]}" == "Cached:" ]; then
-                cached=${a[1]}
-            elif [ "${a[0]}" == "Buffers:" ]; then
-                buffers=${a[1]}
-            elif [ "${a[0]}" == "SReclaimable:" ]; then
-                sreclaimable=${a[1]}
-            fi
-        done </proc/meminfo
-        ((\
-        cached = cached + sreclaimable, \
-        used = total - freemem - buffers - cached))
-        echo $((used * 100 / total))
+        read -r -a a <<<"$(parse_mem_info)"
+        echo $((a[1] * 100 / a[0]))
     else
         ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
     fi
+}
+
+function get_mem_bar() {
+    read -r total used cache buff <<<"$(parse_mem_info)"
+    ((\
+    rb = buff * 10 / total, \
+    rc = cache * 10 / total, \
+    ru = used * 10 / total, \
+    rf = 10 - rb - rc - ru))
+
+    local bar=""
+    for i in $(seq 1 $ru); do
+        bar="4${bar}"
+    done
+    for i in $(seq 1 $rc); do
+        bar="3${bar}"
+    done
+    for i in $(seq 1 $rb); do
+        bar="2${bar}"
+    done
+    for i in $(seq 1 $rf); do
+        bar="0${bar}"
+    done
+    dot_histogram "$bar" "mem_bar"
+    append_status_line "$(get_cache "mem_bar")"
 }
 
 function dot_histogram() {
