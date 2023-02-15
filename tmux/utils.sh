@@ -256,15 +256,28 @@ function get_net_stat() {
 function get_mem_stat() {
     if [ "$g_IsLinux" -eq 1 ]; then
         local total=1
-        local available=0
+        local freemem=0
+        local cached=0
+        local buffers=0
+        local sreclaimable=0
+        local used=0
         while read -r -a a; do
             if [ "${a[0]}" == "MemTotal:" ]; then
                 total=${a[1]}
-            elif [ "${a[0]}" == "MemAvailable:" ]; then
-                available=${a[1]}
+            elif [ "${a[0]}" == "MemFree:" ]; then
+                freemem=${a[1]}
+            elif [ "${a[0]}" == "Cached:" ]; then
+                cached=${a[1]}
+            elif [ "${a[0]}" == "Buffers:" ]; then
+                buffers=${a[1]}
+            elif [ "${a[0]}" == "SReclaimable:" ]; then
+                sreclaimable=${a[1]}
             fi
         done </proc/meminfo
-        echo $((100 - available * 100 / total))
+        ((\
+        cached = cached + sreclaimable, \
+        used = total - freemem - buffers - cached))
+        echo $((used * 100 / total))
     else
         ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
     fi
