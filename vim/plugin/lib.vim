@@ -32,7 +32,7 @@ command! -nargs=0 WindowsDebug
     \ call lib#window#test()
 
 command! -nargs=1 MyDebug
-    \ call lib#debug#foo(<q-args>)
+    \ echo lib#py#call('shlex', 'split', <q-args>)
 
 augroup my_plugin_lib
   autocmd!

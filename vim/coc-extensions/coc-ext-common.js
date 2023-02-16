@@ -1,39 +1,45 @@
+"use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __markAsModule = (target) => __defProp(target, "__esModule", {value: true});
 var __export = (target, all) => {
   for (var name in all)
-    __defProp(target, name, {get: all[name], enumerable: true});
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __exportStar = (target, module2, desc) => {
-  if (module2 && typeof module2 === "object" || typeof module2 === "function") {
-    for (let key of __getOwnPropNames(module2))
-      if (!__hasOwnProp.call(target, key) && key !== "default")
-        __defProp(target, key, {get: () => module2[key], enumerable: !(desc = __getOwnPropDesc(module2, key)) || desc.enumerable});
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
   }
-  return target;
+  return to;
 };
-var __toModule = (module2) => {
-  return __exportStar(__markAsModule(__defProp(module2 != null ? __create(__getProtoOf(module2)) : {}, "default", module2 && module2.__esModule && "default" in module2 ? {get: () => module2.default, enumerable: true} : {value: module2, enumerable: true})), module2);
-};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/coc-ext-common.ts
-__markAsModule(exports);
-__export(exports, {
+var coc_ext_common_exports = {};
+__export(coc_ext_common_exports, {
   activate: () => activate
 });
-var import_coc21 = __toModule(require("coc.nvim"));
+module.exports = __toCommonJS(coc_ext_common_exports);
+var import_coc21 = require("coc.nvim");
 
 // src/lists/autocmd.ts
-var import_coc = __toModule(require("coc.nvim"));
+var import_coc = require("coc.nvim");
 
 // src/utils/common.ts
-var import_path = __toModule(require("path"));
-var import_url = __toModule(require("url"));
+var import_url = require("url");
 function getEnvHttpProxy(is_https) {
   const proxy = process.env[is_https ? "https_proxy" : "http_proxy"];
   if (proxy) {
@@ -56,7 +62,7 @@ function stringify(value) {
   }
 }
 function getRandomId(scope, sep = "-") {
-  const ts = new Date().getTime().toString(16).slice(-8);
+  const ts = (/* @__PURE__ */ new Date()).getTime().toString(16).slice(-8);
   let r = Math.floor(Math.random() * 65535).toString(16);
   r = "0".repeat(4 - r.length) + r;
   return scope && scope.length > 0 ? `${scope}${sep}${ts}${sep}${r}` : `${ts}${sep}${r}`;
@@ -99,7 +105,7 @@ function parseAutocmdInfo(str) {
     pattern = "";
     setting = "";
   };
-  const spaces = new Set([" ", "	"]);
+  const spaces = /* @__PURE__ */ new Set([" ", "	"]);
   for (const l of lines) {
     const sn = strFindFirstNotOf(l, spaces);
     if (sn == 0) {
@@ -152,8 +158,8 @@ function parseAutocmdInfo(str) {
   return res;
 }
 var AutocmdList = class extends import_coc.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "autocmd";
     this.description = "CocList for coc-ext-common (autocmd)";
     this.defaultAction = "preview";
@@ -171,11 +177,11 @@ var AutocmdList = class extends import_coc.BasicList {
         }
         lines.push("");
       }
-      this.preview({filetype: "vim", lines}, context);
+      this.preview({ filetype: "vim", lines }, context);
     });
   }
   async loadItems(_context) {
-    const {nvim} = this;
+    const { nvim } = this;
     let str = await nvim.exec("verbose autocmd", true);
     const infos = parseAutocmdInfo(str);
     let max_gn_len = 0;
@@ -197,7 +203,7 @@ var AutocmdList = class extends import_coc.BasicList {
         label,
         data: i,
         ansiHighlights: [
-          {span: [0, i.group.length], hlGroup: "Define"},
+          { span: [0, i.group.length], hlGroup: "Define" },
           {
             span: [max_gn_len + 2, max_gn_len + 2 + i.event.length],
             hlGroup: "Special"
@@ -208,7 +214,6 @@ var AutocmdList = class extends import_coc.BasicList {
     return res;
   }
 };
-var autocmd_default = AutocmdList;
 
 // src/lists/commands.ts
 var Commands = class {
@@ -223,7 +228,7 @@ var Commands = class {
       execute: async (item) => {
         if (Array.isArray(item))
           return;
-        const {command, shabang, hasArgs} = item.data;
+        const { command, shabang, hasArgs } = item.data;
         if (!hasArgs) {
           nvim.command(command, true);
         } else {
@@ -231,7 +236,10 @@ var Commands = class {
           const mode = await nvim.call("mode");
           const isInsertMode = mode.startsWith("i");
           if (isInsertMode) {
-            nvim.command(`call feedkeys("\\<C-O>${feedableCommand}", 'n')`, true);
+            nvim.command(
+              `call feedkeys("\\<C-O>${feedableCommand}", 'n')`,
+              true
+            );
           } else {
             await nvim.feedKeys(feedableCommand, "n", true);
           }
@@ -243,11 +251,13 @@ var Commands = class {
       execute: async (item) => {
         if (Array.isArray(item))
           return;
-        const {command} = item.data;
+        const { command } = item.data;
         if (!/^[A-Z]/.test(command))
           return;
-        const res = await nvim.eval(`split(execute("verbose command ${command}"),"
-")[-1]`);
+        const res = await nvim.eval(
+          `split(execute("verbose command ${command}"),"
+")[-1]`
+        );
         if (/Last\sset\sfrom/.test(res)) {
           const filepath = res.replace(/^\s+Last\sset\sfrom\s+/, "");
           nvim.command(`edit +/${command} ${filepath}`, true);
@@ -256,7 +266,7 @@ var Commands = class {
     });
   }
   async loadItems(_context) {
-    const {nvim} = this;
+    const { nvim } = this;
     let list = await nvim.eval('split(execute("command"),"\n")');
     list = list.slice(1);
     const res = [];
@@ -268,7 +278,7 @@ var Commands = class {
       const name = matchArr[0];
       const end = str.slice(4 + name.length);
       res.push({
-        label: `${str.slice(0, 4)}${name}[3m${end}[23m`,
+        label: `${str.slice(0, 4)}${name}\x1B[3m${end}\x1B[23m`,
         filterText: name,
         data: {
           command: name,
@@ -280,21 +290,20 @@ var Commands = class {
     return res;
   }
 };
-var commands_default = Commands;
 
 // src/lists/lists.ts
-var import_coc3 = __toModule(require("coc.nvim"));
+var import_coc3 = require("coc.nvim");
 
 // src/utils/notify.ts
-var import_coc2 = __toModule(require("coc.nvim"));
+var import_coc2 = require("coc.nvim");
 function showNotification(content, title, hl) {
   import_coc2.window.showMessage(content);
 }
 
 // src/lists/lists.ts
 var ExtList = class extends import_coc3.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "ext_list";
     this.description = "CocList for coc-ext-common";
     this.defaultAction = "open";
@@ -307,34 +316,30 @@ var ExtList = class extends import_coc3.BasicList {
     return [
       {
         label: "coc-ext-common list item 1",
-        data: {name: "list item 1"}
+        data: { name: "list item 1" }
       },
       {
         label: "coc-ext-common list item 2",
-        data: {name: "list item 2"}
+        data: { name: "list item 2" }
       }
     ];
   }
 };
-var lists_default = ExtList;
 
 // src/lists/highlight.ts
-var import_coc6 = __toModule(require("coc.nvim"));
+var import_coc6 = require("coc.nvim");
 
 // src/utils/helper.ts
-var import_coc5 = __toModule(require("coc.nvim"));
-var import_fs = __toModule(require("fs"));
+var import_coc5 = require("coc.nvim");
 
 // src/utils/config.ts
-var import_coc4 = __toModule(require("coc.nvim"));
+var import_coc4 = require("coc.nvim");
 function getcfg(key, defaultValue) {
   const config = import_coc4.workspace.getConfiguration("coc-ext");
   return config.get(key, defaultValue);
 }
 
 // src/utils/helper.ts
-var import_path2 = __toModule(require("path"));
-var import_util = __toModule(require("util"));
 function defauleFloatWinConfig() {
   let conf = getcfg("floatConfig", {});
   return {
@@ -390,7 +395,7 @@ ${content}` : content,
   await win.show(doc, cfg);
 }
 async function openFile(filepath, opts) {
-  const {nvim} = import_coc5.workspace;
+  const { nvim } = import_coc5.workspace;
   let open = "edit";
   let cmd = "";
   if (opts) {
@@ -455,8 +460,8 @@ function parseHighlightInfo(str) {
   return res;
 }
 var HighlightList = class extends import_coc6.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "highlight";
     this.description = "CocList for coc-ext-common (highlight)";
     this.defaultAction = "open";
@@ -473,7 +478,7 @@ var HighlightList = class extends import_coc6.BasicList {
     });
   }
   async loadItems(_context) {
-    const {nvim} = this;
+    const { nvim } = this;
     let str = await nvim.exec("verbose highlight", true);
     const hiinfos = parseHighlightInfo(str);
     let max_gn_len = 0;
@@ -490,7 +495,7 @@ var HighlightList = class extends import_coc6.BasicList {
       const fnoffset = xoffset + 3 + 2 + i.desc.length + 2;
       res.push({
         label,
-        data: {last_set_file: i.last_set_file, line: i.line},
+        data: { last_set_file: i.last_set_file, line: i.line },
         ansiHighlights: [
           {
             span: [xoffset, xoffset + 3],
@@ -506,10 +511,9 @@ var HighlightList = class extends import_coc6.BasicList {
     return res;
   }
 };
-var highlight_default = HighlightList;
 
 // src/lists/mapkey.ts
-var import_coc7 = __toModule(require("coc.nvim"));
+var import_coc7 = require("coc.nvim");
 function parseMapkeyInfo(str) {
   let lines = str.split("\n");
   let mode = "";
@@ -552,8 +556,8 @@ function parseMapkeyInfo(str) {
   return res;
 }
 var MapkeyList = class extends import_coc7.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "mapkey";
     this.description = "CocList for coc-ext-common (mapkey)";
     this.defaultAction = "open";
@@ -570,7 +574,7 @@ var MapkeyList = class extends import_coc7.BasicList {
     });
   }
   async loadItems(_context) {
-    const {nvim} = this;
+    const { nvim } = this;
     let str = await nvim.exec("verbose map", true);
     const mapinfos = parseMapkeyInfo(str);
     let max_key_len = 0;
@@ -587,26 +591,25 @@ var MapkeyList = class extends import_coc7.BasicList {
       const fnoffset = keyoffset + i.key.length + spaces.length + i.desc.length + 2;
       res.push({
         label,
-        data: {last_set_file: i.last_set_file, line: i.line},
+        data: { last_set_file: i.last_set_file, line: i.line },
         ansiHighlights: [
-          {span: [0, 1], hlGroup: "Define"},
-          {span: [keyoffset, keyoffset + i.key.length], hlGroup: "Special"},
-          {span: [fnoffset, label.length], hlGroup: "Comment"}
+          { span: [0, 1], hlGroup: "Define" },
+          { span: [keyoffset, keyoffset + i.key.length], hlGroup: "Special" },
+          { span: [fnoffset, label.length], hlGroup: "Comment" }
         ]
       });
     }
     return res;
   }
 };
-var mapkey_default = MapkeyList;
 
 // src/lists/rgfiles.ts
-var import_coc10 = __toModule(require("coc.nvim"));
-var import_path6 = __toModule(require("path"));
+var import_coc10 = require("coc.nvim");
+var import_path4 = __toESM(require("path"));
 
 // src/utils/externalexec.ts
-var import_path3 = __toModule(require("path"));
-var import_child_process = __toModule(require("child_process"));
+var import_path = __toESM(require("path"));
+var import_child_process = require("child_process");
 async function callShell(cmd, args, input, opts) {
   return new Promise((resolve) => {
     const stdin = input ? "pipe" : "ignore";
@@ -645,13 +648,13 @@ async function callShell(cmd, args, input, opts) {
 }
 async function callPython(pythonDir, m, f, a) {
   return new Promise((resolve) => {
-    const msg = JSON.stringify({m, f, a});
+    const msg = JSON.stringify({ m, f, a });
     let root_dir = process.env.COC_VIMCONFIG;
     if (!root_dir) {
       root_dir = ".";
     }
-    const script = import_path3.default.join(root_dir, pythonDir, "coc_ext.py");
-    const py = (0, import_child_process.spawn)("python3", [script], {stdio: ["pipe", "pipe", "pipe"]});
+    const script = import_path.default.join(root_dir, pythonDir, "coc_ext.py");
+    const py = (0, import_child_process.spawn)("python3", [script], { stdio: ["pipe", "pipe", "pipe"] });
     py.stdin.write(msg);
     py.stdin.end();
     let exitCode = 0;
@@ -677,30 +680,40 @@ async function callPython(pythonDir, m, f, a) {
 }
 
 // src/utils/icons.ts
-var import_coc8 = __toModule(require("coc.nvim"));
-var import_path4 = __toModule(require("path"));
+var import_coc8 = require("coc.nvim");
+var import_path2 = __toESM(require("path"));
 var defx_has_init = false;
 var defx_icons = void 0;
 var default_color;
 async function defx_init() {
   defx_has_init = true;
-  let {nvim} = import_coc8.workspace;
-  default_color = await nvim.eval('synIDattr(hlID("Normal"), "fg")');
-  let loaded_defx_icons = await nvim.eval('get(g:, "loaded_defx_icons")');
+  let { nvim } = import_coc8.workspace;
+  default_color = await nvim.eval(
+    'synIDattr(hlID("Normal"), "fg")'
+  );
+  let loaded_defx_icons = await nvim.eval(
+    'get(g:, "loaded_defx_icons")'
+  );
   if (loaded_defx_icons != 1) {
     return;
   }
   defx_icons = await nvim.eval("defx_icons#get()");
-  let colors = new Set();
-  for (const i of Object.values(defx_icons.icons.exact_matches)) {
+  let colors = /* @__PURE__ */ new Set();
+  for (const i of Object.values(
+    defx_icons.icons.exact_matches
+  )) {
     i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
-  for (const i of Object.values(defx_icons.icons.extensions)) {
+  for (const i of Object.values(
+    defx_icons.icons.extensions
+  )) {
     i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
-  for (const i of Object.values(defx_icons.icons.pattern_matches)) {
+  for (const i of Object.values(
+    defx_icons.icons.pattern_matches
+  )) {
     i.hlGroup = `DefxIcoFg_${i.term_color}`;
     colors.add(i.term_color);
   }
@@ -719,7 +732,7 @@ async function getDefxIcon(filetype, filepath) {
       color: default_color.toString()
     };
   }
-  const filename = import_path4.default.basename(filepath);
+  const filename = import_path2.default.basename(filepath);
   let info = defx_icons.icons.exact_matches[filename];
   if (info) {
     return info;
@@ -736,8 +749,8 @@ async function getDefxIcon(filetype, filepath) {
 }
 
 // src/utils/logger.ts
-var import_coc9 = __toModule(require("coc.nvim"));
-var import_path5 = __toModule(require("path"));
+var import_coc9 = require("coc.nvim");
+var import_path3 = __toESM(require("path"));
 var Logger = class {
   constructor() {
     this.channel = import_coc9.window.createOutputChannel("coc-ext");
@@ -749,7 +762,7 @@ var Logger = class {
   }
   logLevel(level, value) {
     var _a;
-    const now = new Date();
+    const now = /* @__PURE__ */ new Date();
     const str = stringify(value);
     if (this.detail) {
       const stack = (_a = new Error().stack) == null ? void 0 : _a.split("\n");
@@ -757,14 +770,16 @@ var Logger = class {
         const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
         const expl = re.exec(stack[3]);
         if (expl) {
-          const file = import_path5.default.basename(expl[3]);
+          const file = import_path3.default.basename(expl[3]);
           const line = expl[4];
-          this.channel.appendLine(`${now.toISOString()} ${level} [${file}:${line}] ${str}`);
+          this.channel.appendLine(
+            `${now.toISOString()} ${level} [${file}:${line}] ${str}`
+          );
           return;
         }
       }
     }
-    const fn = import_path5.default.basename(__filename);
+    const fn = import_path3.default.basename(__filename);
     this.channel.appendLine(`${level} [${fn}] ${str}`);
   }
   debug(value) {
@@ -793,8 +808,8 @@ var logger = new Logger();
 
 // src/lists/rgfiles.ts
 var RgfilesList = class extends import_coc10.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "rgfiles";
     this.description = "CocList for coc-ext-common (rg files)";
     this.defaultAction = "open";
@@ -805,31 +820,36 @@ var RgfilesList = class extends import_coc10.BasicList {
       });
     });
     this.addAction("preview", async (item, context) => {
-      const resp = await callShell("rg", [
-        "-B",
-        "3",
-        "-C",
-        "3",
-        "--color",
-        "never",
-        "--context-separator",
-        "\\\\n================\\\\n",
-        context.args[0],
-        item.data["name"]
-      ], void 0, {shell: true});
+      const resp = await callShell(
+        "rg",
+        [
+          "-B",
+          "3",
+          "-C",
+          "3",
+          "--color",
+          "never",
+          "--context-separator",
+          "\\\\n================\\\\n",
+          context.args[0],
+          item.data["name"]
+        ],
+        void 0,
+        { shell: true }
+      );
       if (resp.exitCode != 0 || !resp.data) {
         logger.error("rg fail");
         return;
       }
       const lines = resp.data.toString().split("\n");
-      this.preview({bufname: item.data["name"], lines}, context);
+      this.preview({ bufname: item.data["name"], lines }, context);
       const prew_wid = await this.nvim.call("coc#list#get_preview", 0);
       await this.nvim.call("matchadd", [
         "Search",
         `\\v${context.args[0]}`,
         9,
         -1,
-        {window: prew_wid}
+        { window: prew_wid }
       ]);
     });
     this.addAction("ctrl-x", this.actionOpenSplit);
@@ -852,7 +872,7 @@ var RgfilesList = class extends import_coc10.BasicList {
       "--count-matches",
       pattern
     ];
-    const resp = await callShell("rg", args, void 0, {shell: true});
+    const resp = await callShell("rg", args, void 0, { shell: true });
     if (resp.exitCode != 0) {
       logger.error("rg fail");
       if (resp.error) {
@@ -869,14 +889,14 @@ var RgfilesList = class extends import_coc10.BasicList {
     const items = [];
     for (const i of list) {
       const arr = i.split(":");
-      const extname = import_path6.default.extname(arr[0]).slice(1);
+      const extname = import_path4.default.extname(arr[0]).slice(1);
       const icon = await getDefxIcon(extname, arr[0]);
       const label = `${icon.icon}  ${arr[0]}  [${arr[1]}]`;
       const offset0 = Buffer.byteLength(icon.icon);
       const offset1 = offset0 + 2 + Buffer.byteLength(arr[0]) + 2;
       items.push({
         label,
-        data: {name: arr[0]},
+        data: { name: arr[0] },
         ansiHighlights: [
           {
             span: [0, offset0],
@@ -892,14 +912,13 @@ var RgfilesList = class extends import_coc10.BasicList {
     return items;
   }
 };
-var rgfiles_default = RgfilesList;
 
 // src/lists/rgwords.ts
-var import_coc11 = __toModule(require("coc.nvim"));
-var import_path7 = __toModule(require("path"));
+var import_coc11 = require("coc.nvim");
+var import_path5 = __toESM(require("path"));
 var RgwordsList = class extends import_coc11.BasicList {
-  constructor(nvim) {
-    super(nvim);
+  constructor(_nvim) {
+    super();
     this.name = "rgwords";
     this.description = "CocList for coc-ext-common (rg words)";
     this.defaultAction = "open";
@@ -916,25 +935,28 @@ var RgwordsList = class extends import_coc11.BasicList {
         return;
       }
       const lines = resp.data.toString().split("\n");
-      this.preview({
-        lines,
-        lnum: item.data["line"],
-        bufname: item.data["name"]
-      }, context);
+      this.preview(
+        {
+          lines,
+          lnum: item.data["line"],
+          bufname: item.data["name"]
+        },
+        context
+      );
       const prew_wid = await this.nvim.call("coc#list#get_preview", 0);
       await this.nvim.call("matchadd", [
         "Search",
         `\\v${context.args[0]}`,
         9,
         -1,
-        {window: prew_wid}
+        { window: prew_wid }
       ]);
       await this.nvim.call("matchadd", [
         "TermCursor",
         `\\%${item.data["line"]}l`,
         8,
         -1,
-        {window: prew_wid}
+        { window: prew_wid }
       ]);
     });
     this.addAction("ctrl-x", this.actionOpenSplit);
@@ -949,9 +971,10 @@ var RgwordsList = class extends import_coc11.BasicList {
     if (context.args.length == 0) {
       return null;
     }
+    logger.debug(context.args);
     const pattern = `"${context.args[0].replace(/"/g, '\\"')}"`;
     const args = ["--color", "never", "--json", pattern];
-    const resp = await callShell("rg", args, void 0, {shell: true});
+    const resp = await callShell("rg", args, void 0, { shell: true });
     if (resp.exitCode != 0) {
       logger.error("rg fail");
       if (resp.error) {
@@ -974,7 +997,7 @@ var RgwordsList = class extends import_coc11.BasicList {
       const filename = match.data.path.text;
       const line = match.data.line_number;
       const strline = line.toString();
-      const extname = import_path7.default.extname(filename).slice(1);
+      const extname = import_path5.default.extname(filename).slice(1);
       const icon = await getDefxIcon(extname, filename);
       const label = `${icon.icon}  ${filename}:${strline}:${match.data.lines.text}`;
       const offset0 = Buffer.byteLength(icon.icon);
@@ -982,7 +1005,7 @@ var RgwordsList = class extends import_coc11.BasicList {
       const offset2 = offset1 + 2 + strline.length;
       items.push({
         label,
-        data: {name: filename, line},
+        data: { name: filename, line },
         ansiHighlights: [
           {
             span: [0, offset0],
@@ -1002,10 +1025,9 @@ var RgwordsList = class extends import_coc11.BasicList {
     return items;
   }
 };
-var rgwords_default = RgwordsList;
 
 // src/formatter/clfformatter.ts
-var import_coc12 = __toModule(require("coc.nvim"));
+var import_coc12 = require("coc.nvim");
 
 // src/formatter/baseformatter.ts
 var BaseFormatter = class {
@@ -1060,10 +1082,13 @@ var ClfFormatter = class extends BaseFormatter {
     } else if (resp.data) {
       showNotification("clang-format ok", "formatter");
       return [
-        import_coc12.TextEdit.replace({
-          start: {line: 0, character: 0},
-          end: {line: document.lineCount, character: 0}
-        }, resp.data.toString())
+        import_coc12.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: document.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
       ];
     }
     return [];
@@ -1071,7 +1096,7 @@ var ClfFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/prettierformatter.ts
-var import_coc13 = __toModule(require("coc.nvim"));
+var import_coc13 = require("coc.nvim");
 var filetype2Parser = {
   javascript: "babel-flow"
 };
@@ -1091,7 +1116,7 @@ var PrettierFormatter = class extends BaseFormatter {
     if (this.setting.args) {
       args.push(...this.setting.args);
     }
-    const {nvim} = import_coc13.workspace;
+    const { nvim } = import_coc13.workspace;
     const filetype = await nvim.eval("&filetype");
     const parser = filetype2Parser[filetype];
     if (parser) {
@@ -1109,10 +1134,13 @@ var PrettierFormatter = class extends BaseFormatter {
     } else if (resp.data) {
       showNotification("prettier ok", "formatter");
       return [
-        import_coc13.TextEdit.replace({
-          start: {line: 0, character: 0},
-          end: {line: document.lineCount, character: 0}
-        }, resp.data.toString())
+        import_coc13.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: document.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
       ];
     }
     return [];
@@ -1120,7 +1148,7 @@ var PrettierFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/bazelformatter.ts
-var import_coc14 = __toModule(require("coc.nvim"));
+var import_coc14 = require("coc.nvim");
 var BazelFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1143,10 +1171,13 @@ var BazelFormatter = class extends BaseFormatter {
     } else if (resp.data) {
       showNotification("buildifier ok", "formatter");
       return [
-        import_coc14.TextEdit.replace({
-          start: {line: 0, character: 0},
-          end: {line: document.lineCount, character: 0}
-        }, resp.data.toString())
+        import_coc14.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: document.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
       ];
     }
     return [];
@@ -1154,7 +1185,7 @@ var BazelFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/luaformatter.ts
-var import_coc15 = __toModule(require("coc.nvim"));
+var import_coc15 = require("coc.nvim");
 var LuaFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1192,7 +1223,11 @@ var LuaFormatter = class extends BaseFormatter {
       }
     }
     const exec = this.setting.exec ? this.setting.exec : "lua-format";
-    const resp = await callShell(exec, this.opts.concat(opts), document.getText());
+    const resp = await callShell(
+      exec,
+      this.opts.concat(opts),
+      document.getText()
+    );
     if (resp.exitCode != 0) {
       showNotification(`lua-format fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
@@ -1201,10 +1236,13 @@ var LuaFormatter = class extends BaseFormatter {
     } else if (resp.data) {
       showNotification("lua-format ok", "formatter");
       return [
-        import_coc15.TextEdit.replace({
-          start: {line: 0, character: 0},
-          end: {line: document.lineCount, character: 0}
-        }, resp.data.toString())
+        import_coc15.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: document.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
       ];
     }
     return [];
@@ -1212,7 +1250,7 @@ var LuaFormatter = class extends BaseFormatter {
 };
 
 // src/formatter/shellformatter.ts
-var import_coc16 = __toModule(require("coc.nvim"));
+var import_coc16 = require("coc.nvim");
 var ShellFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1239,10 +1277,13 @@ var ShellFormatter = class extends BaseFormatter {
     } else if (resp.data) {
       showNotification("shfmt ok", "formatter");
       return [
-        import_coc16.TextEdit.replace({
-          start: {line: 0, character: 0},
-          end: {line: document.lineCount, character: 0}
-        }, resp.data.toString())
+        import_coc16.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: document.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
       ];
     }
     return [];
@@ -1302,18 +1343,18 @@ function createTranslation(name, sl, tl, text) {
 }
 
 // src/utils/http.ts
-var import_https = __toModule(require("https"));
-var import_http = __toModule(require("http"));
+var import_https = __toESM(require("https"));
+var import_http = __toESM(require("http"));
 async function simpleHttpsProxy(host, port, target_host) {
   return new Promise((resolve) => {
-    import_http.default.request({host, port, path: target_host, method: "CONNECT"}).on("connect", (resp, socket, _head) => {
+    import_http.default.request({ host, port, path: target_host, method: "CONNECT" }).on("connect", (resp, socket, _head) => {
       if (resp.statusCode == 200) {
-        resolve({agent: new import_https.default.Agent({socket})});
+        resolve({ agent: new import_https.default.Agent({ socket }) });
       } else {
-        resolve({error: {name: "ERR_CONN", message: "connect fail"}});
+        resolve({ error: { name: "ERR_CONN", message: "connect fail" } });
       }
     }).on("error", (error) => {
-      resolve({error});
+      resolve({ error });
     }).end();
   });
 }
@@ -1338,7 +1379,7 @@ async function simpleHttpRequest(opts, is_https, data) {
       });
     }).on("timeout", () => {
       resolve({
-        error: {name: "ERR_TIMEOUT", message: `query ${host} timeout`}
+        error: { name: "ERR_TIMEOUT", message: `query ${host} timeout` }
       });
     });
     if (data) {
@@ -1352,9 +1393,13 @@ async function sendHttpRequest(req) {
   if (!req.proxy) {
     return await simpleHttpRequest(req.args, is_https, req.data);
   } else if (is_https) {
-    const agent = await simpleHttpsProxy(req.proxy.host, req.proxy.port, `${req.args.host}:${req.args.port ? req.args.port : 443}`);
+    const agent = await simpleHttpsProxy(
+      req.proxy.host,
+      req.proxy.port,
+      `${req.args.host}:${req.args.port ? req.args.port : 443}`
+    );
     if (agent.error) {
-      return {error: agent.error};
+      return { error: agent.error };
     }
     const opts = Object.assign({}, req.args);
     opts.agent = agent.agent;
@@ -1362,16 +1407,16 @@ async function sendHttpRequest(req) {
   } else {
     const opts = Object.assign({}, req.args);
     opts.headers = Object.assign({}, req.args.headers);
-    var path8 = `${is_https ? "https" : "http"}://${req.args.host}`;
+    var path6 = `${is_https ? "https" : "http"}://${req.args.host}`;
     if (opts.port) {
-      path8 += `:${opts.port}`;
+      path6 += `:${opts.port}`;
     }
     if (opts.path) {
-      path8 += opts.path;
+      path6 += opts.path;
     }
     opts.host = req.proxy.host;
     opts.port = req.proxy.port;
-    opts.path = path8;
+    opts.path = path6;
     opts.headers.Host = req.args.host;
     return await simpleHttpRequest(opts, is_https, req.data);
   }
@@ -1389,7 +1434,7 @@ function getParaphrase(html) {
   return paraphrase.join("\n");
 }
 async function bingTranslate(text, sl, tl, proxy_url) {
-  const proxy = proxy_url ? {host: proxy_url.hostname, port: parseInt(proxy_url.port)} : void 0;
+  const proxy = proxy_url ? { host: proxy_url.hostname, port: parseInt(proxy_url.port) } : void 0;
   const req = {
     args: {
       host: "cn.bing.com",
@@ -1420,43 +1465,43 @@ async function bingTranslate(text, sl, tl, proxy_url) {
 }
 
 // src/utils/debug.ts
-var import_coc19 = __toModule(require("coc.nvim"));
+var import_coc19 = require("coc.nvim");
 
 // src/lightbulb/lightbulb.ts
-var import_coc17 = __toModule(require("coc.nvim"));
+var import_coc17 = require("coc.nvim");
 
 // src/utils/symbol.ts
-var import_coc18 = __toModule(require("coc.nvim"));
+var import_coc18 = require("coc.nvim");
 var symbolKind2Info = {
-  1: {name: "File", icon: "\uF40E", short_name: "F"},
-  2: {name: "Module", icon: "\uF0E8", short_name: "M"},
-  3: {name: "Namespace", icon: "\uF668", short_name: "N"},
-  4: {name: "Package", icon: "\uF487", short_name: "P"},
-  5: {name: "Class", icon: "\uF0E8", short_name: "C"},
-  6: {name: "Method", icon: "\uE79B", short_name: "f"},
-  7: {name: "Property", icon: "\uFAB6", short_name: "p"},
-  8: {name: "Field", icon: "\uF9BE", short_name: "m"},
-  9: {name: "Constructor", icon: "\uF425", short_name: "c"},
-  10: {name: "Enum", icon: "\uF435", short_name: "E"},
-  11: {name: "Interface", icon: "\uF417", short_name: "I"},
-  12: {name: "Function", icon: "\u0192", short_name: "f"},
-  13: {name: "Variable", icon: "\uE79B", short_name: "v"},
-  14: {name: "Constant", icon: "\uF8FE", short_name: "C"},
-  15: {name: "String", icon: "\uF672", short_name: "S"},
-  16: {name: "Number", icon: "\uF89F", short_name: "n"},
-  17: {name: "Boolean", icon: "", short_name: "b"},
-  18: {name: "Array", icon: "\uF669", short_name: "a"},
-  19: {name: "Object", icon: "\uF0E8", short_name: "O"},
-  20: {name: "Key", icon: "\uF805", short_name: "K"},
-  21: {name: "Null", icon: "\uFCE0", short_name: "n"},
-  22: {name: "EnumMember", icon: "\uF02B", short_name: "m"},
-  23: {name: "Struct", icon: "\uFB44", short_name: "S"},
-  24: {name: "Event", icon: "\uFACD", short_name: "e"},
-  25: {name: "Operator", icon: "\u03A8", short_name: "o"},
-  26: {name: "TypeParameter", icon: "\uF671", short_name: "T"}
+  1: { name: "File", icon: "\uF40E", short_name: "F" },
+  2: { name: "Module", icon: "\uF0E8", short_name: "M" },
+  3: { name: "Namespace", icon: "\uF668", short_name: "N" },
+  4: { name: "Package", icon: "\uF487", short_name: "P" },
+  5: { name: "Class", icon: "\uF0E8", short_name: "C" },
+  6: { name: "Method", icon: "\uE79B", short_name: "f" },
+  7: { name: "Property", icon: "\uFAB6", short_name: "p" },
+  8: { name: "Field", icon: "\uF9BE", short_name: "m" },
+  9: { name: "Constructor", icon: "\uF425", short_name: "c" },
+  10: { name: "Enum", icon: "\uF435", short_name: "E" },
+  11: { name: "Interface", icon: "\uF417", short_name: "I" },
+  12: { name: "Function", icon: "\u0192", short_name: "f" },
+  13: { name: "Variable", icon: "\uE79B", short_name: "v" },
+  14: { name: "Constant", icon: "\uF8FE", short_name: "C" },
+  15: { name: "String", icon: "\uF672", short_name: "S" },
+  16: { name: "Number", icon: "\uF89F", short_name: "n" },
+  17: { name: "Boolean", icon: "", short_name: "b" },
+  18: { name: "Array", icon: "\uF669", short_name: "a" },
+  19: { name: "Object", icon: "\uF0E8", short_name: "O" },
+  20: { name: "Key", icon: "\uF805", short_name: "K" },
+  21: { name: "Null", icon: "\uFCE0", short_name: "n" },
+  22: { name: "EnumMember", icon: "\uF02B", short_name: "m" },
+  23: { name: "Struct", icon: "\uFB44", short_name: "S" },
+  24: { name: "Event", icon: "\uFACD", short_name: "e" },
+  25: { name: "Operator", icon: "\u03A8", short_name: "o" },
+  26: { name: "TypeParameter", icon: "\uF671", short_name: "T" }
 };
 async function getDocumentSymbols(bufnr0) {
-  const {nvim} = import_coc18.workspace;
+  const { nvim } = import_coc18.workspace;
   const bufnr = bufnr0 ? bufnr0 : await nvim.call("bufnr", ["%"]);
   const doc = import_coc18.workspace.getDocument(bufnr);
   if (!doc || !doc.attached) {
@@ -1466,8 +1511,11 @@ async function getDocumentSymbols(bufnr0) {
     return null;
   }
   const tokenSource = new import_coc18.CancellationTokenSource();
-  const {token} = tokenSource;
-  const docSymList = await import_coc18.languages.getDocumentSymbol(doc.textDocument, token);
+  const { token } = tokenSource;
+  const docSymList = await import_coc18.languages.getDocumentSymbol(
+    doc.textDocument,
+    token
+  );
   return docSymList;
 }
 async function getCursorSymbolList() {
@@ -1507,7 +1555,7 @@ async function debug(cmd, ...args) {
 }
 
 // src/utils/decoder.ts
-var import_util2 = __toModule(require("util"));
+var import_util = require("util");
 function decodeMimeEncodeStr(str) {
   const re = /=\?(.+?)\?([BbQq])\?(.+?)\?=/g;
   const res = [];
@@ -1551,13 +1599,13 @@ function decodeMimeEncodeStr(str) {
     if (i[0] === charset) {
       buf = Buffer.concat([buf, i[1]]);
     } else {
-      const decoder2 = new import_util2.TextDecoder(charset);
+      const decoder2 = new import_util.TextDecoder(charset);
       text += decoder2.decode(buf);
       charset = i[0];
       buf = i[1];
     }
   }
-  const decoder = new import_util2.TextDecoder(charset);
+  const decoder = new import_util.TextDecoder(charset);
   text += decoder.decode(buf);
   return text;
 }
@@ -1581,7 +1629,7 @@ function getParaphrase2(obj) {
 }
 async function googleTranslate(text, sl, tl, proxy_url) {
   const host = "translate.google.com";
-  const proxy = proxy_url ? {host: proxy_url.hostname, port: parseInt(proxy_url.port)} : void 0;
+  const proxy = proxy_url ? { host: proxy_url.hostname, port: parseInt(proxy_url.port) } : void 0;
   const req = {
     args: {
       host,
@@ -1614,9 +1662,9 @@ async function googleTranslate(text, sl, tl, proxy_url) {
 }
 
 // src/leaderf/highlight.ts
-var import_coc20 = __toModule(require("coc.nvim"));
+var import_coc20 = require("coc.nvim");
 async function highlightSource() {
-  const {nvim} = import_coc20.workspace;
+  const { nvim } = import_coc20.workspace;
   let str = await nvim.exec("verbose highlight", true);
   const hiinfos = parseHighlightInfo(str);
   let max_gn_len = 0;
@@ -1628,7 +1676,9 @@ async function highlightSource() {
   let lines = [];
   for (const i of hiinfos) {
     const spaces = " ".repeat(max_gn_len - i.group_name.length + 2);
-    lines.push(`${i.group_name}${spaces}xxx  ${i.desc}  <${i.last_set_file}:${i.line}>`);
+    lines.push(
+      `${i.group_name}${spaces}xxx  ${i.desc}  <${i.last_set_file}:${i.line}>`
+    );
   }
   const var_name = getRandomId("__coc_leader_highligt", "_");
   await nvim.setVar(var_name, lines);
@@ -1752,11 +1802,15 @@ function encodeStrFn(enc) {
   };
 }
 function addFormatter(context, lang, setting) {
-  const selector = [{scheme: "file", language: lang}];
+  const selector = [{ scheme: "file", language: lang }];
   const provider = new FormattingEditProvider(setting);
-  context.subscriptions.push(import_coc21.languages.registerDocumentFormatProvider(selector, provider, 1));
+  context.subscriptions.push(
+    import_coc21.languages.registerDocumentFormatProvider(selector, provider, 1)
+  );
   if (provider.supportRangeFormat()) {
-    context.subscriptions.push(import_coc21.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+    context.subscriptions.push(
+      import_coc21.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
+    );
   }
 }
 async function activate(context) {
@@ -1764,7 +1818,7 @@ async function activate(context) {
   logger.info(`coc-ext-common works`);
   logger.info(import_coc21.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
-  const langFmtSet = new Set();
+  const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
     s.languages.forEach((lang) => {
@@ -1777,43 +1831,101 @@ async function activate(context) {
       addFormatter(context, k, defaultFmtSetting[k]);
     }
   }
-  context.subscriptions.push(import_coc21.commands.registerCommand("ext-debug", debug, {sync: true}), import_coc21.commands.registerCommand("ext-leaderf", leader_recv, {sync: true}), import_coc21.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-copy-xclip", async () => {
-    logger.debug("===");
-    const text = await getText("v", 0);
-    await callShell("xclip", ["-selection", "clipboard", "-i"], text);
-  }, {sync: false}), import_coc21.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
-    const range = await import_coc21.window.getSelectedRange("v");
-    if (!range) {
-      return;
-    }
-    const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc21.workspace.document;
-    const name = doc.textDocument.getText(range);
-    const res = await callPython(pythonDir, "common", "change_name_rule", [
-      name
-    ]);
-    replaceExecText(doc, range, res);
-  }, {
-    sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
-    const text = await getText("v");
-    const tt = decodeMimeEncodeStr(text);
-    popup(tt, "[Mime decode]");
-  }, {
-    sync: false
-  }), import_coc21.listManager.registerList(new lists_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new commands_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new mapkey_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new rgfiles_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new rgwords_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new autocmd_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new highlight_default(import_coc21.workspace.nvim)));
+  context.subscriptions.push(
+    // {
+    //   dispose() {
+    //     clearInterval(timer);
+    //   },
+    // },
+    import_coc21.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc21.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc21.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+      sync: false
+    }),
+    import_coc21.workspace.registerKeymap(
+      ["v"],
+      "ext-copy-xclip",
+      async () => {
+        logger.debug("===");
+        const text = await getText("v", 0);
+        await callShell("xclip", ["-selection", "clipboard", "-i"], text);
+      },
+      { sync: false }
+    ),
+    import_coc21.workspace.registerKeymap(
+      ["v"],
+      "ext-change-name-rule",
+      async () => {
+        const range = await import_coc21.window.getSelectedRange("v");
+        if (!range) {
+          return;
+        }
+        const pythonDir = getcfg("pythonDir", "");
+        const doc = await import_coc21.workspace.document;
+        const name = doc.textDocument.getText(range);
+        const res = await callPython(pythonDir, "common", "change_name_rule", [
+          name
+        ]);
+        replaceExecText(doc, range, res);
+      },
+      {
+        sync: false
+      }
+    ),
+    import_coc21.workspace.registerKeymap(
+      ["v"],
+      "ext-decode-mime",
+      async () => {
+        const text = await getText("v");
+        const tt = decodeMimeEncodeStr(text);
+        popup(tt, "[Mime decode]");
+      },
+      {
+        sync: false
+      }
+    ),
+    import_coc21.listManager.registerList(new ExtList(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new Commands(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new MapkeyList(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new RgfilesList(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new RgwordsList(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new AutocmdList(import_coc21.workspace.nvim)),
+    import_coc21.listManager.registerList(new HighlightList(import_coc21.workspace.nvim))
+    // sources.createSource({
+    //   name: 'coc-ext-common completion source', // unique id
+    //   doComplete: async () => {
+    //     const items = await getCompletionItems();
+    //     return items;
+    //   },
+    // })
+    // workspace.registerAutocmd({
+    //   event: 'InsertLeave',
+    //   request: true,
+    //   callback: () => {
+    //     window.showMessage(`registerAutocmd on InsertLeave`);
+    //   },
+    // })
+  );
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  activate
+});

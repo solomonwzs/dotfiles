@@ -12,4 +12,15 @@ from . import project
 from . import translate
 from . import helper
 
-__all__ = ["debug", "translate", "coder", "project", "helper"]
+import shlex
+import logging
+
+__all__ = [
+    "coder",
+    "debug",
+    "helper",
+    "logging",
+    "project",
+    "shlex",
+    "translate",
+]

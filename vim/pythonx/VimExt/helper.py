@@ -6,10 +6,11 @@
 # @version  1.0
 # @license  MIT
 
-import subprocess
-import os
 import logging
+import os
 import re
+import shlex
+import subprocess
 
 logging.basicConfig(
     format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
@@ -77,10 +78,6 @@ def parse_highlight_info(s: str):
         space = " " * (max_glen - len(i[0]) + 2)
         out.append(f"{i[0]}{space}{i[1]}  -> {i[2]}:{i[3]}")
     return out
-
-
-def log(a) -> None:
-    logging.info(a)
 
 
 if __name__ == "__main__":

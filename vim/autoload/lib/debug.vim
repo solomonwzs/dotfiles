@@ -10,7 +10,7 @@ function! lib#debug#foo(args) abort
   " setfiletype log
   " execute bn.'bufdo file '.fnameescape("=log=")
   " echo bn
-  call lib#py#call('helper', 'log', a:args)
+  call lib#py#call('logging', 'info', a:args)
 endfunction
 
 function! lib#debug#bar() abort
@@ -21,10 +21,10 @@ function! lib#debug#bar() abort
 endfunction
 
 function! lib#debug#lf_source(a)
-  call lib#py#call('helper', 'log', [1, a:a])
+  call lib#py#call('logging', 'info', [1, a:a])
   return ['1', '2', '3', '4']
 endfunction
 
 function! lib#debug#lf_before_enter(a)
-  call lib#py#call('helper', 'log', [2, a:a])
+  call lib#py#call('logging', 'info', [2, a:a])
 endfunction
