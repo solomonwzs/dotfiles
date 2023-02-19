@@ -36,6 +36,10 @@ g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
 
+g_Return=""
+
+g_SizeUnit=("" "KB" "MB" "GB" "TB")
+
 # g_DotList=(
 #     " " "⢀" "⣀" "⠠" "⢠" "⣠" "⠤" "⢤" "⣤"
 #     "⠐" "⢐" "⣐" "⠰" "⢰" "⣰" "⠴" "⢴" "⣴"
@@ -58,20 +62,22 @@ declare -A g_DotMap=(
     ["40"]="⡇" ["41"]="⣇" ["42"]="⣧" ["43"]="⣷" ["44"]="⣿"
 )
 
+g_Stack=()
+
+function push_stack() {
+    for i in "$@"; do
+        g_Stack+=("$i")
+    done
+}
+
+function pop_stack() {
+    for ((i = 0; i < $1; ++i)); do
+        unset 'g_Stack[${#g_Stack[@]}-1]'
+    done
+}
+
 function set_interval {
     g_Interval="$1"
-}
-
-function set_cache() {
-    g_Cache["$1"]="$2"
-}
-
-function get_cache() {
-    if [ -z "${g_Cache[$1]:+x}" ]; then
-        echo ""
-    else
-        echo "${g_Cache[$1]}"
-    fi
 }
 
 function init_net_dev_list() {
@@ -100,13 +106,49 @@ function append_status_line() {
     g_StatusLine="${g_StatusLine}${1}"
 }
 
-function parse_cpu_stat() {
+function linux_init_cpu_stat() {
+    local stats=()
+    local cache=""
     while read -r -a a; do
         if [ "${a[0]:0:3}" != "cpu" ]; then
             break
         fi
-        echo "${a[4]} $((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
+        local idle="${a[4]}"
+        local all="$((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
+        stats+=("$idle")
+        stats+=("$all")
+        cache="$cache $idle $all"
     done </proc/stat
+
+    local key="cpus"
+    local array
+    read -r -a array <<<"${g_Cache[$key]:-}"
+    g_Cache[$key]="$cache"
+
+    if [ ${#array[@]} -eq ${#stats[@]} ]; then
+        local len=${#stats[@]}
+        for ((i = 1; i < len; i += 2)); do
+            g_CpuStat+=("$((\
+                a = stats[i - 1] - array[i - 1], \
+                b = stats[i] - array[i], \
+                100 - a * 100 / b))")
+        done
+    else
+        for i in $(seq 1 2 ${#stats[@]}); do
+            g_CpuStat+=(0)
+        done
+    fi
+}
+
+function darwin_init_cpu_stat() {
+    local cpu
+    local cpu_cores
+    cpu="$(ps -A -o %cpu | awk '{c+=$1} END {print c}')"
+    cpu=${cpu%.*}
+    # cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
+    cpu_cores=$(sysctl hw.activecpu)
+    cpu_cores=${cpu_cores#* }
+    g_CpuStat+=($((cpu / cpu_cores)))
 }
 
 function init_cpu_stat() {
@@ -114,39 +156,9 @@ function init_cpu_stat() {
         return
     fi
     if [ "$g_IsLinux" -eq 1 ]; then
-        local stats=()
-        local cache=""
-        while read -r idle all; do
-            stats+=("$idle")
-            stats+=("$all")
-            cache="$cache $idle $all"
-        done <<<"$(parse_cpu_stat)"
-
-        local array
-        read -r -a array <<<"$(get_cache "cpus")"
-        set_cache "cpus" "$cache"
-
-        if [ ${#array[@]} -eq ${#stats[@]} ]; then
-            for i in $(seq 1 2 ${#stats[@]}); do
-                g_CpuStat+=("$((\
-                    a = stats[i - 1] - array[i - 1], \
-                    b = stats[i] - array[i], \
-                    100 - a * 100 / b))")
-            done
-        else
-            for i in $(seq 1 2 ${#stats[@]}); do
-                g_CpuStat+=(0)
-            done
-        fi
+        linux_init_cpu_stat
     else
-        local cpu
-        local cpu_cores
-        cpu="$(ps -A -o %cpu | awk '{c+=$1} END {print c}')"
-        cpu=${cpu%.*}
-        # cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
-        cpu_cores=$(sysctl hw.activecpu)
-        cpu_cores=${cpu_cores#* }
-        g_CpuStat+=($((cpu / cpu_cores)))
+        darwin_init_cpu_stat
     fi
 }
 
@@ -159,13 +171,14 @@ function init_net_stat() {
     for i in "${!g_NetdevList[@]}"; do
         local dev="${g_NetdevList[$i]}"
 
+        get_net_stat "$dev"
         local rx_bytes
         local tx_bytes
-        read -r rx_bytes tx_bytes <<<"$(get_net_stat "$dev")"
+        read -r rx_bytes tx_bytes <<<"$g_Return"
 
         local key="net_$dev"
         local array
-        read -r -a array <<<"$(get_cache "$key")"
+        read -r -a array <<<"${g_Cache[$key]:-}"
         if [[ ${#array[@]} -eq 0 || "$g_Interval" -eq 0 ]]; then
             g_NetRxList["$i"]=0
             g_NetTxList["$i"]=0
@@ -175,21 +188,20 @@ function init_net_stat() {
             g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
                 a / g_Interval))"
         fi
-        set_cache "$key" "$rx_bytes $tx_bytes"
+        g_Cache[$key]="$rx_bytes $tx_bytes"
     done
 }
 
 function get_battery_icon() {
     read -r charging <"/sys/class/power_supply/BAT0/status"
     if [ "$charging" = "Charging" ]; then
-        echo ""
+        g_Return=""
     else
         i=$(($1 / 10))
-        echo "${g_BatteryPowerList[$i]}"
+        g_Return="${g_BatteryPowerList[$i]}"
     fi
 }
 
-g_SizeUnit=("" "KB" "MB" "GB" "TB")
 function flow_digital() {
     local bps=$1
     local i=0
@@ -198,37 +210,32 @@ function flow_digital() {
         i=$((i + 1))
     done
     u=${g_SizeUnit[$i]}
-    echo "${bps}${u}/s"
-}
-
-function percent_block() {
-    i=$(($1 * 10 / 125))
-    echo "${g_PercentBlockList[$i]}"
+    g_Return="${bps}${u}/s"
 }
 
 function histogram() {
     local key="$2"
-    IFS=$'\t' read -r str <<<"$(get_cache "$key")"
-    str="$str$(percent_block "$1")"
-    len=${#str}
+    local str="${g_Cache[$key]:-}"
+    str="${str}${g_PercentBlockList[$(($1 * 10 / 125))]}"
+    local len=${#str}
     if [ "${len}" -gt 8 ]; then
         str="${str:$((len - 8)):8}"
     fi
     while [ ${#str} -lt 8 ]; do
         str="${g_PercentBlockList[0]}${str}"
     done
-    set_cache "$key" "$str"
+    g_Cache[$key]="$str"
+    g_Return="$str"
 }
 
 function get_cpu_cores() {
     if [ "$g_IsLinux" -eq 1 ]; then
         init_cpu_stat
-        echo $(("${#g_CpuStat[@]}" - 1))
+        g_Return=$(("${#g_CpuStat[@]}" - 1))
     else
-        # sysctl hw.activecpu | cut -d' ' -f2
         local cores
         cores=$(sysctl hw.activecpu)
-        echo "${cores#* }"
+        g_Return="${cores#* }"
     fi
 }
 
@@ -240,85 +247,64 @@ function get_temp_stat() {
     fi
 }
 
-function get_net_stat() {
-    if [ "$g_IsLinux" -eq 1 ]; then
-        read -r rx_bytes <"/sys/class/net/${1}/statistics/rx_bytes"
-        read -r tx_bytes <"/sys/class/net/${1}/statistics/tx_bytes"
-        echo "$rx_bytes $tx_bytes"
-    else
-        local rx_bytes
-        local tx_bytes
-        read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
-        echo "$rx_bytes $tx_bytes"
-    fi
+function linux_get_net_stat() {
+    read -r rx_bytes <"/sys/class/net/${1}/statistics/rx_bytes"
+    read -r tx_bytes <"/sys/class/net/${1}/statistics/tx_bytes"
+    g_Return="$rx_bytes $tx_bytes"
 }
 
-function parse_mem_info() {
-    local total=1
-    local freemem=0
-    local cached=0
-    local buffers=0
-    local sreclaimable=0
-    local used=0
-    while read -r -a a; do
-        if [ "${a[0]}" == "MemTotal:" ]; then
-            total=${a[1]}
-        elif [ "${a[0]}" == "MemFree:" ]; then
-            freemem=${a[1]}
-        elif [ "${a[0]}" == "Cached:" ]; then
-            cached=${a[1]}
-        elif [ "${a[0]}" == "Buffers:" ]; then
-            buffers=${a[1]}
-        elif [ "${a[0]}" == "SReclaimable:" ]; then
-            sreclaimable=${a[1]}
-        fi
-    done </proc/meminfo
-    ((\
-    cached = cached + sreclaimable, \
-    used = total - freemem - buffers - cached))
-    echo "$total $used $cached $buffers"
+function darwin_get_net_stat() {
+    local rx_bytes
+    local tx_bytes
+    read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
+    g_Return="$rx_bytes $tx_bytes"
+}
+
+function get_net_stat() {
+    if [ "$g_IsLinux" -eq 1 ]; then
+        linux_get_net_stat "$1"
+    else
+        darwin_get_net_stat "$1"
+    fi
 }
 
 function get_mem_stat() {
     if [ "$g_IsLinux" -eq 1 ]; then
-        read -r -a a <<<"$(parse_mem_info)"
-        echo $((a[1] * 100 / a[0]))
+        local total=1
+        local freemem=0
+        local cached=0
+        local buffers=0
+        local sreclaimable=0
+        local used=0
+        while read -r -a a; do
+            if [ "${a[0]}" == "MemTotal:" ]; then
+                total=${a[1]}
+            elif [ "${a[0]}" == "MemFree:" ]; then
+                freemem=${a[1]}
+            elif [ "${a[0]}" == "Cached:" ]; then
+                cached=${a[1]}
+            elif [ "${a[0]}" == "Buffers:" ]; then
+                buffers=${a[1]}
+            elif [ "${a[0]}" == "SReclaimable:" ]; then
+                sreclaimable=${a[1]}
+            fi
+        done </proc/meminfo
+        ((\
+        cached = cached + sreclaimable, \
+        used = total - freemem - buffers - cached))
+        g_Return="$((used * 100 / total))"
     else
-        ps -A -o %mem | awk '{m+=$1} END {print int(m)}'
+        g_Return=$(ps -A -o %mem | awk '{m+=$1} END {print int(m)}')
     fi
-}
-
-function get_mem_bar() {
-    read -r total used cache buff <<<"$(parse_mem_info)"
-    ((\
-    rb = buff * 10 / total, \
-    rc = cache * 10 / total, \
-    ru = used * 10 / total, \
-    rf = 10 - rb - rc - ru))
-
-    local bar=""
-    for i in $(seq 1 $ru); do
-        bar="4${bar}"
-    done
-    for i in $(seq 1 $rc); do
-        bar="3${bar}"
-    done
-    for i in $(seq 1 $rb); do
-        bar="2${bar}"
-    done
-    for i in $(seq 1 $rf); do
-        bar="0${bar}"
-    done
-    dot_histogram "$bar" "mem_bar"
-    append_status_line "$(get_cache "mem_bar")"
 }
 
 function dot_histogram() {
     local str=""
-    for i in $(seq 0 2 $((${#1} - 1))); do
+    for ((i = 0; i <= ${#1} - 1; i += 2)); do
         str="${str}${g_DotMap[${1:$i:2}]}"
     done
-    set_cache "$2" "$str"
+    g_Cache[$2]="$str"
+    g_Return="$str"
 }
 
 function component_cpu_dot_histogram() {
@@ -330,22 +316,22 @@ function component_cpu_dot_histogram() {
     g_CpuStatStr="${g_CpuStatStr:1:15}$((cpu / 25))"
 
     dot_histogram "$g_CpuStatStr" "dot_htg_cpu"
-    cpu_htg="$(get_cache "dot_htg_cpu")"
+    cpu_htg=$g_Return
+    for (( ; ${#cpu} < 3; )); do cpu=" $cpu"; done
 
-    append_status_line "$(printf "%s%3d%%" "$cpu_htg" "$cpu")"
+    append_status_line "${cpu_htg}${cpu}%"
 }
 
 function component_mem_dot_histogram() {
-    local mem
-    local mem_htg
-
-    mem="$(get_mem_stat)"
+    get_mem_stat
+    local mem=g_Return
     g_MemStatStr="${g_MemStatStr:1:15}$((mem / 25))"
 
     dot_histogram "$g_MemStatStr" "dot_htg_mem"
-    mem_htg="$(get_cache "dot_htg_mem")"
+    local mem_htg=$g_Return
+    for (( ; ${#mem} < 3; )); do mem=" $mem"; done
 
-    append_status_line "$(printf "%s%3d%%" "$mem_htg" "$mem")"
+    append_status_line "${mem_htg}${mem}%"
 }
 
 function component_cpu_histogram() {
@@ -355,61 +341,81 @@ function component_cpu_histogram() {
     init_cpu_stat
     cpu="${g_CpuStat[0]}"
     histogram "$cpu" "htg_cpu"
-    cpu_htg="$(get_cache "htg_cpu")"
+    cpu_htg="$g_Return"
 
-    append_status_line "$(printf "%s%3d%%" "$cpu_htg" "$cpu")"
+    for (( ; ${#cpu} < 3; )); do cpu=" $cpu"; done
+    append_status_line "${cpu_htg}${cpu}%"
 }
 
 function component_cpu() {
     init_cpu_stat
-    append_status_line "$(printf "%s%3d%%" \
-        "$(percent_block "${g_CpuStat[0]}")" "${g_CpuStat[0]}")"
+
+    local cpu="${g_CpuStat[0]}"
+    local bar="${g_PercentBlockList[$((cpu * 10 / 125))]}"
+
+    for (( ; ${#cpu} < 3; )); do cpu=" $cpu"; done
+    append_status_line "${bar}${cpu}%"
 }
 
 function component_mem_histogram() {
-    local mem_htg
-    local mem
-
-    mem="$(get_mem_stat)"
+    get_mem_stat
+    local mem=$g_Return
     histogram "$mem" "htg_mem"
-    mem_htg="$(get_cache "htg_mem")"
+    local mem_htg="$g_Return"
 
-    append_status_line "$(printf "%s%3d%%" "$mem_htg" "$mem")"
+    for (( ; ${#mem} < 3; )); do mem=" $mem"; done
+    append_status_line "${mem_htg}${mem}%"
 }
 
 function component_mem() {
-    local mem
-    mem="$(get_mem_stat)"
-    append_status_line "$(printf "%s%3d%%" \
-        "$(percent_block "$mem")" "$mem")"
+    get_mem_stat
+    local mem=$g_Return
+    local bar="${g_PercentBlockList[$((mem * 10 / 125))]}"
+
+    for (( ; ${#mem} < 3; )); do mem=" $mem"; done
+    append_status_line "${bar}${mem}%"
 }
 
 function component_net() {
     init_net_stat
-    append_status_line "$(printf "%8s %8s" \
-        "$(flow_digital "${g_NetRxList[$1]}")" "$(flow_digital "${g_NetTxList[$1]}")")"
+
+    flow_digital "${g_NetRxList[$1]}"
+    rx=$g_Return
+
+    flow_digital "${g_NetTxList[$1]}"
+    tx=$g_Return
+
+    for (( ; ${#rx} < 8; )); do rx=" $rx"; done
+    for (( ; ${#tx} < 8; )); do tx=" $tx"; done
+
+    append_status_line "${rx} ${tx}"
 }
 
 function component_temp() {
     local temp
     temp=$(get_temp_stat)
-    append_status_line "$(printf "%s" "$temp")"
+    append_status_line "$temp"
 }
 
 function component_power() {
     read -r full <"/sys/class/power_supply/BAT0/energy_full"
     read -r now <"/sys/class/power_supply/BAT0/energy_now"
     percent=$((now * 100 / full))
-    icon=$(get_battery_icon $percent)
+    get_battery_icon "$percent"
+    icon=$g_Return
 
-    append_status_line "$(printf " %s %d%%" "$icon" "$percent")"
+    append_status_line " ${icon} ${percent}%"
 }
 
 function component_cpus() {
     init_cpu_stat
-    for i in $(seq 1 $((${#g_CpuStat[@]} - 1))); do
-        append_status_line "$(printf "%s" \
-            "$(percent_block "${g_CpuStat[$i]}")")"
+
+    local str=""
+    for ((i = 1; i <= ${#g_CpuStat[@]} - 1; ++i)); do
+        str="${str}${g_PercentBlockList[$((g_CpuStat[i] * 10 / 125))]}"
     done
-    append_status_line "$(printf "%3d%%" "${g_CpuStat[0]}")"
+
+    local cpu="${g_CpuStat[0]}"
+    for (( ; ${#cpu} < 3; )); do cpu=" $cpu"; done
+    append_status_line "${str}${cpu}%"
 }

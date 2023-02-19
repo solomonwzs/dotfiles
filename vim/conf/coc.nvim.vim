@@ -222,8 +222,8 @@ augroup my_coc_nvim
   " autocmd User CocDiagnosticChange call s:diagnostic_notify()
 augroup END
 
-command! -nargs=* -complete=custom,coc#list#options MyCocList
+command! -nargs=* -complete=custom,coc#list#options CocListX
     \ :call coc#rpc#notify('openList', lib#py#call('shlex', 'split', <q-args>).data)
 
 cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
-    \ ('MyCocList --number-select') : ('Cl'))
+    \ ('CocListX') : ('Cl'))

@@ -67,8 +67,7 @@ while true; do
             append_status_line "$x"
         fi
     done
-    show_status_line
-    echo ""
+    echo "$g_StatusLine"
     # for key in "${!g_Cache[@]}"; do
     #     echo "> $key"
     # done

@@ -67,5 +67,5 @@ while true; do
             append_status_line "$x"
         fi
     done
-    tmux set-environment "MY_TMUX_STATUS" "$(show_status_line)"
+    tmux set-environment "MY_TMUX_STATUS" "$g_StatusLine"
 done
