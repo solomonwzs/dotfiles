@@ -163,7 +163,7 @@ inoremap <silent><expr> <TAB>
     \   <SID>pum_next() :
     \   coc#expandableOrJumpable() ?
     \     "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump', ''])\<CR>" :
-    \     check_back_space() ?
+    \     <SID>check_back_space() ?
     \       "\<TAB>" :
     \       coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? <SID>pum_prev() : "\<C-h>"
