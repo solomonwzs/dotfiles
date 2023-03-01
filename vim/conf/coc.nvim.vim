@@ -157,10 +157,15 @@ function! s:pum_prev() abort
   return coc#pum#prev(1)
 endfunction
 
+" require coc-snippets
 inoremap <silent><expr> <TAB>
-    \ coc#pum#visible() ? <SID>pum_next() :
-    \ <SID>check_back_space() ? "\<Tab>" :
-    \ coc#refresh()
+    \ coc#pum#visible() ?
+    \   <SID>pum_next() :
+    \   coc#expandableOrJumpable() ?
+    \     "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump', ''])\<CR>" :
+    \     check_back_space() ?
+    \       "\<TAB>" :
+    \       coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? <SID>pum_prev() : "\<C-h>"
 inoremap <silent><expr> <c-space> coc#refresh()
 inoremap <silent><expr> <CR> coc#pum#visible() ? 
