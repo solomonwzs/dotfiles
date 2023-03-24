@@ -29,3 +29,8 @@ MY_TMUX_COMPONENTS=("net:enp0s3" "cpu" "mem")
 #     export DISPLAY=:0
 #     alias readlink=greadlink
 # fi
+
+# GMail OAuth2 setting
+# MY_GMAIL_CLIENT_ID=""
+# MY_GMAIL_CLIENT_SECRET=""
+# MY_GMAIL_REFRESH_TOKEN=""
