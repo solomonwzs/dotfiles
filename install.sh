@@ -3,7 +3,8 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2019-06-25
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
+
 set -euo pipefail
 
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
@@ -50,22 +51,21 @@ done
 function make_link() {
     target="$1"
     link_name="$2"
-    info "Create '$link_name'"
-    ([ -e "$link_name" ] && warn "'$link_name' has exists") ||
-        ln -s "$target" "$link_name"
+    ([ -e "$link_name" ] && warn "'$link_name' has exists") || (
+        info "Create '$link_name'" && ln -s "$target" "$link_name"
+    )
 }
 
 function copy_file() {
-    info "Create '$2'"
-    ([ -e "$2" ] && warn "'$2' has exists") ||
-        cp "$1" "$2"
+    ([ -e "$2" ] && warn "'$2' has exists") || (info "Create '$2'" &&
+        cp "$1" "$2")
 }
 
 function git_clone() {
     addr="$1"
     dir="$2"
-    ([ -e "$dir" ] && warn "'$dir' has exists") ||
-        git clone "$addr" "$dir"
+    ([ -e "$dir" ] && warn "'$dir' has exists") || (info "Download '$1'" &&
+        git clone "$addr" "$dir")
 }
 
 deps=("fzf" "tmux" "rg")
@@ -90,14 +90,12 @@ make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
 
 make_link "$EXECUTE_DIRNAME/zsh/fzf_preview_file.sh" "$HOME/bin/preview_file"
+make_link "$EXECUTE_DIRNAME/zsh/gmail_oauth2_token.sh" "$HOME/bin/gmail_oauth2_token"
 make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
 
 OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
-info "Download 'oh-my-zsh'"
 git_clone "https://github.com/ohmyzsh/ohmyzsh.git" "$OH_MY_ZSH_PATH"
-info "Download 'zsh-autosuggestions'"
 git_clone "https://github.com/zsh-users/zsh-autosuggestions.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-autosuggestions"
-info "Download 'zsh-syntax-highlighting'"
 git_clone "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-syntax-highlighting"

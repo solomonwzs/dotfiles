@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2019-04-04
-" @license    MIT
+" @license    GPL-2.0+
 
 call ui#init#init()
 

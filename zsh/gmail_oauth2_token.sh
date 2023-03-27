@@ -3,7 +3,7 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2023-03-24
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
 
 set -euo pipefail
 

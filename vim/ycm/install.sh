@@ -3,7 +3,7 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2019-05-12
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
 
 
 function f_readlink() {

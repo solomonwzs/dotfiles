@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2020-12-31
-" @license    MIT
+" @license    GPL-2.0+
 
 function s:default_ok_cb(data, ...)
   echo 'OK: '.join(a:data, ' ')

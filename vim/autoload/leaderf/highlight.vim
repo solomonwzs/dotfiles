@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2022-07-24
-" @license    MIT
+" @license    GPL-2.0+
 
 function! leaderf#highlight#source(args) abort
   " redir => tmp

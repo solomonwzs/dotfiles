@@ -4,7 +4,7 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2022-10-11
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
 
 from PIL import Image
 import optparse

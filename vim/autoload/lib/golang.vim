@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2021-01-04
-" @license    MIT
+" @license    GPL-2.0+
 
 let s:default_cb = {'ok_cb': '_msg', 'err_cb': '_msg'}
 

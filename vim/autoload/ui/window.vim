@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2018-10-10
-" @license    MIT
+" @license    GPL-2.0+
 
 function! s:setStatusLine(stl)
   let bufnr = bufnr('%')

@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2022-01-10
-" @license    MIT
+" @license    GPL-2.0+
 
 " if !has('nvim')
 "   finish

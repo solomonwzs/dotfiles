@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2022-07-21
-" @license    MIT
+" @license    GPL-2.0+
 
 function! leaderf#rrg#files_with_matches_source(args) abort
   let out = system('rg '.a:args.pattern.' --files-with-matches --color never')

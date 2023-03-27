@@ -4,7 +4,7 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2018-10-10
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
 
 from snippets.common import strtoday
 import re
@@ -82,7 +82,7 @@ def header_comment(snip):
     return f"""{START} @author     Solomon Ng <solomon.wzs@gmail.com>{END}
 {START} @version    1.0{END}
 {START} @date       {now}{END}
-{START} @license    MIT{END}"""
+{START} @license    GPL-2.0+{END}"""
 
 
 def vi_set_filetype(snip):

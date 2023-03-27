@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2020-12-31
-" @license    MIT
+" @license    GPL-2.0+
 
 let s:is_vim = !has('nvim')
 let s:float_supported = exists('*nvim_open_win') || has('patch-8.1.1719')

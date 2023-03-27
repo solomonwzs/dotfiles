@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2019-11-20
-" @license    MIT
+" @license    GPL-2.0+
 
 if !lib#bundle#has_loaded('ale')
     finish

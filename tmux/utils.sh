@@ -3,7 +3,7 @@
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2022-07-11
 # @version  1.0
-# @license  MIT
+# @license  GPL-2.0+
 
 [ -f "$HOME/.my_conf.sh" ] && source "$HOME/.my_conf.sh"
 

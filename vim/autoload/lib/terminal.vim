@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2021-01-04
-" @license    MIT
+" @license    GPL-2.0+
 
 function! lib#terminal#meta_mode(mode)
   set ttimeout

@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2019-07-19
-" @license    MIT
+" @license    GPL-2.0+
 
 let s:win_list = []
 

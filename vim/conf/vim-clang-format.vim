@@ -1,7 +1,7 @@
 " @author     Solomon Ng <solomon.wzs@gmail.com>
 " @version    1.0
 " @date       2020-01-29
-" @license    MIT
+" @license    GPL-2.0+
 
 let g:clang_format#detect_style_file = 1
 
