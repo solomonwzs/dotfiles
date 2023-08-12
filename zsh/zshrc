@@ -109,7 +109,7 @@ paths=(
     "$HOME/bin"
 )
 for p in "${paths[@]}"; do
-    [ -d "$p" ] && export PATH=$PATH:"$p"
+    [ -d "$p" ] && export PATH="$p":"$PATH"
 done
 
 if hash fortune 2>/dev/null && hash cowsay 2>/dev/null && hash lolcat 2>/dev/null; then
