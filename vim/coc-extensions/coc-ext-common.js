@@ -1568,9 +1568,13 @@ function getParaphrase2(obj) {
   const paraphrase = [];
   const dict = obj["dict"];
   if (dict) {
+    const words = [];
     for (const i of dict) {
       const pos = i["pos"];
-      const terms = i["terms"].join(", ");
+      for (const e of i["entry"]) {
+        words.push(e["word"]);
+      }
+      const terms = words.join(", ");
       paraphrase.push(`${pos}: ${terms}`);
     }
   } else {
