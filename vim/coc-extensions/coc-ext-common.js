@@ -1074,7 +1074,8 @@ var ClfFormatter = class extends BaseFormatter {
 // src/formatter/prettierformatter.ts
 var import_coc13 = __toModule(require("coc.nvim"));
 var filetype2Parser = {
-  javascript: "babel-flow"
+  javascript: "babel-flow",
+  xml: "html"
 };
 var PrettierFormatter = class extends BaseFormatter {
   constructor(setting) {
@@ -1684,6 +1685,7 @@ var defaultFmtSetting = {
   markdown: prettierFmtSetting,
   sh: shFmtSetting,
   typescript: prettierFmtSetting,
+  xml: prettierFmtSetting,
   yaml: prettierFmtSetting,
   zsh: shFmtSetting
 };
