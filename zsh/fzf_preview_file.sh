@@ -38,15 +38,27 @@ shift $((OPTIND - 1))
 filename="$1"
 
 mime=$(file --mime "$filename")
-if [[ "$mime" =~ "text" ]]; then
+if [[ "$mime" =~ text || "$mime" =~ message/rfc822 ]]; then
     (bat --style=numbers --color=always "$filename" ||
         highlight -O ansi -l "$filename" ||
         coderay "$filename" ||
         rougify "$filename" ||
         cat "$filename") 2>/dev/null | head -"$line"
-elif [[ "$mime" =~ "image" ]]; then
+elif [[ "$mime" =~ image ]]; then
     height=$((height * 2 - 1))
     image_view --width "$width" --height "$height" --ratio "$ratio" "$filename"
+elif [[ "$mime" =~ application/zip ]]; then
+    unzip -l "$filename"
+elif [[ "$mime" =~ application/gzip ]]; then
+    tar tvf "$filename"
+elif [[ "$mime" =~ application/pdf ||
+    "$mime" =~ application/vnd.openxmlformats-officedocument ||
+    "$mime" =~ application/msword ||
+    "$mime" =~ application/vnd.ms-excel ||
+    "$mime" =~ application/vnd.ms-powerpoint ]] &&
+    _loc="$(type -p "document2text")" &&
+    [[ -n $_loc ]]; then
+    document2text "$filename"
 else
     echo "$mime"
 fi
