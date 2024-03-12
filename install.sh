@@ -79,6 +79,7 @@ make_link "$EXECUTE_DIRNAME/vim/vimrc" "$HOME/.config/nvim/init.vim"
 
 make_link "$EXECUTE_DIRNAME/zsh/zshrc" "$HOME/.zshrc"
 copy_file "$EXECUTE_DIRNAME/zsh/my_conf.sh" "$HOME/.my_conf.sh"
+make_link "$EXECUTE_DIRNAME/zsh/toolbox.txt" "$HOME/.toolbox.txt"
 
 # info "Create terminfo"
 # [ -e "$HOME/.terminfo/t/tmux-256color" ] ||

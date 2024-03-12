@@ -301,6 +301,23 @@ _fzf_comprun() {
     esac
 }
 
+__fzf_toolbox() {
+    local preview="awk 'BEGIN{n=-1} \$1==\">\"{n+=1} n=={n}&&\$1==\">>\"{print substr(\$0,4)}' $HOME/.toolbox.txt"
+    local selected=($(awk '$1==">" {print substr($0, 3)}' "$HOME/.toolbox.txt" |
+        fzf "$@" --preview "$preview"))
+    local ret=$?
+    echo -n "${selected}"
+    return $ret
+}
+fzf-toolbox-widget() {
+    LBUFFER="${LBUFFER}$(__fzf_toolbox --prompt='toolbox> ' --preview-window=wrap,60%)"
+    local ret=$?
+    zle reset-prompt
+    return $ret
+}
+zle -N fzf-toolbox-widget
+bindkey '^T' fzf-toolbox-widget
+
 _tmux_set_env() {
     tmux_env_val=$(tmux show-environment 2>/dev/null)
     local var=$(echo "$tmux_env_val" | grep '^${1}=')
