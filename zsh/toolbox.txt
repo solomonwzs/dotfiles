@@ -1,28 +1,42 @@
 > du -sh /dev/shm/*
->> 查看共享内存文件实际占用多少物理内存
+# 查看共享内存文件实际占用多少物理内存
 
 > lsof -p $pid | egrep 'NAME|/dev/shm'
->> 查看进程 $pid 实际打开了哪些共享内存文件
+# 查看进程 $pid 实际打开了哪些共享内存文件
 
 > pmap -X $pid | egrep 'Rss|finder_'
->> 查看进程的共享内存文件 finder_* 都映射到哪些地址段
+# 查看进程的共享内存文件 finder_* 都映射到哪些地址段
 
 > ls -lhS /dev/shm/*
->> 查看共享内存文件最大允许的大小，注意不是实际占用大小
+# 查看共享内存文件最大允许的大小，注意不是实际占用大小
 
 > ffmpeg -i 1.mp4 -r 12 -filter:v "setpts=0.8*PTS" -y 1.gif
 >> 视频调速，视频速度调整为1/0.8倍速
 
 > perf record -F 2000 -p $pid -g -- sleep 10
->> 生成进程 $pid 的性能分析结果到 perf.data
->> -F: 事件采样的频率, 单位 HZ
->> -g: 进行堆栈追踪，生成调用关系图，等价于-call-graph，默认情况下，-g 等同于-call-graph fp，即通过 frame pointer 来进行堆栈追踪。如果frame pointer 被优化掉的话，可以通过 dwarf, lbr 进行堆栈追踪
->> sleep: 采样的时间
+# 生成进程 $pid 的性能分析结果到 perf.data；
+# -F: 事件采样的频率, 单位 HZ；
+# -g: 进行堆栈追踪，生成调用关系图，等价于-call-graph，默认情况下，-g 等同于-call-graph fp，即通过 frame pointer 来进行堆栈追踪。如果frame pointer 被优化掉的话，可以通过 dwarf, lbr 进行堆栈追踪；
+# sleep: 采样的时间；
 
 > perf script -i perf.data | stackcollapse-perf | flamegraph > /tmp/1.svg
->> 生成火焰图
+# 生成火焰图
 
 > tcpdump -i eth0 port 3306 -w plantegg.cap
->> 用tcpdump抓取并保存包
->> 抓到的包存储在 plantegg.cap 中，可以用作 wireshark、tshark 详细分析
->> 如果明确知道目的ip、端口等可以通过指定条件来明确只抓取某个连接的包
+# 用tcpdump抓取并保存包；
+# 抓到的包存储在 plantegg.cap 中，可以用作 wireshark、tshark 详细分析；
+# 如果明确知道目的ip、端口等可以通过指定条件来明确只抓取某个连接的包；
+
+> netstat -atpo
+# -a: 显示所有 listening 和 non-listening 端口；
+# -t: 显示 tcp 连接；
+# -p: 显示 PID/Program name；
+# -o: 显示 Timer；
+#   keepalive - keepalive 的时间计时，on - 重发（retransmission）的时间计时，off - 没有时间计时，timewait - 等待（timewait）时间计时；
+#   (a/b/c)，a - 时间计时值，b - 重发次数（retransmission），c - keepalive 发送探测（probe）次数；
+
+> netstat -s | egrep -i "drop|route|overflow|filter|retran|fails|listen"
+# 网络统计信息
+
+> ss -m
+# 展示端口内存信息

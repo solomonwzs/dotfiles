@@ -302,7 +302,7 @@ _fzf_comprun() {
 }
 
 __fzf_toolbox() {
-    local preview="awk 'BEGIN{n=-1} \$1==\">\"{n+=1} n=={n}&&\$1==\">>\"{print substr(\$0,4)}' $HOME/.toolbox.txt"
+    local preview="awk 'BEGIN{n=-1} \$1==\">\"{n+=1} n=={n}&&\$1==\"#\"{print substr(\$0,3)}' $HOME/.toolbox.txt"
     local selected=($(awk '$1==">" {print substr($0, 3)}' "$HOME/.toolbox.txt" |
         fzf "$@" --preview "$preview"))
     local ret=$?
