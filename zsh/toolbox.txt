@@ -11,7 +11,7 @@
 # 查看共享内存文件最大允许的大小，注意不是实际占用大小
 
 > ffmpeg -i 1.mp4 -r 12 -filter:v "setpts=0.8*PTS" -y 1.gif
->> 视频调速，视频速度调整为1/0.8倍速
+# 视频调速，视频速度调整为1/0.8倍速
 
 > perf record -F 2000 -p $pid -g -- sleep 10
 # 生成进程 $pid 的性能分析结果到 perf.data；
