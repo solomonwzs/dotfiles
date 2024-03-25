@@ -40,3 +40,9 @@
 
 > ss -m
 # 展示端口内存信息
+
+> openssl s_client -crlf -quiet -connect imap.gmail.com:993
+# 使用加密连接连接服务
+
+> openssl s_client -starttls smtp -crlf -showcerts -connect gmail-smtp-in.l.google.com:25
+# 连接 SMTP 服务并 STARTTLS

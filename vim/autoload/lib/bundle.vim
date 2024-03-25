@@ -12,6 +12,7 @@ let s:bundle_list = [
     \ {'name': 'defx-icons'},
     \ {'name': 'defx.nvim', 'vim': 0},
     \ {'name': 'deol.nvim'},
+    \ {'name': 'diffview.nvim', 'vim': 0},
     \ {'name': 'gruvbox', 'priority': 1},
     \ {'name': 'lightline.vim', 'priority': 2},
     \ {'name': 'nerdtree', 'nvim': 0},

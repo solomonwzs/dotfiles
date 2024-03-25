@@ -252,6 +252,10 @@ Plug 'https://github.com/kyazdani42/nvim-web-devicons'
 " A fancy, configurable, notification manager for NeoVim.
 Plug 'https://github.com/rcarriga/nvim-notify'
 
+" Single tabpage interface for easily cycling through diffs for all modified 
+" files for any git rev.
+Plug 'https://github.com/sindrets/diffview.nvim.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

@@ -52,6 +52,7 @@ set foldlevel=1
 
 set noequalalways
 
+" Setting diff
 set diffopt=vertical
 
 " Setting for search
