@@ -9,13 +9,7 @@
 import logging
 import os
 import re
-import shlex
 import subprocess
-
-logging.basicConfig(
-    format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
-    level=logging.DEBUG,
-)
 
 
 def system_command(cmd: str) -> str:
@@ -81,6 +75,11 @@ def parse_highlight_info(s: str):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="\033[3;32m(%(levelname).1s) %(asctime)s <%(process)d> [%(filename)s:%(funcName)s:%(lineno)s]\033[0m %(message)s",
+        level=logging.DEBUG,
+    )
+
     logging.info(
         parse_filepath("/home/solomon/dotfiles/vim/pythonx/VimExt/helper.py")
     )

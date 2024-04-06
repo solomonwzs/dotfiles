@@ -56,6 +56,13 @@ function make_link() {
     )
 }
 
+function make_dir() {
+    target="$1"
+    ([ -e "$target" ] && warn "'$target' has exists") || (
+        info "Create '$target'" && mkdir -p "$target"
+    )
+}
+
 function copy_file() {
     ([ -e "$2" ] && warn "'$2' has exists") || (info "Create '$2'" &&
         cp "$1" "$2")
@@ -89,6 +96,8 @@ make_link "$EXECUTE_DIRNAME/zsh/toolbox.txt" "$HOME/.toolbox.txt"
 
 make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 make_link "$EXECUTE_DIRNAME/tig/tigrc" "$HOME/.tigrc"
+
+make_dir "$HOME/bin"
 
 make_link "$EXECUTE_DIRNAME/zsh/fzf_preview_file.sh" "$HOME/bin/preview_file"
 make_link "$EXECUTE_DIRNAME/zsh/gmail_oauth2_token.sh" "$HOME/bin/gmail_oauth2_token"
