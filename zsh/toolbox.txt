@@ -13,11 +13,20 @@
 > ffmpeg -i 1.mp4 -r 12 -filter:v "setpts=0.8*PTS" -y 1.gif
 # 视频调速，视频速度调整为1/0.8倍速
 
-> perf record -F 2000 -p $pid -g -- sleep 10
+> perf record -F 2000 -e cpu-clock --call-graph dwarf -p $pid -- sleep 10
 # 生成进程 $pid 的性能分析结果到 perf.data；
 # -F: 事件采样的频率, 单位 HZ；
-# -g: 进行堆栈追踪，生成调用关系图，等价于-call-graph，默认情况下，-g 等同于-call-graph fp，即通过 frame pointer 来进行堆栈追踪。如果frame pointer 被优化掉的话，可以通过 dwarf, lbr 进行堆栈追踪；
+# -e: 指定性能事件；
+# --call-graph / -g: 进行堆栈追踪，生成调用关系图，等价于-call-graph，默认情况下，-g 等同于-call-graph fp，即通过 frame pointer 来进行堆栈追踪。如果frame pointer 被优化掉的话，可以通过 dwarf, lbr 进行堆栈追踪；
 # sleep: 采样的时间；
+
+> perf top -e cycles:k
+# 显示内核和模块中，消耗最多CPU周期的函数
+# -p: 指定进程 ID
+
+> perf top -e kmem:kmem_cache_alloc
+# 显示分配高速缓存最多的函数
+# -p: 指定进程 ID
 
 > perf script -i perf.data | stackcollapse-perf | flamegraph > /tmp/1.svg
 # 生成火焰图
