@@ -13,11 +13,6 @@ import logging
 import os
 import re
 
-logging.basicConfig(
-    format="\033[3;32m(%(levelname).1s) %(asctime)s [%(filename)s:%(lineno)s - %(funcName)s]\033[0m %(message)s",
-    level=logging.DEBUG,
-)
-
 CXX_HEADER_EXT = {".h", ".hh", ".hpp", ".hxx"}
 CXX_FLAGS_FILE_NAME = "compile_flags.txt"
 
@@ -137,5 +132,10 @@ def get_cxx_gcc_options() -> dict[str, str]:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="\033[3;32m(%(levelname).1s) %(asctime)s [%(filename)s:%(lineno)s - %(funcName)s]\033[0m %(message)s",
+        level=logging.DEBUG,
+    )
+
     logging.debug(VIM_HOME)
     logging.debug(get_cxx_gcc_options())
