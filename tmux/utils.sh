@@ -128,10 +128,9 @@ function linux_init_cpu_stat() {
     if [ ${#array[@]} -eq ${#stats[@]} ]; then
         local len=${#stats[@]}
         for ((i = 1; i < len; i += 2)); do
-            g_CpuStat+=("$((\
-                a = stats[i - 1] - array[i - 1], \
-                b = stats[i] - array[i], \
-                100 - a * 100 / b))")
+            g_CpuStat+=(\
+                "$((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i])))"\
+            )
         done
     else
         for i in $(seq 1 2 ${#stats[@]}); do
@@ -185,8 +184,8 @@ function init_net_stat() {
         else
             g_NetRxList["$i"]="$((a = rx_bytes - array[0], \
                 a / g_Interval))"
-            g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
-                a / g_Interval))"
+                            g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
+                                a / g_Interval))"
         fi
         g_Cache[$key]="$rx_bytes $tx_bytes"
     done
@@ -290,11 +289,11 @@ function get_mem_stat() {
             fi
         done </proc/meminfo
         ((\
-        cached = cached + sreclaimable, \
-        used = total - freemem - buffers - cached))
-        g_Return="$((used * 100 / total))"
-    else
-        g_Return=$(ps -A -o %mem | awk '{m+=$1} END {print int(m)}')
+            cached = cached + sreclaimable, \
+            used = total - freemem - buffers - cached))
+                    g_Return="$((used * 100 / total))"
+                else
+                    g_Return=$(ps -A -o %mem | awk '{m+=$1} END {print int(m)}')
     fi
 }
 
