@@ -205,6 +205,7 @@ nmap <silent> <space>cb :<C-U>CocCommand git.showBlameDoc<CR>
 " for coc-ext-common
 nmap <silent> <leader>t <Plug>(coc-ext-translate)
 vmap <silent> <leader>t <Plug>(coc-ext-translate-v)
+vmap <silent> <leader>ki <Plug>(coc-ext-kimi)
 vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)
 vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)
 vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)

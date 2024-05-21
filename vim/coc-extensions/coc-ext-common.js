@@ -26,7 +26,7 @@ __markAsModule(exports);
 __export(exports, {
   activate: () => activate
 });
-var import_coc21 = __toModule(require("coc.nvim"));
+var import_coc22 = __toModule(require("coc.nvim"));
 
 // src/lists/autocmd.ts
 var import_coc = __toModule(require("coc.nvim"));
@@ -386,8 +386,8 @@ ${content}` : content,
       filetype
     }
   ];
-  const win = new import_coc5.FloatFactory(import_coc5.workspace.nvim);
-  await win.show(doc, cfg);
+  const win = import_coc5.window.createFloatFactory(cfg);
+  await win.show(doc);
 }
 async function openFile(filepath, opts) {
   const {nvim} = import_coc5.workspace;
@@ -405,6 +405,11 @@ async function openFile(filepath, opts) {
     }
   }
   await nvim.command(`${open} ${cmd} ${filepath}`);
+}
+function sleepMs(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 // src/lists/highlight.ts
@@ -787,6 +792,10 @@ var Logger = class {
   }
   error(message) {
     this.logLevel("E", message);
+  }
+  append(message) {
+    const str = stringify(message);
+    this.channel.append(str);
   }
 };
 var logger = new Logger();
@@ -1320,7 +1329,6 @@ async function simpleHttpsProxy(host, port, target_host) {
   });
 }
 async function simpleHttpRequest(opts, is_https, data) {
-  const host = opts.hostname ? opts.hostname : opts.host;
   const request = is_https ? import_https.default.request : import_http.default.request;
   return new Promise((resolve) => {
     const req = request(opts, (resp) => {
@@ -1340,7 +1348,10 @@ async function simpleHttpRequest(opts, is_https, data) {
       });
     }).on("timeout", () => {
       resolve({
-        error: {name: "ERR_TIMEOUT", message: `query ${host} timeout`}
+        error: {
+          name: "ERR_TIMEOUT",
+          message: `query ${opts.hostname ? opts.hostname : opts.host} timeout`
+        }
       });
     });
     if (data) {
@@ -1349,22 +1360,21 @@ async function simpleHttpRequest(opts, is_https, data) {
     req.end();
   });
 }
-async function sendHttpRequest(req) {
-  const is_https = req.args.protocol == "https:";
+async function genHttpRequestArgs(req) {
   if (!req.proxy) {
-    return await simpleHttpRequest(req.args, is_https, req.data);
-  } else if (is_https) {
+    return req.args;
+  } else if (req.args.protocol == "https:") {
     const agent = await simpleHttpsProxy(req.proxy.host, req.proxy.port, `${req.args.host}:${req.args.port ? req.args.port : 443}`);
     if (agent.error) {
-      return {error: agent.error};
+      return agent.error;
     }
     const opts = Object.assign({}, req.args);
     opts.agent = agent.agent;
-    return await simpleHttpRequest(opts, is_https, req.data);
+    return opts;
   } else {
     const opts = Object.assign({}, req.args);
     opts.headers = Object.assign({}, req.args.headers);
-    var path8 = `${is_https ? "https" : "http"}://${req.args.host}`;
+    var path8 = `http://${req.args.host}`;
     if (opts.port) {
       path8 += `:${opts.port}`;
     }
@@ -1375,7 +1385,46 @@ async function sendHttpRequest(req) {
     opts.port = req.proxy.port;
     opts.path = path8;
     opts.headers.Host = req.args.host;
-    return await simpleHttpRequest(opts, is_https, req.data);
+    return opts;
+  }
+}
+async function sendHttpRequest(req) {
+  const res = await genHttpRequestArgs(req);
+  if (res instanceof Error) {
+    return {error: res};
+  } else {
+    return simpleHttpRequest(res, req.args.protocol == "https:", req.data);
+  }
+}
+async function sendHttpRequestWithCallback(req, cb) {
+  const res = await genHttpRequestArgs(req);
+  if (res instanceof Error) {
+    return res;
+  } else {
+    const request = req.args.protocol == "https:" ? import_https.default.request : import_http.default.request;
+    const r = request(res, (resp) => {
+      resp.on("data", (chunk) => {
+        if (cb.onData) {
+          cb.onData(chunk);
+        }
+      }).on("end", () => {
+        if (cb.onEnd) {
+          cb.onEnd(resp);
+        }
+      });
+    }).on("error", (error) => {
+      if (cb.onError) {
+        cb.onError(error);
+      }
+    }).on("timeout", () => {
+      if (cb.onTimeout) {
+        cb.onTimeout();
+      }
+    });
+    if (req.data) {
+      r.write(req.data);
+    }
+    r.end();
   }
 }
 
@@ -1506,6 +1555,12 @@ async function getCursorSymbolList() {
 async function debug(cmd, ...args) {
   logger.debug(cmd);
   logger.debug(args);
+  let channel = import_coc19.window.createOutputChannel("debug");
+  channel.show();
+  for (let i = 0; i < 100; ++i) {
+    channel.appendLine(`=> ${i}`);
+    await sleepMs(50);
+  }
 }
 
 // src/utils/decoder.ts
@@ -1648,6 +1703,219 @@ async function leader_recv(cmd, ..._args) {
   }
 }
 
+// src/kimi/kimi.ts
+var import_coc21 = __toModule(require("coc.nvim"));
+var KimiChat = class {
+  constructor(refresh_token) {
+    this.refresh_token = refresh_token;
+    this.rtoken = refresh_token;
+    this.chat_id = "";
+    this.headers = {
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+      Origin: "https://kimi.moonshot.cn",
+      Referer: "https://kimi.moonshot.cn/"
+    };
+    this.channel = null;
+    this.name = "";
+  }
+  getHeaders() {
+    this.headers["X-Traffic-Id"] = Array.from({length: 20}, () => Math.floor(Math.random() * 36).toString(36)).join("");
+    return this.headers;
+  }
+  async show() {
+    if (this.channel) {
+    } else if (this.chat_id && this.name) {
+      this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
+    } else {
+      return;
+    }
+    let {nvim} = import_coc21.workspace;
+    let winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
+    if (winid == -1) {
+      this.channel.show();
+      winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
+      nvim.call("coc#compat#execute", [winid, "setl wrap"], true);
+    } else {
+      nvim.call("win_gotoid", [winid], true);
+    }
+  }
+  async getAccessToken() {
+    this.headers["Authorization"] = `Bearer ${this.rtoken}`;
+    const refresh_req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: "/api/auth/token/refresh",
+        method: "GET",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      }
+    };
+    const resp = await sendHttpRequest(refresh_req);
+    if (resp.statusCode == 200 && resp.body) {
+      const obj = JSON.parse(resp.body.toString());
+      this.headers["Authorization"] = `Bearer ${obj["access_token"]}`;
+    }
+    return resp.statusCode ? resp.statusCode : -1;
+  }
+  getChatId() {
+    return this.chat_id;
+  }
+  setChatIdAndName(chat_id, name) {
+    this.chat_id = chat_id;
+    this.name = name;
+  }
+  async createChatId(name) {
+    const test_req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: "/api/chat",
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      },
+      data: JSON.stringify({name, is_example: false})
+    };
+    const resp = await sendHttpRequest(test_req);
+    if (resp.statusCode == 200 && resp.body) {
+      const obj = JSON.parse(resp.body.toString());
+      this.chat_id = obj["id"];
+      this.name = name;
+    }
+    return resp.statusCode ? resp.statusCode : -1;
+  }
+  async chatList() {
+    if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
+      return {name: "ERR_AUTH_FAIL", message: "auth fail"};
+    }
+    const req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: "/api/chat/list",
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      },
+      data: JSON.stringify({kimiplus_id: "", offset: 0, size: 50})
+    };
+    const resp = await sendHttpRequest(req);
+    if (resp.statusCode == 200 && resp.body) {
+      let obj = JSON.parse(resp.body.toString());
+      if (obj["items"]) {
+        return obj["items"];
+      } else {
+        return [];
+      }
+    } else {
+      return {
+        name: "ERR_GET_CHAT_LIST",
+        message: `statusCode: ${resp.statusCode}, error: ${resp.error}`
+      };
+    }
+  }
+  async chat(text) {
+    var _a, _b, _c;
+    logger.debug(text);
+    if (this.chat_id.length == 0) {
+      return -1;
+    }
+    (_a = this.channel) == null ? void 0 : _a.appendLine(`
+<<<< ${new Date().toISOString()}`);
+    (_b = this.channel) == null ? void 0 : _b.appendLine(text);
+    (_c = this.channel) == null ? void 0 : _c.appendLine("\n>>>>");
+    let statusCode = -1;
+    const cb = {
+      onData: (chunk) => {
+        logger.debug(chunk.toString());
+        chunk.toString().split("\n").forEach((line) => {
+          var _a2, _b2;
+          if (line.length == 0) {
+            return;
+          }
+          const data = JSON.parse(line.slice(5));
+          if (data["event"] == "cmpl") {
+            (_a2 = this.channel) == null ? void 0 : _a2.append(data["text"]);
+          } else if (data["event"] == "all_done") {
+            (_b2 = this.channel) == null ? void 0 : _b2.appendLine(" (END)");
+          }
+        });
+      },
+      onEnd: (rsp) => {
+        statusCode = rsp.statusCode ? rsp.statusCode : -1;
+      },
+      onError: (err) => {
+        var _a2, _b2;
+        (_a2 = this.channel) == null ? void 0 : _a2.appendLine(" (ERROR) ");
+        (_b2 = this.channel) == null ? void 0 : _b2.appendLine(JSON.stringify(err));
+        statusCode = -1;
+      },
+      onTimeout: () => {
+        statusCode = -1;
+      }
+    };
+    const req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: `/api/chat/${this.chat_id}/completion/stream`,
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      },
+      data: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: text
+          }
+        ],
+        refs: [],
+        user_search: true
+      })
+    };
+    await sendHttpRequestWithCallback(req, cb);
+    if (statusCode == 401) {
+      if (await this.getAccessToken() != 200) {
+        return -1;
+      }
+      await sendHttpRequestWithCallback(req, cb);
+    }
+  }
+  async debug() {
+    console.log(await this.getAccessToken());
+    console.log(await this.createChatId("Kimi"));
+    console.log(this.chat_id);
+    const req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: `/api/chat/${this.chat_id}/completion/stream`,
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders()
+      },
+      data: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: "\u4F60\u662F\u7FFB\u8BD1\u5458\uFF0C\u8BF7\u7FFB\u8BD1\u6210\u4E2D\u6587\uFF1AI has a pen"
+          }
+        ],
+        refs: [],
+        user_search: true
+      })
+    };
+    sendHttpRequestWithCallback(req, {
+      onData: (chunk) => {
+        console.log(chunk.toString());
+      }
+    });
+  }
+};
+var kimiChat = new KimiChat(process.env.MY_KIMI_REFRESH_TOKEN ? process.env.MY_KIMI_REFRESH_TOKEN : "");
+
 // src/coc-ext-common.ts
 var cppFmtSetting = {
   provider: "clang-format",
@@ -1692,7 +1960,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc21.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc22.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -1747,12 +2015,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const range = await import_coc21.window.getSelectedRange("v");
+    const range = await import_coc22.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc21.workspace.document;
+    const doc = await import_coc22.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -1761,15 +2029,57 @@ function encodeStrFn(enc) {
 function addFormatter(context, lang, setting) {
   const selector = [{scheme: "file", language: lang}];
   const provider = new FormattingEditProvider(setting);
-  context.subscriptions.push(import_coc21.languages.registerDocumentFormatProvider(selector, provider, 1));
+  context.subscriptions.push(import_coc22.languages.registerDocumentFormatProvider(selector, provider, 1));
   if (provider.supportRangeFormat()) {
-    context.subscriptions.push(import_coc21.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
+    context.subscriptions.push(import_coc22.languages.registerDocumentRangeFormatProvider(selector, provider, 1));
   }
+}
+async function kimi_open() {
+  if (kimiChat.getChatId().length == 0) {
+    let chat_list = await kimiChat.chatList();
+    if (chat_list instanceof Error) {
+      logger.error(chat_list);
+      return -1;
+    }
+    let items = chat_list.map((i) => {
+      return {label: i.name, chat_id: i.id, description: i.updated_at};
+    });
+    items.push({label: "Create", chat_id: "", description: ""});
+    let choose = await import_coc22.window.showQuickPick(items, {title: "Choose Chat"});
+    if (!choose || choose.chat_id.length == 0) {
+      let new_name = await import_coc22.window.requestInput("Name", "", {
+        position: "center"
+      });
+      if (new_name.length == 0) {
+        return -1;
+      }
+      const statusCode = await kimiChat.createChatId(new_name);
+      if (statusCode != 200) {
+        logger.error(`createChatId fail, statusCode: ${statusCode}`);
+        return -1;
+      }
+    } else {
+      kimiChat.setChatIdAndName(choose.chat_id, choose.label);
+    }
+  }
+  kimiChat.show();
+  return 0;
+}
+function kimi_chat(mode) {
+  return async () => {
+    const text = await getText(mode);
+    let ret = await kimi_open();
+    if (ret != 0) {
+      return;
+    }
+    logger.debug(text);
+    kimiChat.chat(text);
+  };
 }
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc21.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc22.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -1784,30 +2094,32 @@ async function activate(context) {
       addFormatter(context, k, defaultFmtSetting[k]);
     }
   }
-  context.subscriptions.push(import_coc21.commands.registerCommand("ext-debug", debug, {sync: true}), import_coc21.commands.registerCommand("ext-leaderf", leader_recv, {sync: true}), import_coc21.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+  context.subscriptions.push(import_coc22.commands.registerCommand("ext-debug", debug, {sync: true}), import_coc22.commands.registerCommand("ext-kimi", kimi_open, {sync: true}), import_coc22.commands.registerCommand("ext-leaderf", leader_recv, {sync: true}), import_coc22.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+  }), import_coc22.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-kimi", kimi_chat("v"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-copy-xclip", async () => {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    sync: false
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-copy-xclip", async () => {
     const text = await getText("v", 0);
     await callShell("xclip", ["-selection", "clipboard", "-i"], text);
-  }, {sync: false}), import_coc21.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
-    const range = await import_coc21.window.getSelectedRange("v");
+  }, {sync: false}), import_coc22.workspace.registerKeymap(["v"], "ext-change-name-rule", async () => {
+    const range = await import_coc22.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc21.workspace.document;
+    const doc = await import_coc22.workspace.document;
     const name = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "common", "change_name_rule", [
       name
@@ -1815,11 +2127,11 @@ async function activate(context) {
     replaceExecText(doc, range, res);
   }, {
     sync: false
-  }), import_coc21.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
+  }), import_coc22.workspace.registerKeymap(["v"], "ext-decode-mime", async () => {
     const text = await getText("v");
     const tt = decodeMimeEncodeStr(text);
     popup(tt, "[Mime decode]");
   }, {
     sync: false
-  }), import_coc21.listManager.registerList(new lists_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new commands_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new mapkey_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new rgfiles_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new rgwords_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new autocmd_default(import_coc21.workspace.nvim)), import_coc21.listManager.registerList(new highlight_default(import_coc21.workspace.nvim)));
+  }), import_coc22.listManager.registerList(new lists_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new commands_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new mapkey_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new rgfiles_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new rgwords_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new autocmd_default(import_coc22.workspace.nvim)), import_coc22.listManager.registerList(new highlight_default(import_coc22.workspace.nvim)));
 }
