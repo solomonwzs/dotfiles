@@ -80,14 +80,14 @@ endsnippet
 
 snippet #xmlog "macro log" b
 #ifndef __DEBUG_TOOL
-#define _XMLOG_Impl               MMIMPT
+#define _XMLOG_Impt               MMIMPT
 #define _XMLOG_Info               MMINFO
 #define _XMLOG_Err                MMERR
 #define _XMLOG_Warn               MMERR
 #define _XMLOG_Debug              MMDEBUG
 #define xmlog(_type_, _fmt_, ...) _XMLOG_##_type_(_fmt_, ##__VA_ARGS__)
 #else
-#define _STYLE_Impl  "\e[3;35m"
+#define _STYLE_Impt  "\e[3;35m"
 #define _STYLE_Info  "\e[3;32m"
 #define _STYLE_Err   "\e[3;31m"
 #define _STYLE_Warn  "\e[3;33m"
