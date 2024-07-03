@@ -1723,6 +1723,19 @@ var KimiChat = class {
     this.headers["X-Traffic-Id"] = Array.from({length: 20}, () => Math.floor(Math.random() * 36).toString(36)).join("");
     return this.headers;
   }
+  append(text, newline = true) {
+    if (this.channel) {
+    } else if (this.chat_id && this.name) {
+      this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
+    } else {
+      return;
+    }
+    if (newline) {
+      this.channel.appendLine(text);
+    } else {
+      this.channel.append(text);
+    }
+  }
   async show() {
     if (this.channel) {
     } else if (this.chat_id && this.name) {
@@ -1739,6 +1752,7 @@ var KimiChat = class {
     } else {
       nvim.call("win_gotoid", [winid], true);
     }
+    nvim.call("win_execute", [winid, `set ft=kimichat`]);
   }
   async getAccessToken() {
     this.headers["Authorization"] = `Bearer ${this.rtoken}`;
@@ -1816,30 +1830,58 @@ var KimiChat = class {
       };
     }
   }
+  async chatScroll(chat_id) {
+    if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
+      return {name: "ERR_AUTH_FAIL", message: "auth fail"};
+    }
+    const req = {
+      args: {
+        host: "kimi.moonshot.cn",
+        path: `/api/chat/${chat_id}/segment/scroll`,
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      },
+      data: JSON.stringify({last: 50})
+    };
+    const resp = await sendHttpRequest(req);
+    if (resp.statusCode == 200 && resp.body) {
+      let obj = JSON.parse(resp.body.toString());
+      if (obj["items"]) {
+        return obj["items"];
+      } else {
+        return [];
+      }
+    } else {
+      return {
+        name: "ERR_GET_CHAT_LIST",
+        message: `statusCode: ${resp.statusCode}, error: ${resp.error}`
+      };
+    }
+  }
   async chat(text) {
-    var _a, _b, _c;
     logger.debug(text);
     if (this.chat_id.length == 0) {
       return -1;
     }
-    (_a = this.channel) == null ? void 0 : _a.appendLine(`
+    this.append(`
 <<<< ${new Date().toISOString()}`);
-    (_b = this.channel) == null ? void 0 : _b.appendLine(text);
-    (_c = this.channel) == null ? void 0 : _c.appendLine("\n>>>>");
+    this.append(text);
+    this.append("\n>>>>");
     let statusCode = -1;
     const cb = {
       onData: (chunk) => {
         logger.debug(chunk.toString());
         chunk.toString().split("\n").forEach((line) => {
-          var _a2, _b2;
           if (line.length == 0) {
             return;
           }
           const data = JSON.parse(line.slice(5));
           if (data["event"] == "cmpl") {
-            (_a2 = this.channel) == null ? void 0 : _a2.append(data["text"]);
+            this.append(data["text"], false);
           } else if (data["event"] == "all_done") {
-            (_b2 = this.channel) == null ? void 0 : _b2.appendLine(" (END)");
+            this.append(" (END)");
           }
         });
       },
@@ -1847,9 +1889,8 @@ var KimiChat = class {
         statusCode = rsp.statusCode ? rsp.statusCode : -1;
       },
       onError: (err) => {
-        var _a2, _b2;
-        (_a2 = this.channel) == null ? void 0 : _a2.appendLine(" (ERROR) ");
-        (_b2 = this.channel) == null ? void 0 : _b2.appendLine(JSON.stringify(err));
+        this.append(" (ERROR) ");
+        this.append(JSON.stringify(err));
         statusCode = -1;
       },
       onTimeout: () => {
@@ -2060,6 +2101,21 @@ async function kimi_open() {
       }
     } else {
       kimiChat.setChatIdAndName(choose.chat_id, choose.label);
+      const items2 = await kimiChat.chatScroll(choose.chat_id);
+      if (items2 instanceof Error) {
+        logger.error(items2);
+      } else {
+        for (const item of items2) {
+          if (item.role == "user") {
+            kimiChat.append(`
+<<<< ${item.created_at}`);
+            kimiChat.append(item.content);
+            kimiChat.append("\n>>>>");
+          } else {
+            kimiChat.append(item.content);
+          }
+        }
+      }
     }
   }
   kimiChat.show();
