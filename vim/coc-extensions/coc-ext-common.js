@@ -1406,21 +1406,27 @@ async function sendHttpRequestWithCallback(req, cb) {
       const r = request(res, (resp) => {
         resp.on("data", (chunk) => {
           if (cb.onData) {
-            cb.onData(chunk);
+            cb.onData(chunk, resp);
           }
         }).on("end", () => {
           if (cb.onEnd) {
             cb.onEnd(resp);
           }
+          resolve(null);
         });
       }).on("error", (error) => {
         if (cb.onError) {
           cb.onError(error);
         }
+        resolve(error);
       }).on("timeout", () => {
         if (cb.onTimeout) {
           cb.onTimeout();
         }
+        resolve({
+          name: "ERR_TIMEOUT",
+          message: `query ${req.args.host} timeout`
+        });
       });
       if (req.data) {
         r.write(req.data);
@@ -1464,7 +1470,7 @@ async function bingTranslate(text, sl, tl, proxy_url) {
     return null;
   }
   if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
-    logger.error(`status: ${resp.statusCode}`);
+    logger.error(`bing, status: ${resp.statusCode}`);
     return null;
   }
   const ret = createTranslation("Bing", sl, tl, text);
@@ -1664,7 +1670,7 @@ async function googleTranslate(text, sl, tl, proxy_url) {
     return null;
   }
   if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
-    logger.error(`status: ${resp.statusCode}`);
+    logger.error(`google, status: ${resp.statusCode}`);
     return null;
   }
   const obj = JSON.parse(resp.body.toString());
@@ -1733,7 +1739,7 @@ var KimiChat = class {
     this.headers["X-Traffic-Id"] = Array.from({length: 20}, () => Math.floor(Math.random() * 36).toString(36)).join("");
     return this.headers;
   }
-  async append(text, newline = true) {
+  append(text, newline = true) {
     if (this.channel) {
     } else if (this.chat_id && this.name) {
       this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
@@ -1747,15 +1753,15 @@ var KimiChat = class {
     }
     if (this.winid != -1) {
       let {nvim} = import_coc21.workspace;
-      await nvim.call("win_execute", [this.winid, "norm G"]);
+      nvim.call("win_execute", [this.winid, "norm G"]);
     }
   }
-  async appendUserInput(datetime, text) {
-    await this.append(`
+  appendUserInput(datetime, text) {
+    this.append(`
 >> ${datetime}`);
     let lines = text.split("\n");
     for (const i of lines) {
-      await this.append(`>> ${i}`);
+      this.append(`>> ${i}`);
     }
   }
   async show() {
@@ -1887,28 +1893,31 @@ var KimiChat = class {
     if (this.chat_id.length == 0) {
       return;
     }
-    await this.appendUserInput(new Date().toISOString(), text);
+    this.appendUserInput(new Date().toISOString(), text);
     let statusCode = -1;
     const cb = {
-      onData: async (chunk) => {
-        chunk.toString().split("\n").forEach(async (line) => {
+      onData: (chunk, rsp) => {
+        if (rsp.statusCode != 200) {
+          return;
+        }
+        chunk.toString().split("\n").forEach((line) => {
           if (line.length == 0) {
             return;
           }
           const data = JSON.parse(line.slice(5));
           if (data["event"] == "cmpl") {
-            await this.append(data["text"], false);
+            this.append(data["text"], false);
           } else if (data["event"] == "all_done") {
-            await this.append(" (END)");
+            this.append(" (END)");
           }
         });
       },
       onEnd: (rsp) => {
         statusCode = rsp.statusCode ? rsp.statusCode : -1;
       },
-      onError: async (err) => {
-        await this.append(" (ERROR) ");
-        await this.append(JSON.stringify(err));
+      onError: (err) => {
+        this.append(" (ERROR) ");
+        this.append(JSON.stringify(err));
         statusCode = -1;
       },
       onTimeout: () => {
@@ -1921,8 +1930,7 @@ var KimiChat = class {
         path: `/api/chat/${this.chat_id}/completion/stream`,
         method: "POST",
         protocol: "https:",
-        headers: this.getHeaders(),
-        timeout: 1e3
+        headers: this.getHeaders()
       },
       data: JSON.stringify({
         messages: [
@@ -1938,10 +1946,12 @@ var KimiChat = class {
     await sendHttpRequestWithCallback(req, cb);
     if (statusCode == 401) {
       if (await this.getAccessToken() != 200) {
+        logger.error("Authorization Expired");
         return;
       }
       await sendHttpRequestWithCallback(req, cb);
     }
+    logger.info(statusCode);
   }
   async debug() {
     console.log(await this.getAccessToken());
