@@ -1401,30 +1401,32 @@ async function sendHttpRequestWithCallback(req, cb) {
   if (res instanceof Error) {
     return res;
   } else {
-    const request = req.args.protocol == "https:" ? import_https.default.request : import_http.default.request;
-    const r = request(res, (resp) => {
-      resp.on("data", (chunk) => {
-        if (cb.onData) {
-          cb.onData(chunk);
+    return new Promise((resolve) => {
+      const request = req.args.protocol == "https:" ? import_https.default.request : import_http.default.request;
+      const r = request(res, (resp) => {
+        resp.on("data", (chunk) => {
+          if (cb.onData) {
+            cb.onData(chunk);
+          }
+        }).on("end", () => {
+          if (cb.onEnd) {
+            cb.onEnd(resp);
+          }
+        });
+      }).on("error", (error) => {
+        if (cb.onError) {
+          cb.onError(error);
         }
-      }).on("end", () => {
-        if (cb.onEnd) {
-          cb.onEnd(resp);
+      }).on("timeout", () => {
+        if (cb.onTimeout) {
+          cb.onTimeout();
         }
       });
-    }).on("error", (error) => {
-      if (cb.onError) {
-        cb.onError(error);
+      if (req.data) {
+        r.write(req.data);
       }
-    }).on("timeout", () => {
-      if (cb.onTimeout) {
-        cb.onTimeout();
-      }
+      r.end();
     });
-    if (req.data) {
-      r.write(req.data);
-    }
-    r.end();
   }
 }
 
@@ -1718,12 +1720,20 @@ var KimiChat = class {
     };
     this.channel = null;
     this.name = "";
+    this.winid = -1;
+  }
+  async openAutoScroll() {
+    let {nvim} = import_coc21.workspace;
+    this.winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
+  }
+  closeAutoScroll() {
+    this.winid = -1;
   }
   getHeaders() {
     this.headers["X-Traffic-Id"] = Array.from({length: 20}, () => Math.floor(Math.random() * 36).toString(36)).join("");
     return this.headers;
   }
-  append(text, newline = true) {
+  async append(text, newline = true) {
     if (this.channel) {
     } else if (this.chat_id && this.name) {
       this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
@@ -1734,6 +1744,18 @@ var KimiChat = class {
       this.channel.appendLine(text);
     } else {
       this.channel.append(text);
+    }
+    if (this.winid != -1) {
+      let {nvim} = import_coc21.workspace;
+      await nvim.call("win_execute", [this.winid, "norm G"]);
+    }
+  }
+  async appendUserInput(datetime, text) {
+    await this.append(`
+>> ${datetime}`);
+    let lines = text.split("\n");
+    for (const i of lines) {
+      await this.append(`>> ${i}`);
     }
   }
   async show() {
@@ -1748,11 +1770,12 @@ var KimiChat = class {
     if (winid == -1) {
       this.channel.show();
       winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
-      nvim.call("coc#compat#execute", [winid, "setl wrap"], true);
+      await nvim.call("coc#compat#execute", [winid, "setl wrap"]);
+      await nvim.call("win_execute", [winid, "set ft=kimichat"]);
     } else {
-      nvim.call("win_gotoid", [winid], true);
+      await nvim.call("win_gotoid", [winid]);
     }
-    nvim.call("win_execute", [winid, `set ft=kimichat`]);
+    await nvim.call("win_execute", [winid, "norm G"]);
   }
   async getAccessToken() {
     this.headers["Authorization"] = `Bearer ${this.rtoken}`;
@@ -1861,36 +1884,31 @@ var KimiChat = class {
     }
   }
   async chat(text) {
-    logger.debug(text);
     if (this.chat_id.length == 0) {
-      return -1;
+      return;
     }
-    this.append(`
-<<<< ${new Date().toISOString()}`);
-    this.append(text);
-    this.append("\n>>>>");
+    await this.appendUserInput(new Date().toISOString(), text);
     let statusCode = -1;
     const cb = {
-      onData: (chunk) => {
-        logger.debug(chunk.toString());
-        chunk.toString().split("\n").forEach((line) => {
+      onData: async (chunk) => {
+        chunk.toString().split("\n").forEach(async (line) => {
           if (line.length == 0) {
             return;
           }
           const data = JSON.parse(line.slice(5));
           if (data["event"] == "cmpl") {
-            this.append(data["text"], false);
+            await this.append(data["text"], false);
           } else if (data["event"] == "all_done") {
-            this.append(" (END)");
+            await this.append(" (END)");
           }
         });
       },
       onEnd: (rsp) => {
         statusCode = rsp.statusCode ? rsp.statusCode : -1;
       },
-      onError: (err) => {
-        this.append(" (ERROR) ");
-        this.append(JSON.stringify(err));
+      onError: async (err) => {
+        await this.append(" (ERROR) ");
+        await this.append(JSON.stringify(err));
         statusCode = -1;
       },
       onTimeout: () => {
@@ -1920,7 +1938,7 @@ var KimiChat = class {
     await sendHttpRequestWithCallback(req, cb);
     if (statusCode == 401) {
       if (await this.getAccessToken() != 200) {
-        return -1;
+        return;
       }
       await sendHttpRequestWithCallback(req, cb);
     }
@@ -2107,18 +2125,15 @@ async function kimi_open() {
       } else {
         for (const item of items2) {
           if (item.role == "user") {
-            kimiChat.append(`
-<<<< ${item.created_at}`);
-            kimiChat.append(item.content);
-            kimiChat.append("\n>>>>");
+            await kimiChat.appendUserInput(item.created_at, item.content);
           } else {
-            kimiChat.append(item.content);
+            await kimiChat.append(item.content);
           }
         }
       }
     }
   }
-  kimiChat.show();
+  await kimiChat.show();
   return 0;
 }
 function kimi_chat(mode) {
@@ -2128,8 +2143,9 @@ function kimi_chat(mode) {
     if (ret != 0) {
       return;
     }
-    logger.debug(text);
-    kimiChat.chat(text);
+    await kimiChat.openAutoScroll();
+    await kimiChat.chat(text);
+    kimiChat.closeAutoScroll();
   };
 }
 async function activate(context) {

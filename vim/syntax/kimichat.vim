@@ -3,6 +3,7 @@ if exists("b:current_syntax")
 endif
 let b:current_syntax = "kimichat"
 
-syntax region KcInput start="<<<<" end=">>>>"
+" syntax region KcInput start=/^<<<</ end=/^>>>>/
+syntax match KcInput /^>>.*/
 
-hi def link KcInput Comment
+hi KcInput ctermfg=239 ctermbg=74 cterm=bold
