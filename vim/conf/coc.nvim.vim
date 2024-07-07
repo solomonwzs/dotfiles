@@ -202,20 +202,6 @@ vmap <silent> <space>cf <Plug>(coc-format-selected)
 " for coc-git
 nmap <silent> <space>cb :<C-U>CocCommand git.showBlameDoc<CR>
 
-" for coc-ext-common
-nmap <silent> <leader>t <Plug>(coc-ext-translate)
-vmap <silent> <leader>t <Plug>(coc-ext-translate-v)
-vmap <silent> <leader>ki <Plug>(coc-ext-kimi)
-vmap <silent> <leader>du <Plug>(coc-ext-decode-utf8)
-vmap <silent> <leader>eu <Plug>(coc-ext-encode-utf8)
-vmap <silent> <leader>dg <Plug>(coc-ext-decode-gbk)
-vmap <silent> <leader>eg <Plug>(coc-ext-encode-gbk)
-vmap <silent> <leader>dm <Plug>(coc-ext-decode-mime)
-vmap <silent> <leader>cn <Plug>(coc-ext-change-name-rule)
-nmap <silent> <leader>cs <Plug>(coc-ext-cursor-symbol)
-
-vmap <C-c> <Plug>(coc-ext-copy-xclip)
-
 augroup my_coc_nvim
   autocmd!
   autocmd FileType python let b:coc_root_patterns = ['.env']
@@ -233,3 +219,9 @@ command! -nargs=* -complete=custom,coc#list#options CocListX
 
 cnoreabbrev <expr> Cl ((getcmdtype() is# ':' && getcmdline() is# 'Cl') ?
     \ ('CocListX') : ('Cl'))
+
+" for coc-ext-common
+let s:coc_ext_conf = g:vimhome.'/conf/coc-ext.vim'
+if filereadable(s:coc_ext_conf)
+  exec 'so '.s:coc_ext_conf
+endif
