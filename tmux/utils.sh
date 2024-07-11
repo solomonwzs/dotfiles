@@ -106,19 +106,31 @@ function append_status_line() {
     g_StatusLine="${g_StatusLine}${1}"
 }
 
-function linux_init_cpu_stat() {
+function init_cpu_stat() {
+    if [ ${#g_CpuStat[@]} -ne 0 ]; then
+        return
+    fi
+
     local stats=()
     local cache=""
-    while read -r -a a; do
-        if [ "${a[0]:0:3}" != "cpu" ]; then
-            break
-        fi
-        local idle="${a[4]}"
-        local all="$((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
-        stats+=("$idle")
-        stats+=("$all")
-        cache="$cache $idle $all"
-    done </proc/stat
+    if [ "$g_IsLinux" -eq 1 ]; then
+        while read -r -a a; do
+            if [ "${a[0]:0:3}" != "cpu" ]; then
+                break
+            fi
+            local idle="${a[4]}"
+            local all="$((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
+            stats+=("$idle")
+            stats+=("$all")
+            cache="$cache $idle $all"
+        done </proc/stat
+    else
+        while IFS=" " read -r -a a; do
+            stats+=("${a[0]}")
+            stats+=("${a[1]}")
+            cache="$cache ${a[0]} ${a[1]}"
+        done <<<"$(simple_cpu)"
+    fi
 
     local key="cpus"
     local array
@@ -128,36 +140,14 @@ function linux_init_cpu_stat() {
     if [ ${#array[@]} -eq ${#stats[@]} ]; then
         local len=${#stats[@]}
         for ((i = 1; i < len; i += 2)); do
-            g_CpuStat+=(\
-                "$((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i])))"\
+            g_CpuStat+=(
+                "$((100 - (stats[i - 1] - array[i - 1]) * 100 / (stats[i] - array[i])))"
             )
         done
     else
         for i in $(seq 1 2 ${#stats[@]}); do
             g_CpuStat+=(0)
         done
-    fi
-}
-
-function darwin_init_cpu_stat() {
-    local cpu
-    local cpu_cores
-    cpu="$(ps -A -o %cpu | awk '{c+=$1} END {print c}')"
-    cpu=${cpu%.*}
-    # cpu_cores=$(sysctl hw.activecpu | cut -d' ' -f2)
-    cpu_cores=$(sysctl hw.activecpu)
-    cpu_cores=${cpu_cores#* }
-    g_CpuStat+=($((cpu / cpu_cores)))
-}
-
-function init_cpu_stat() {
-    if [ ${#g_CpuStat[@]} -ne 0 ]; then
-        return
-    fi
-    if [ "$g_IsLinux" -eq 1 ]; then
-        linux_init_cpu_stat
-    else
-        darwin_init_cpu_stat
     fi
 }
 
@@ -184,8 +174,8 @@ function init_net_stat() {
         else
             g_NetRxList["$i"]="$((a = rx_bytes - array[0], \
                 a / g_Interval))"
-                            g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
-                                a / g_Interval))"
+            g_NetTxList["$i"]="$((a = tx_bytes - array[1], \
+                a / g_Interval))"
         fi
         g_Cache[$key]="$rx_bytes $tx_bytes"
     done
@@ -255,7 +245,8 @@ function linux_get_net_stat() {
 function darwin_get_net_stat() {
     local rx_bytes
     local tx_bytes
-    read -r rx_bytes tx_bytes <<<"$(netstat -ib -I "$1" | awk 'NR == 2 {print $7, $10}')"
+    local ifname
+    read -r ifname rx_bytes tx_bytes <<<"$(simple_net "$1")"
     g_Return="$rx_bytes $tx_bytes"
 }
 
@@ -289,11 +280,12 @@ function get_mem_stat() {
             fi
         done </proc/meminfo
         ((\
-            cached = cached + sreclaimable, \
-            used = total - freemem - buffers - cached))
-                    g_Return="$((used * 100 / total))"
-                else
-                    g_Return=$(ps -A -o %mem | awk '{m+=$1} END {print int(m)}')
+        cached = cached + sreclaimable, \
+        used = total - freemem - buffers - cached))
+        g_Return="$((used * 100 / total))"
+    else
+        read free cached used available total <<<"$(simple_mem)"
+        g_Return="$((used * 100 / total))"
     fi
 }
 

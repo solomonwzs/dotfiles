@@ -109,3 +109,9 @@ git_clone "https://github.com/zsh-users/zsh-autosuggestions.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-autosuggestions"
 git_clone "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-syntax-highlighting"
+
+if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
+    cd "$EXECUTE_DIRNAME/osx"
+    info "Build osx tools"
+    make
+fi
