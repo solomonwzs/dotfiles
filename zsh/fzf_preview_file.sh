@@ -38,8 +38,9 @@ shift $((OPTIND - 1))
 filename="$1"
 
 mime=$(file --mime "$filename")
-if [[ "$mime" =~ text || "$mime" =~ message/rfc822 ]]; then
-    (bat --style=numbers --color=always "$filename" ||
+if [[ "$mime" =~ text || "$mime" =~ us-ascii || "$mime" =~ utf-8 ||
+    "$mime" =~ iso-8859-1 ]]; then
+    (bat --style=numbers --color=always --theme=gruvbox-dark "$filename" ||
         highlight -O ansi -l "$filename" ||
         coderay "$filename" ||
         rougify "$filename" ||

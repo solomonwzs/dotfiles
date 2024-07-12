@@ -2498,6 +2498,14 @@ async function activate(context) {
     import_coc22.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
+    import_coc22.workspace.registerKeymap(
+      ["v"],
+      "ext-decode-base64",
+      decodeStrFn("base64"),
+      {
+        sync: false
+      }
+    ),
     import_coc22.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),
