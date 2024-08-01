@@ -55,8 +55,8 @@ let g:Lf_WildIgnore = {
 
 cnoreabbrev <expr> Rg ((getcmdtype() is# ':' && getcmdline() is# 'Rg') ?
     \ ('Leaderf rg') : ('Rg'))
-cnoreabbrev <expr> Rgi ((getcmdtype() is# ':' && getcmdline() is# 'Rgi') ?
-    \ ('Leaderf rg --ignore-case') : ('Rgi'))
+cnoreabbrev <expr> Rgn ((getcmdtype() is# ':' && getcmdline() is# 'Rgn') ?
+    \ ('Leaderf rg --no-ignore') : ('Rgn'))
 cnoreabbrev <expr> Lf ((getcmdtype() is# ':' && getcmdline() is# 'Lf') ?
     \ ('Leaderf') : ('Lf'))
 
