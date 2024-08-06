@@ -7,7 +7,7 @@ colorscheme gruvbox
 
 if g:colors_name ==# 'gruvbox'
     highlight Normal ctermbg=NONE guibg=NONE
-    highlight Comment cterm=italic guibg=italic
+    highlight Comment cterm=italic gui=italic
 
     highlight VimSignatureMarkLine ctermbg=96 guibg=#875f87
 
