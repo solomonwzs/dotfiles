@@ -1069,7 +1069,7 @@ var ClfFormatter = class extends BaseFormatter {
       setting["IndentWidth"] = options.tabSize.toString();
     }
     if (options.insertSpaces !== void 0 && !setting["UseTab"]) {
-      setting["UseTab"] = options.insertSpaces ? "false" : "true";
+      setting["UseTab"] = options.insertSpaces ? false : true;
     }
     if (!setting["BasedOnStyle"]) {
       setting["BasedOnStyle"] = "Google";

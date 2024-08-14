@@ -103,9 +103,20 @@
       "setting": {
         "provider": "clang-format",
         "args": {
-          "AlignConsecutiveAssignments": "true",
-          "AlignConsecutiveDeclarations": "true",
+          "AlignConsecutiveAssignments": true,
+          "AlignConsecutiveDeclarations": true,
           "AlignEscapedNewlines": "Left"
+        }
+      }
+    },
+    {
+      "languages": ["c", "cpp"],
+      "setting": {
+        "provider": "clang-format",
+        "args": {
+          "AllowShortBlocksOnASingleLine": false,
+          "AllowShortCaseLabelsOnASingleLine": false,
+          "AllowShortFunctionsOnASingleLine": "Empty"
         }
       }
     },
