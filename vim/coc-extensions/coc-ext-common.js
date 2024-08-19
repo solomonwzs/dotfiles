@@ -83,6 +83,16 @@ function strFindFirstNotOf(str, ch) {
   }
   return -1;
 }
+var CocExtError = class extends Error {
+  constructor(errorCode, message) {
+    super(message);
+    this.name = "CocExtError";
+    this.errorCode = errorCode;
+  }
+};
+CocExtError.ERR_HTTP = -1;
+CocExtError.ERR_AUTH = -2;
+CocExtError.ERR_KIMI = -3;
 
 // src/lists/autocmd.ts
 function parseAutocmdInfo(str) {
@@ -372,6 +382,12 @@ async function getText(mode, escape = true) {
     text = doc.textDocument.getText(range);
   }
   return text.trim();
+}
+async function echoMessage(hl, msg) {
+  const { nvim } = import_coc5.workspace;
+  await nvim.exec(`echohl ${hl}`);
+  await nvim.exec(`echo "${msg}"`);
+  await nvim.exec(`echohl None`);
 }
 async function popup(content, title, filetype, cfg) {
   if (content.length == 0) {
@@ -1360,7 +1376,9 @@ async function simpleHttpsProxy(host, port, target_host) {
       if (resp.statusCode == 200) {
         resolve({ agent: new import_https.default.Agent({ socket }) });
       } else {
-        resolve({ error: { name: "ERR_CONN", message: "connect fail" } });
+        resolve({
+          error: new CocExtError(CocExtError.ERR_HTTP, "connect fail")
+        });
       }
     }).on("error", (error) => {
       resolve({ error });
@@ -1387,10 +1405,10 @@ async function simpleHttpRequest(opts, is_https, data) {
       });
     }).on("timeout", () => {
       resolve({
-        error: {
-          name: "ERR_TIMEOUT",
-          message: `query ${opts.hostname ? opts.hostname : opts.host} timeout`
-        }
+        error: new CocExtError(
+          CocExtError.ERR_HTTP,
+          `query ${opts.hostname ? opts.hostname : opts.host} timeout`
+        )
       });
     });
     if (data) {
@@ -1466,10 +1484,12 @@ async function sendHttpRequestWithCallback(req, cb) {
         if (cb.onTimeout) {
           cb.onTimeout();
         }
-        resolve({
-          name: "ERR_TIMEOUT",
-          message: `query ${req.args.host} timeout`
-        });
+        resolve(
+          new CocExtError(
+            CocExtError.ERR_HTTP,
+            `query ${req.args.host} timeout`
+          )
+        );
       });
       if (req.data) {
         r.write(req.data);
@@ -1993,12 +2013,12 @@ ${card.ref_doc.url}`;
   }
   async sendHttpRequest(req) {
     if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
-      return { name: "ERR_AUTH_FAIL", message: "auth fail" };
+      return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
     }
     let resp = await sendHttpRequest(req);
     if (resp.statusCode == 401) {
       if (await this.getAccessToken() != 200) {
-        return { name: "ERR_AUTH_FAIL", message: "auth fail" };
+        return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
       }
       resp = await sendHttpRequest(req);
     }
@@ -2052,10 +2072,10 @@ ${card.ref_doc.url}`;
         return [];
       }
     } else {
-      return {
-        name: "ERR_GET_CHAT_LIST",
-        message: `statusCode: ${resp.statusCode}, error: ${resp.error}`
-      };
+      return new CocExtError(
+        CocExtError.ERR_KIMI,
+        `[Kimi] statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
+      );
     }
   }
   async refCard(query) {
@@ -2078,7 +2098,10 @@ ${card.ref_doc.url}`;
       const obj = JSON.parse(resp.body.toString());
       return obj["items"][0];
     }
-    return { name: "ERR_REF_CARD", message: "query ref fail" };
+    return new CocExtError(
+      CocExtError.ERR_KIMI,
+      `query ref fail, path: ${req.args.path}`
+    );
   }
   async chatScroll() {
     const req = {
@@ -2104,10 +2127,10 @@ ${card.ref_doc.url}`;
         return [];
       }
     } else {
-      return {
-        name: "ERR_GET_CHAT_LIST",
-        message: `statusCode: ${resp.statusCode}, error: ${resp.error}`
-      };
+      return new CocExtError(
+        CocExtError.ERR_KIMI,
+        `statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
+      );
     }
   }
   async chat(text) {
@@ -2151,7 +2174,7 @@ ${card.ref_doc.url}`;
       },
       onError: (err) => {
         this.append(" (ERROR) ");
-        this.append(JSON.stringify(err));
+        this.append(err.message);
         statusCode = -1;
       },
       onTimeout: () => {
@@ -2373,6 +2396,7 @@ async function kimi_open() {
     let chat_list = await kimiChat.chatList();
     if (chat_list instanceof Error) {
       logger.error(chat_list);
+      echoMessage("ErrorMsg", chat_list.message);
       return -1;
     }
     let items = chat_list.map((i) => {
