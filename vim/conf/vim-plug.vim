@@ -256,6 +256,12 @@ Plug 'https://github.com/rcarriga/nvim-notify'
 " files for any git rev.
 Plug 'https://github.com/sindrets/diffview.nvim.git'
 
+" Neovim plugin to improve the default vim.ui interfaces
+Plug 'https://github.com/stevearc/dressing.nvim.git'
+
+" Plugin to improve viewing Markdown files in Neovim 
+Plug 'https://github.com/MeanderingProgrammer/render-markdown.nvim.git'
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)

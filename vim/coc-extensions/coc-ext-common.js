@@ -2155,7 +2155,8 @@ ${card.ref_doc.url}`;
                 this.append(data.text, false);
               }
             } else if (data.event == "resp") {
-              this.append(`>> id:${data.id}`);
+              this.append(`>> id:${data.id}
+`);
             } else if (data.event == "search_plus") {
               if (data.msg && data.msg.type == "get_res" && data.msg.title && data.msg.url) {
                 const idx = this.addUrl(data.msg.url);
@@ -2426,7 +2427,8 @@ async function kimi_open() {
           if (item.role == "user") {
             kimiChat.appendUserInput(item.created_at, item.content);
           } else {
-            kimiChat.append(`>> id:${item.id}`);
+            kimiChat.append(`>> id:${item.id}
+`);
             if (item.search_plus) {
               for (const search of item.search_plus) {
                 if (search.msg.type == "get_res") {
