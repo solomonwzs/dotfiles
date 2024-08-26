@@ -33,7 +33,7 @@ __export(coc_ext_common_exports, {
   activate: () => activate
 });
 module.exports = __toCommonJS(coc_ext_common_exports);
-var import_coc22 = require("coc.nvim");
+var import_coc23 = require("coc.nvim");
 
 // src/lists/autocmd.ts
 var import_coc = require("coc.nvim");
@@ -1779,10 +1779,39 @@ async function leader_recv(cmd, ..._args) {
   }
 }
 
-// src/kimi/kimi.ts
+// src/ai/kimi.ts
+var import_coc22 = require("coc.nvim");
+
+// src/ai/base.ts
 var import_coc21 = require("coc.nvim");
-var KimiChat = class {
+var BaseAiChannel = class {
+  constructor() {
+    this.channel = null;
+    this.bufnr = -1;
+  }
+  async showChannel(name, filetye) {
+    if (!this.channel) {
+      this.channel = import_coc21.window.createOutputChannel(name);
+    }
+    let { nvim } = import_coc21.workspace;
+    let winid = await nvim.call("bufwinid", name);
+    if (winid == -1) {
+      this.channel.show();
+      winid = await nvim.call("bufwinid", name);
+      this.bufnr = await nvim.call("bufnr", name);
+      await nvim.call("coc#compat#execute", [winid, "setl wrap"]);
+      await nvim.call("win_execute", [winid, `set ft=${filetye}`]);
+    } else {
+      await nvim.call("win_gotoid", [winid]);
+    }
+    await nvim.call("win_execute", [winid, "norm G"]);
+  }
+};
+
+// src/ai/kimi.ts
+var KimiChat = class extends BaseAiChannel {
   constructor(refresh_token) {
+    super();
     this.refresh_token = refresh_token;
     this.rtoken = refresh_token;
     this.chat_id = "";
@@ -1799,7 +1828,7 @@ var KimiChat = class {
     this.urls = [];
   }
   async bufferLines() {
-    const doc = import_coc21.workspace.getDocument(this.bufnr);
+    const doc = import_coc22.workspace.getDocument(this.bufnr);
     if (doc == null) {
       return -1;
     }
@@ -1831,8 +1860,8 @@ var KimiChat = class {
     return { type: "none", id: -1 };
   }
   async getRef() {
-    const doc = await import_coc21.workspace.document;
-    const pos = await import_coc21.window.getCursorPosition();
+    const doc = await import_coc22.workspace.document;
+    const pos = await import_coc22.window.getCursorPosition();
     const lines = await doc.buffer.lines;
     const line = lines[pos.line];
     if (!line) {
@@ -1927,7 +1956,7 @@ ${card.ref_doc.url}`;
     return null;
   }
   async openAutoScroll() {
-    let { nvim } = import_coc21.workspace;
+    let { nvim } = import_coc22.workspace;
     this.winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
   }
   closeAutoScroll() {
@@ -1943,7 +1972,7 @@ ${card.ref_doc.url}`;
   append(text, newline = true) {
     if (this.channel) {
     } else if (this.chat_id && this.name) {
-      this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
+      this.channel = import_coc22.window.createOutputChannel(`Kimi-${this.chat_id}`);
     } else {
       return;
     }
@@ -1953,7 +1982,7 @@ ${card.ref_doc.url}`;
       this.channel.append(text);
     }
     if (this.winid != -1) {
-      let { nvim } = import_coc21.workspace;
+      let { nvim } = import_coc22.workspace;
       nvim.call("win_execute", [this.winid, "norm G"]);
     }
   }
@@ -1966,24 +1995,9 @@ ${card.ref_doc.url}`;
     }
   }
   async show() {
-    if (this.channel) {
-    } else if (this.chat_id && this.name) {
-      this.channel = import_coc21.window.createOutputChannel(`Kimi-${this.chat_id}`);
-    } else {
-      return;
+    if (this.channel || this.chat_id && this.name) {
+      await this.showChannel(`Kimi-${this.chat_id}`, "kimichat");
     }
-    let { nvim } = import_coc21.workspace;
-    let winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
-    if (winid == -1) {
-      this.channel.show();
-      winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
-      this.bufnr = await nvim.call("bufnr", `Kimi-${this.chat_id}`);
-      await nvim.call("coc#compat#execute", [winid, "setl wrap"]);
-      await nvim.call("win_execute", [winid, "set ft=kimichat"]);
-    } else {
-      await nvim.call("win_gotoid", [winid]);
-    }
-    await nvim.call("win_execute", [winid, "norm G"]);
   }
   async getAccessToken() {
     this.headers["Authorization"] = `Bearer ${this.rtoken}`;
@@ -2245,6 +2259,55 @@ var kimiChat = new KimiChat(
   process.env.MY_KIMI_REFRESH_TOKEN ? process.env.MY_KIMI_REFRESH_TOKEN : ""
 );
 
+// src/ai/groq.ts
+var GroqChat = class extends BaseAiChannel {
+  constructor(api_key) {
+    super();
+    this.api_key = api_key;
+    this.headers = {
+      Authorization: `Bearer ${this.api_key}`,
+      "Content-Type": "application/json"
+    };
+  }
+  async show() {
+    await this.showChannel("GroqChat", "groqchat");
+  }
+  async debug() {
+    const req = {
+      args: {
+        host: "api.groq.com",
+        path: "/openai/v1/chat/completions",
+        method: "POST",
+        protocol: "https:",
+        headers: this.headers
+      },
+      data: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: "How to close vim"
+          }
+        ],
+        model: "llama-3.1-70b-versatile"
+      })
+    };
+    const resp = await sendHttpRequest(req);
+    if (resp.error) {
+      logger.error(resp.error.message);
+      return null;
+    }
+    if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
+      logger.error(`groq, status: ${resp.statusCode}`);
+      return null;
+    }
+    const obj = JSON.parse(resp.body.toString());
+    logger.debug(obj);
+  }
+};
+var groqChat = new GroqChat(
+  process.env.MY_GROQ_API_KEY ? process.env.MY_GROQ_API_KEY : ""
+);
+
 // src/coc-ext-common.ts
 var cppFmtSetting = {
   provider: "clang-format",
@@ -2289,7 +2352,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc22.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc23.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -2322,7 +2385,7 @@ function hlPreview() {
     if (arr.length == 0) {
       return;
     }
-    const { nvim } = import_coc22.workspace;
+    const { nvim } = import_coc23.workspace;
     await nvim.exec(
       "hi HlPreview cterm=None ctermfg=None ctermbg=None gui=None guifg=None guibg=None"
     );
@@ -2369,12 +2432,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const range = await import_coc22.window.getSelectedRange("v");
+    const range = await import_coc23.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc22.workspace.document;
+    const doc = await import_coc23.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -2384,13 +2447,18 @@ function addFormatter(context, lang, setting) {
   const selector = [{ scheme: "file", language: lang }];
   const provider = new FormattingEditProvider(setting);
   context.subscriptions.push(
-    import_coc22.languages.registerDocumentFormatProvider(selector, provider, 1)
+    import_coc23.languages.registerDocumentFormatProvider(selector, provider, 1)
   );
   if (provider.supportRangeFormat()) {
     context.subscriptions.push(
-      import_coc22.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
+      import_coc23.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
     );
   }
+}
+async function groq_open() {
+  await groqChat.show();
+  await groqChat.debug();
+  return 0;
 }
 async function kimi_open() {
   if (kimiChat.getChatId().length == 0) {
@@ -2404,9 +2472,9 @@ async function kimi_open() {
       return { label: i.name, chat_id: i.id, description: i.updated_at };
     });
     items.push({ label: "Create", chat_id: "", description: "" });
-    let choose = await import_coc22.window.showQuickPick(items, { title: "Choose Chat" });
+    let choose = await import_coc23.window.showQuickPick(items, { title: "Choose Chat" });
     if (!choose || choose.chat_id.length == 0) {
-      let new_name = await import_coc22.window.requestInput("Name", "", {
+      let new_name = await import_coc23.window.requestInput("Name", "", {
         position: "center"
       });
       if (new_name.length == 0) {
@@ -2466,14 +2534,14 @@ function kimi_ref() {
   return async () => {
     const text = await kimiChat.getRef();
     if (text) {
-      popup(text);
+      popup(text, "", "markdown");
     }
   };
 }
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc22.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -2494,37 +2562,38 @@ async function activate(context) {
     //     clearInterval(timer);
     //   },
     // },
-    import_coc22.commands.registerCommand("ext-debug", debug, { sync: true }),
-    import_coc22.commands.registerCommand("ext-kimi", kimi_open, { sync: true }),
-    import_coc22.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
-    import_coc22.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+    import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc23.commands.registerCommand("ext-groq", groq_open, { sync: true }),
+    import_coc23.commands.registerCommand("ext-kimi", kimi_open, { sync: true }),
+    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-kimi", kimi_chat("v"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-kimi", kimi_chat("v"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["n"], "ext-kimi-ref", kimi_ref(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-kimi-ref", kimi_ref(), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-base64",
       decodeStrFn("base64"),
@@ -2532,10 +2601,10 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc22.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),
-    import_coc22.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-copy-xclip",
       async () => {
@@ -2544,16 +2613,16 @@ async function activate(context) {
       },
       { sync: false }
     ),
-    import_coc22.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-change-name-rule",
       async () => {
-        const range = await import_coc22.window.getSelectedRange("v");
+        const range = await import_coc23.window.getSelectedRange("v");
         if (!range) {
           return;
         }
         const pythonDir = getcfg("pythonDir", "");
-        const doc = await import_coc22.workspace.document;
+        const doc = await import_coc23.workspace.document;
         const name = doc.textDocument.getText(range);
         const res = await callPython(pythonDir, "common", "change_name_rule", [
           name
@@ -2564,7 +2633,7 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc22.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-mime",
       async () => {
@@ -2576,13 +2645,13 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc22.listManager.registerList(new ExtList(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new Commands(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new MapkeyList(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new RgfilesList(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new RgwordsList(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new AutocmdList(import_coc22.workspace.nvim)),
-    import_coc22.listManager.registerList(new HighlightList(import_coc22.workspace.nvim))
+    import_coc23.listManager.registerList(new ExtList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new Commands(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new MapkeyList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgfilesList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgwordsList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new AutocmdList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new HighlightList(import_coc23.workspace.nvim))
     // sources.createSource({
     //   name: 'coc-ext-common completion source', // unique id
     //   doComplete: async () => {

@@ -335,3 +335,6 @@ _tmux_set_env "MY_TMUX_ACTIVE_BG_COLOR" "${MY_TMUX_ACTIVE_BG_COLOR:-colour120}" 
 
 # kimi
 [ -n "${MY_KIMI_REFRESH_TOKEN}" ] && export MY_KIMI_REFRESH_TOKEN="$MY_KIMI_REFRESH_TOKEN"
+
+#groq
+[ -n "${MY_GROQ_API_KEY}" ] && export MY_GROQ_API_KEY="$MY_GROQ_API_KEY"

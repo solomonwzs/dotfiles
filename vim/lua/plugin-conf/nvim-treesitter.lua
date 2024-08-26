@@ -30,3 +30,4 @@ require("nvim-treesitter.configs").setup {
 }
 
 vim.treesitter.language.register("markdown", "kimichat")
+vim.treesitter.language.register("markdown", "groqchat")

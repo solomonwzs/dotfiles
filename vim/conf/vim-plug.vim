@@ -22,10 +22,10 @@ Plug 'https://github.com/vim-scripts/DrawIt'
 " Plug 'https://github.com/kien/ctrlp.vim'
 
 " Lean & mean status/tabline for vim that's light as air
-Plug 'https://github.com/vim-airline/vim-airline'
+" Plug 'https://github.com/vim-airline/vim-airline'
 
 " Generate Vim tags for Erlang files
-Plug 'https://github.com/vim-erlang/vim-erlang-tags'
+" Plug 'https://github.com/vim-erlang/vim-erlang-tags'
 
 " Vim python-mode. PyLint, Rope, Pydoc, breakpoints from box.
 " Plug 'https://github.com/klen/python-mode'
@@ -44,7 +44,7 @@ Plug 'https://github.com/will133/vim-dirdiff'
 
 " Run Async Shell Commands in Vim 8.0 / NeoVim and Output
 " to Quickfix Window
-Plug 'https://github.com/skywind3000/asyncrun.vim.git'
+" Plug 'https://github.com/skywind3000/asyncrun.vim.git'
 
 " Asynchronous Lint Engine
 " Plug 'https://github.com/w0rp/ale.git'
@@ -54,7 +54,7 @@ Plug 'https://github.com/skywind3000/asyncrun.vim.git'
 
 " A Vim plugin which shows a git diff in the gutter
 " (sign column) and stages/undoes hunks.
-Plug 'https://github.com/airblade/vim-gitgutter.git'
+" Plug 'https://github.com/airblade/vim-gitgutter.git'
 
 " Commentary.vim: comment stuff out
 Plug 'https://github.com/tpope/vim-commentary'
@@ -74,7 +74,7 @@ Plug 'https://github.com/Yggdroot/LeaderF.git', {'do': './install.sh'}
 Plug 'https://github.com/majutsushi/tagbar'
 
 " Vim plugin for the Perl module / CLI script 'ack'
-Plug 'https://github.com/mileszs/ack.vim.git'
+" Plug 'https://github.com/mileszs/ack.vim.git'
 
 " A Vim plugin that manages your tag files
 " Plug 'https://github.com/ludovicchabant/vim-gutentags.git'
@@ -86,7 +86,7 @@ Plug 'https://github.com/mileszs/ack.vim.git'
 " Plug 'https://github.com/davidhalter/jedi-vim.git'
 
 " Syntax checking hacks for vim
-Plug 'https://github.com/vim-syntastic/syntastic.git'
+" Plug 'https://github.com/vim-syntastic/syntastic.git'
 
 " Updated javacomplete plugin for vim
 " Plug 'https://github.com/artur-shaik/vim-javacomplete2.git'
@@ -101,13 +101,13 @@ Plug 'https://github.com/tpope/vim-fugitive.git'
 Plug 'https://github.com/godlygeek/tabular.git'
 
 " Markdown Vim Mode
-Plug 'https://github.com/plasticboy/vim-markdown.git'
+" Plug 'https://github.com/plasticboy/vim-markdown.git'
 
 " Twitter client for Vim
-Plug 'https://github.com/twitvim/twitvim.git'
+" Plug 'https://github.com/twitvim/twitvim.git'
 
 " Next generation completion framework after neocomplcache
-Plug 'https://github.com/Shougo/neocomplete.vim.git'
+" Plug 'https://github.com/Shougo/neocomplete.vim.git'
 
 " Retro groove color scheme for Vim
 Plug 'https://github.com/morhetz/gruvbox.git'
@@ -117,34 +117,34 @@ Plug 'https://github.com/morhetz/gruvbox.git'
 
 " Rainbow Parentheses Improved, shorter code, no level limit,
 " smooth and fast, powerful configuration.
-Plug 'https://github.com/luochen1990/rainbow.git'
+" Plug 'https://github.com/luochen1990/rainbow.git'
 
 " Vim configuration for Rust.
 " Plug 'https://github.com/rust-lang/rust.vim.git'
 
 " Preview colours in source code while editing
-Plug 'https://github.com/ap/vim-css-color.git'
+" Plug 'https://github.com/ap/vim-css-color.git'
 
 " Maktaba is a vimscript plugin library.
-Plug 'https://github.com/google/vim-maktaba.git'
+" Plug 'https://github.com/google/vim-maktaba.git'
 
 " Glaive is a utility for configuring maktaba plugins.
-Plug 'https://github.com/google/vim-glaive.git'
+" Plug 'https://github.com/google/vim-glaive.git'
 
 " Syntax-aware code formatting, depends on maktaba.
-Plug 'https://github.com/google/vim-codefmt.git'
+" Plug 'https://github.com/google/vim-codefmt.git'
 
 " Syntax Highlight for Vue.js components.
-Plug 'https://github.com/posva/vim-vue.git'
+" Plug 'https://github.com/posva/vim-vue.git'
 
 " Vim syntax for TOML.
-Plug 'https://github.com/cespare/vim-toml.git'
+" Plug 'https://github.com/cespare/vim-toml.git'
 
 " Vastly improved Javascript indentation and syntax support in Vim.
-Plug 'https://github.com/pangloss/vim-javascript.git'
+" Plug 'https://github.com/pangloss/vim-javascript.git'
 
 " Erlang omnicomplete plugin for Vim.
-Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
+" Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 
 " coc-erlang_ls
 " Plug 'https://github.com/hyhugh/coc-erlang_ls.git', {'do': 'yarn install --frozen-lockfile'}
@@ -156,13 +156,13 @@ Plug 'https://github.com/vim-erlang/vim-erlang-omnicomplete.git'
 "         \ }
 
 " Dark powered asynchronous completion framework for neovim/Vim8.
-Plug 'https://github.com/Shougo/deoplete.nvim.git'
+" Plug 'https://github.com/Shougo/deoplete.nvim.git'
 
 " Yet Another Remote Plugin Framework for Neovim.
-Plug 'https://github.com/roxma/nvim-yarp.git'
+" Plug 'https://github.com/roxma/nvim-yarp.git'
 
 " EXPERIMENTAL
-Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
+" Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
 
 " async language server protocol plugin for vim and neovim.
 " Plug 'https://github.com/prabirshrestha/vim-lsp.git'
@@ -171,10 +171,10 @@ Plug 'https://github.com/roxma/vim-hug-neovim-rpc.git'
 " Plug 'https://github.com/racer-rust/vim-racer.git'
 
 " fzf heart vim.
-Plug 'https://github.com/junegunn/fzf.vim.git'
+" Plug 'https://github.com/junegunn/fzf.vim.git'
 
 " The fancy start screen for Vim.
-Plug 'https://github.com/mhinz/vim-startify.git'
+" Plug 'https://github.com/mhinz/vim-startify.git'
 
 " Vim motions on speed!
 " Plug 'https://github.com/easymotion/vim-easymotion.git'
@@ -183,16 +183,16 @@ Plug 'https://github.com/mhinz/vim-startify.git'
 Plug 'https://github.com/SirVer/ultisnips.git'
 
 " Dark powered shell interface for NeoVim and Vim8.
-Plug 'https://github.com/Shougo/deol.nvim.git'
+" Plug 'https://github.com/Shougo/deol.nvim.git'
 
 " Interactive command execution in Vim.
-Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
+" Plug 'https://github.com/Shougo/vimproc.vim.git', {'do': 'make'}
 
 " Unite and create user interfaces.
 " Plug 'https://github.com/Shougo/unite.vim.git'
 
 " Neovim / Vim integration for Delve. (for Golang)
-Plug 'https://github.com/sebdah/vim-delve.git'
+" Plug 'https://github.com/sebdah/vim-delve.git'
 
 " A code-completion engine for Vim http://valloric.github.io/YouCompleteMe/
 " Plug 'https://github.com/Valloric/YouCompleteMe.git'
@@ -234,7 +234,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 
 " Display all accessible marks and their surrounding lines in a collapsible
 " sidebar.
-Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
+" Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
 " Nvim Treesitter configurations and abstraction layer.
 Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
@@ -250,14 +250,14 @@ Plug 'https://github.com/nvim-telescope/telescope.nvim'
 Plug 'https://github.com/kyazdani42/nvim-web-devicons'
 
 " A fancy, configurable, notification manager for NeoVim.
-Plug 'https://github.com/rcarriga/nvim-notify'
+" Plug 'https://github.com/rcarriga/nvim-notify'
 
 " Single tabpage interface for easily cycling through diffs for all modified 
 " files for any git rev.
 Plug 'https://github.com/sindrets/diffview.nvim.git'
 
 " Neovim plugin to improve the default vim.ui interfaces
-Plug 'https://github.com/stevearc/dressing.nvim.git'
+" Plug 'https://github.com/stevearc/dressing.nvim.git'
 
 " Plugin to improve viewing Markdown files in Neovim 
 Plug 'https://github.com/MeanderingProgrammer/render-markdown.nvim.git'

@@ -1,1 +1,3 @@
-require("render-markdown").setup({file_types = {"markdown", "kimichat"}})
+require("render-markdown").setup({
+  file_types = {"markdown", "kimichat", "groqchat"}
+})

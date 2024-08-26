@@ -6,12 +6,10 @@
 let s:bundle_list = [
     \ {'name': 'DrawIt'},
     \ {'name': 'LeaderF'},
-    \ {'name': 'asyncrun.vim'},
     \ {'name': 'coc.nvim', 'priority': 2},
     \ {'name': 'defx-git', 'vim': 0},
     \ {'name': 'defx-icons'},
     \ {'name': 'defx.nvim', 'vim': 0},
-    \ {'name': 'deol.nvim'},
     \ {'name': 'diffview.nvim', 'vim': 0},
     \ {'name': 'gruvbox', 'priority': 1},
     \ {'name': 'lightline.vim', 'priority': 2},
@@ -19,20 +17,15 @@ let s:bundle_list = [
     \ {'name': 'nvim-treesitter', 'vim': 0},
     \ {'name': 'nvim-web-devicons', 'vim': 0},
     \ {'name': 'plenary.nvim', 'vim': 0},
-    \ {'name': 'rainbow'},
     \ {'name': 'render-markdown.nvim', 'vim': 0, 'priority': 1},
     \ {'name': 'tabular'},
     \ {'name': 'tagbar', 'priority': 2},
     \ {'name': 'telescope.nvim', 'vim': 0},
     \ {'name': 'ultisnips'},
     \ {'name': 'vim-commentary'},
-    \ {'name': 'vim-delve'},
     \ {'name': 'vim-dirdiff'},
     \ {'name': 'vim-fugitive'},
     \ {'name': 'vim-signature'},
-    \ {'name': 'vim-toml'},
-    \ {'name': 'vim-vue'},
-    \ {'name': 'vimproc.vim'},
     \ ]
 
 let s:loaded_bundles = {}
