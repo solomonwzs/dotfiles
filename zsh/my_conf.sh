@@ -38,3 +38,6 @@ MY_TMUX_COMPONENTS=("net:enp0s3" "cpu" "mem")
 
 # kimi key
 # MY_KIMI_REFRESH_TOKEN=""
+
+# groq key
+# MY_GROQ_API_KEY=""

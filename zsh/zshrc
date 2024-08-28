@@ -264,7 +264,7 @@ _fzf_preview_file() {
 
 pfzf() {
     command fzf \
-        --preview 'preview_file -w $FZF_PREVIEW_COLUMNS -h $FZF_PREVIEW_LINES {}' \
+        --preview 'ls -lh {} && preview_file -w $FZF_PREVIEW_COLUMNS -h $FZF_PREVIEW_LINES {}' \
         --preview-window '60%' \
         --height 80% \
         --bind 'enter:execute(${EDITOR:-vim} {})' \

@@ -1784,6 +1784,7 @@ var import_coc22 = require("coc.nvim");
 
 // src/ai/base.ts
 var import_coc21 = require("coc.nvim");
+var import_tiktoken = require("tiktoken");
 var BaseAiChannel = class {
   constructor() {
     this.channel = null;
@@ -2268,6 +2269,8 @@ var GroqChat = class extends BaseAiChannel {
       Authorization: `Bearer ${this.api_key}`,
       "Content-Type": "application/json"
     };
+    const proxy_url = getEnvHttpProxy(true);
+    this.proxy = proxy_url ? { host: proxy_url.hostname, port: parseInt(proxy_url.port) } : void 0;
   }
   async show() {
     await this.showChannel("GroqChat", "groqchat");
@@ -2285,15 +2288,16 @@ var GroqChat = class extends BaseAiChannel {
         messages: [
           {
             role: "user",
-            content: "How to close vim"
+            content: "what is tiktoken?"
           }
         ],
         model: "llama-3.1-70b-versatile"
-      })
+      }),
+      proxy: this.proxy
     };
     const resp = await sendHttpRequest(req);
     if (resp.error) {
-      logger.error(resp.error.message);
+      logger.error(`query fail, ${resp.error.message}`);
       return null;
     }
     if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {

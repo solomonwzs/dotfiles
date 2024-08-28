@@ -1,3 +1,6 @@
 *.DS_Store
 __pycache__
 .vim
+vim/coc-extensions/node_modules
+vim/coc-extensions/package-lock.json
+vim/coc-extensions/package.json

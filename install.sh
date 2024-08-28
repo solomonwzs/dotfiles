@@ -37,6 +37,7 @@ pkg_list=(
     "git"
     "lua"
     "node"
+    "npm"
     "nvim"
     "rg"
     "tig"
@@ -109,6 +110,17 @@ git_clone "https://github.com/zsh-users/zsh-autosuggestions.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-autosuggestions"
 git_clone "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
     "$OH_MY_ZSH_PATH/custom/plugins/zsh-syntax-highlighting"
+
+coc_ext_dir="$EXECUTE_DIRNAME/vim/coc-extensions"
+tiktoken_dir="$coc_ext_dir/node_modules/tiktoken"
+if [ -e "$tiktoken_dir" ]; then
+    warn "'$tiktoken_dir' has exists"
+else
+    info "install tiktoken"
+    cd "$EXECUTE_DIRNAME/vim/coc-extensions"
+    npm install tiktoken
+    cd -
+fi
 
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
     cd "$EXECUTE_DIRNAME/osx"
