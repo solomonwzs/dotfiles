@@ -13,7 +13,7 @@ g_StatusLine=""
 
 g_PercentBlockList=(" " "▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
 
-g_BatteryPowerList=("" "" "" "" "" "" "" "" "" "" "")
+g_BatteryPowerList=("󰂎" "󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹")
 
 # g_IsDarwin=""
 # if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
@@ -184,7 +184,7 @@ function init_net_stat() {
 function get_battery_icon() {
     read -r charging <"/sys/class/power_supply/BAT0/status"
     if [ "$charging" = "Charging" ]; then
-        g_Return=""
+        g_Return="󰂄"
     else
         i=$(($1 / 10))
         g_Return="${g_BatteryPowerList[$i]}"
@@ -379,7 +379,7 @@ function component_net() {
     for (( ; ${#rx} < 8; )); do rx=" $rx"; done
     for (( ; ${#tx} < 8; )); do tx=" $tx"; done
 
-    append_status_line "${rx} ${tx}"
+    append_status_line "${rx} ${tx}"
 }
 
 function component_temp() {

@@ -67,7 +67,7 @@
   },
 
   "diagnostic.infoSign": "",
-  "diagnostic.hintSign": "",
+  "diagnostic.hintSign": "󰌵",
   "diagnostic.errorSign": "",
   "diagnostic.warningSign": "",
 

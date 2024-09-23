@@ -46,7 +46,7 @@ let g:lightline.tab = {
     \ }
 
 let g:lightline.component = {
-    \ 'close'    : '%999X   ',
+    \ 'close'    : '%999X 󰅙 ',
     \ 'modified' : '%{&modified ? "" : &modifiable ? "" : "-"}',
     \ 'paste'    : '%{&paste?"" : ""}',
     \ 'readonly' : '%{&readonly ? "" : ""}',
