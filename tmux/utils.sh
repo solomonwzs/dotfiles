@@ -292,7 +292,8 @@ function get_mem_stat() {
 function dot_histogram() {
     local str=""
     for ((i = 0; i <= ${#1} - 1; i += 2)); do
-        str="${str}${g_DotMap[${1:$i:2}]}"
+        idx="${1:$i:2}"
+        str="${str}${g_DotMap[$idx]}"
     done
     g_Cache[$2]="$str"
     g_Return="$str"
@@ -307,7 +308,7 @@ function component_cpu_dot_histogram() {
     g_CpuStatStr="${g_CpuStatStr:1:15}$((cpu / 25))"
 
     dot_histogram "$g_CpuStatStr" "dot_htg_cpu"
-    cpu_htg=$g_Return
+    cpu_htg="$g_Return"
     for (( ; ${#cpu} < 3; )); do cpu=" $cpu"; done
 
     append_status_line "${cpu_htg}${cpu}%"
@@ -315,11 +316,11 @@ function component_cpu_dot_histogram() {
 
 function component_mem_dot_histogram() {
     get_mem_stat
-    local mem=g_Return
+    local mem="$g_Return"
     g_MemStatStr="${g_MemStatStr:1:15}$((mem / 25))"
 
     dot_histogram "$g_MemStatStr" "dot_htg_mem"
-    local mem_htg=$g_Return
+    local mem_htg="$g_Return"
     for (( ; ${#mem} < 3; )); do mem=" $mem"; done
 
     append_status_line "${mem_htg}${mem}%"
@@ -350,7 +351,7 @@ function component_cpu() {
 
 function component_mem_histogram() {
     get_mem_stat
-    local mem=$g_Return
+    local mem="$g_Return"
     histogram "$mem" "htg_mem"
     local mem_htg="$g_Return"
 
@@ -360,7 +361,7 @@ function component_mem_histogram() {
 
 function component_mem() {
     get_mem_stat
-    local mem=$g_Return
+    local mem="$g_Return"
     local bar="${g_PercentBlockList[$((mem * 10 / 125))]}"
 
     for (( ; ${#mem} < 3; )); do mem=" $mem"; done
@@ -371,15 +372,15 @@ function component_net() {
     init_net_stat
 
     flow_digital "${g_NetRxList[$1]}"
-    rx=$g_Return
+    rx="$g_Return"
 
     flow_digital "${g_NetTxList[$1]}"
-    tx=$g_Return
+    tx="$g_Return"
 
     for (( ; ${#rx} < 8; )); do rx=" $rx"; done
     for (( ; ${#tx} < 8; )); do tx=" $tx"; done
 
-    append_status_line "${rx} ${tx}"
+    append_status_line "${rx}󱦳 ${tx}󱦲"
 }
 
 function component_temp() {
