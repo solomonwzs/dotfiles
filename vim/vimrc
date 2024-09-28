@@ -89,15 +89,6 @@ augroup my_vimrc
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") |
       \ exe "normal! g`\"" | endif
 
-  autocmd FileType java       setlocal omnifunc=javacomplete#Complete
-  autocmd Filetype c          setlocal omnifunc=ccomplete#Complete
-  autocmd Filetype html       setlocal omnifunc=htmlcomplete#CompleteTags
-  autocmd Filetype markdown   setlocal omnifunc=htmlcomplete#CompleteTags
-  autocmd Filetype xml        setlocal omnifunc=xmlcomplete#CompleteTags
-  autocmd Filetype python     setlocal omnifunc=pythoncomplete#CompleteTags
-  autocmd FileType python     setlocal completeopt-=preview
-  autocmd Filetype tex        setlocal omnifunc=syntaxcomplete#Complete
-  autocmd FileType css        setlocal omnifunc=csscomplete#CompleteCSS
   autocmd FileType json       syntax match Comment +\/\/.\+$+
 
   if executable('ghc-mod')

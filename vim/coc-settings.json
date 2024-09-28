@@ -140,6 +140,7 @@
   // coc-sumneko-lua
   "sumneko-lua.enableNvimLuaDev": true,
   "Lua.hint.enable": false,
+  "Lua.diagnostics.enable": false,
 
   "languageserver": {
     // pacman -S bash-language-server
