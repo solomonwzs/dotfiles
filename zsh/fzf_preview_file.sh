@@ -50,7 +50,9 @@ elif [[ "$mime" =~ image ]]; then
     image_view --width "$width" --height "$height" --ratio "$ratio" "$filename"
 elif [[ "$mime" =~ application/zip ]]; then
     unzip -l "$filename"
-elif [[ "$mime" =~ application/gzip ]]; then
+elif [[ "$mime" =~ application/x-rar ]]; then
+    unrar l "$filename"
+elif [[ "$mime" =~ application/gzip || "$mime" =~ application/x-xz ]]; then
     tar tvf "$filename"
 elif [[ "$mime" =~ application/pdf ||
     "$mime" =~ application/vnd.openxmlformats-officedocument ||

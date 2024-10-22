@@ -55,3 +55,6 @@
 
 > openssl s_client -starttls smtp -crlf -showcerts -connect gmail-smtp-in.l.google.com:25
 # 连接 SMTP 服务并 STARTTLS
+
+> objdump --disassemble --show-raw-insn $filename
+# 显示汇编指令
