@@ -36,6 +36,8 @@ g_NetRxList=()
 g_NetTxList=()
 g_CpuStat=()
 
+g_X86PkgTempDir=""
+
 g_Return=""
 
 g_SizeUnit=("" "KB" "MB" "GB" "TB")
@@ -383,10 +385,36 @@ function component_net() {
     append_status_line "${rx}󱦳 ${tx}󱦲"
 }
 
+function find_temrmal_zone() {
+    local dname=""
+    for ((i = 0; 1; i += 1)); do
+        dname="/sys/class/thermal/thermal_zone$i"
+        if [ ! -d "$dname" ]; then
+            break
+        fi
+        read -r _type <"$dname/type"
+        if [[ "$_type" == "$1" ]]; then
+            break
+        fi
+    done
+    g_Return="$dname"
+}
+
 function component_temp() {
     local temp
-    temp=$(get_temp_stat)
-    append_status_line "$temp"
+    if [ "$g_IsLinux" -eq 1 ]; then
+        if [ -z "$g_X86PkgTempDir" ]; then
+            find_temrmal_zone "x86_pkg_temp"
+            g_X86PkgTempDir="$g_Return"
+        fi
+        if [ -n "$g_X86PkgTempDir" ]; then
+            read -r temp <"$g_X86PkgTempDir/temp"
+            append_status_line " $((temp / 1000))°C"
+        fi
+    else
+        temp=$(get_temp_stat)
+        append_status_line "$temp"
+    fi
 }
 
 function component_power() {

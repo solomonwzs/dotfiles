@@ -93,6 +93,16 @@ var CocExtError = class extends Error {
 CocExtError.ERR_HTTP = -1;
 CocExtError.ERR_AUTH = -2;
 CocExtError.ERR_KIMI = -3;
+var CocExtErrnoError = class extends Error {
+  constructor(err) {
+    super(err.message);
+    this.name = "CocExtErrnoError";
+    this.errno = err.errno;
+    this.code = err.code;
+    this.path = err.path;
+    this.syscall = err.syscall;
+  }
+};
 
 // src/lists/autocmd.ts
 function parseAutocmdInfo(str) {
@@ -1370,6 +1380,18 @@ function createTranslation(name, sl, tl, text) {
 // src/utils/http.ts
 var import_https = __toESM(require("https"));
 var import_http = __toESM(require("http"));
+
+// src/utils/file.ts
+var import_fs = __toESM(require("fs"));
+async function fsAccess(path6, mode) {
+  return new Promise((resolve) => {
+    import_fs.default.access(path6, mode, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+
+// src/utils/http.ts
 async function simpleHttpsProxy(host, port, target_host) {
   return new Promise((resolve) => {
     import_http.default.request({ host, port, path: target_host, method: "CONNECT" }).on("connect", (resp, socket, _head) => {
@@ -1784,7 +1806,6 @@ var import_coc22 = require("coc.nvim");
 
 // src/ai/base.ts
 var import_coc21 = require("coc.nvim");
-var import_tiktoken = require("tiktoken");
 var BaseAiChannel = class {
   constructor() {
     this.channel = null;
@@ -2313,6 +2334,7 @@ var groqChat = new GroqChat(
 );
 
 // src/coc-ext-common.ts
+var import_fs2 = __toESM(require("fs"));
 var cppFmtSetting = {
   provider: "clang-format",
   args: {
@@ -2547,6 +2569,8 @@ async function activate(context) {
   logger.info(`coc-ext-common works`);
   logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
+  const err = await fsAccess("/tmp/not_exist", import_fs2.default.constants.F_OK);
+  logger.debug(err instanceof Error);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
