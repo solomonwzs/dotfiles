@@ -7,8 +7,10 @@ noremap <C-P>f :LeaderfFunction<CR>
 noremap <C-P>b :LeaderfBuffer<CR>
 noremap <C-P>a :LeaderfTag<CR>
 
-noremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", expand('<cword>'))<CR><CR>
-vnoremap <silent> <C-P>gs :<C-U><C-R>=printf("Leaderf rg -F -e %s", leaderf#Rg#visual())<CR><CR>
+noremap <silent> <C-P>gs
+    \ :<C-U><C-R>=printf("Leaderf rg --fixed-strings --regexp %s", expand('<cword>'))<CR><CR>
+vnoremap <silent> <C-P>gs
+    \ :<C-U><C-R>=printf("Leaderf rg --fixed-strings --regexp %s", leaderf#Rg#visual())<CR><CR>
 
 let g:Lf_CommandMap = {
     \ '<C-K>': ['<Up>'],
@@ -71,14 +73,14 @@ if has('nvim')
       \ 'source': 'leaderf#man#source',
       \ 'accept': 'leaderf#man#accept',
       \ 'highlights_def': {
-        \ 'Lf_hl_manTitle': '^.\+\ze(',
-        \ 'Lf_hl_manNumber': '(.\+)',
-        \ },
-        \ 'highlights_cmd': [
-          \ 'hi link Lf_hl_manTitle Title',
-          \ 'hi link Lf_hl_manNumber Number',
-          \ ],
-          \ }
+      \ 'Lf_hl_manTitle': '^.\+\ze(',
+      \ 'Lf_hl_manNumber': '(.\+)',
+      \ },
+      \ 'highlights_cmd': [
+      \ 'hi link Lf_hl_manTitle Title',
+      \ 'hi link Lf_hl_manNumber Number',
+      \ ],
+      \ }
 endif
 
 let g:Lf_Extensions.rrg = {
@@ -86,8 +88,8 @@ let g:Lf_Extensions.rrg = {
     \ 'accept': 'leaderf#rrg#files_with_matches_accept',
     \ 'format_line': 'leaderf#rrg#files_with_matches_format_line',
     \ 'arguments': [
-      \ {'name': ['pattern']}
-      \ ],
+    \ {'name': ['pattern']}
+    \ ],
     \ }
 
 let g:Lf_Extensions.highlight = {
@@ -97,8 +99,8 @@ let g:Lf_Extensions.highlight = {
     \ 'accept': 'leaderf#highlight#accept',
     \ 'before_exit': 'leaderf#highlight#before_exit',
     \ 'arguments': [
-      \ {'name': ['vname']}
-      \ ],
+    \ {'name': ['vname']}
+    \ ],
     \ }
 
 let g:Lf_Extensions.debug = {

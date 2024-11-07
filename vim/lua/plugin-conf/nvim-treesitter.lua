@@ -28,7 +28,7 @@ require("nvim-treesitter.configs").setup {
     additional_vim_regex_highlighting = false
   },
 
-  indent = {enable = true}
+  indent = {enable = false}
 }
 
 vim.treesitter.language.register("markdown", "kimichat")
