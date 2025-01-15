@@ -246,9 +246,6 @@ Plug 'https://github.com/nvim-lua/plenary.nvim'
 " Find, Filter, Preview, Pick. All lua, all the time.
 Plug 'https://github.com/nvim-telescope/telescope.nvim'
 
-" lua `fork` of vim-web-devicons for neovim.
-Plug 'https://github.com/kyazdani42/nvim-web-devicons'
-
 " A fancy, configurable, notification manager for NeoVim.
 " Plug 'https://github.com/rcarriga/nvim-notify'
 
@@ -259,8 +256,11 @@ Plug 'https://github.com/sindrets/diffview.nvim.git'
 " Neovim plugin to improve the default vim.ui interfaces
 " Plug 'https://github.com/stevearc/dressing.nvim.git'
 
-" Plugin to improve viewing Markdown files in Neovim 
+" Plugin to improve viewing Markdown files in Neovim
 Plug 'https://github.com/MeanderingProgrammer/render-markdown.nvim.git'
+
+" Provides Nerd Font icons (glyphs) for use by neovim plugins
+Plug 'https://github.com/nvim-tree/nvim-web-devicons.git'
 
 call plug#end()
 
