@@ -58,3 +58,6 @@
 
 > objdump --disassemble --show-raw-insn $filename
 # 显示汇编指令
+
+> jmtpfs $path
+# 将手机挂载到挂载点
