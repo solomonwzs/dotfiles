@@ -93,6 +93,7 @@ var CocExtError = class extends Error {
 CocExtError.ERR_HTTP = -1;
 CocExtError.ERR_AUTH = -2;
 CocExtError.ERR_KIMI = -3;
+CocExtError.ERR_DEEPSEEK = -4;
 var CocExtErrnoError = class extends Error {
   constructor(err) {
     super(err.message);

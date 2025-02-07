@@ -1,3 +1,4 @@
-require("render-markdown").setup({
-  file_types = {"markdown", "kimichat", "groqchat"}
-})
+-- local has, render = pcall(require, "render-markdown")
+-- if has then
+--   render.setup({file_types = {"markdown", "kimichat", "groqchat"}})
+-- end
