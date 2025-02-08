@@ -17,7 +17,7 @@ let s:bundle_list = {
     \ 'nvim-treesitter': {'vim': 0},
     \ 'nvim-web-devicons': {'vim': 0},
     \ 'plenary.nvim': {'vim': 0},
-    \ 'render-markdown.nvim': {'vim': 0, 'deps': ['nvim-web-devicons']},
+    \ 'render-markdown.nvim': {'vim': 0, 'deps': ['nvim-web-devicons', 'nvim-treesitter']},
     \ 'tabular': {},
     \ 'tagbar': {},
     \ 'telescope.nvim': {'vim': 0},

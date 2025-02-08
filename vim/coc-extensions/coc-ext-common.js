@@ -1653,8 +1653,8 @@ async function getCursorSymbolList() {
 
 // src/utils/debug.ts
 async function debug(cmd, ...args) {
-  logger.debug(cmd);
-  logger.debug(args);
+  logger.debug(["cmd", cmd]);
+  logger.debug(["args", args]);
   let channel = import_coc19.window.createOutputChannel("debug");
   channel.show();
   for (let i = 0; i < 100; ++i) {
@@ -1810,12 +1810,69 @@ var import_coc22 = require("coc.nvim");
 
 // src/ai/base.ts
 var import_coc21 = require("coc.nvim");
-var BaseAiChannel = class {
+var BaseChatChannel = class {
   constructor() {
     this.channel = null;
     this.bufnr = -1;
+    this.chat_id = void 0;
+    this.chat_name = this.getChatName();
+    this.winid = -1;
   }
-  async showChannel(name, filetye) {
+  getCurrentChatId() {
+    return this.chat_id;
+  }
+  setCurrentChatId(chat_id) {
+    this.chat_id = chat_id;
+  }
+  async openAutoScroll() {
+    let { nvim } = import_coc21.workspace;
+    this.winid = await nvim.call(
+      "bufwinid",
+      `${this.chat_name}-${this.chat_id}`
+    );
+  }
+  closeAutoScroll() {
+    this.winid = -1;
+  }
+  async bufferLines() {
+    const doc = import_coc21.workspace.getDocument(this.bufnr);
+    if (doc == null) {
+      return -1;
+    }
+    return (await doc.buffer.lines).length;
+  }
+  append(text, newline = true) {
+    if (this.channel) {
+    } else if (this.chat_id) {
+      this.channel = import_coc21.window.createOutputChannel(
+        `${this.chat_name}-${this.chat_id}`
+      );
+    } else {
+      return;
+    }
+    if (newline) {
+      this.channel.appendLine(text);
+    } else {
+      this.channel.append(text);
+    }
+    if (this.winid != -1) {
+      let { nvim } = import_coc21.workspace;
+      nvim.call("win_execute", [this.winid, "norm G"]);
+    }
+  }
+  appendUserInput(datetime, text) {
+    this.append(`
+>> ${datetime}`);
+    let lines = text.split("\n");
+    for (const i of lines) {
+      this.append(`>> ${i}`);
+    }
+  }
+  async show() {
+    if (!this.chat_id) {
+      return;
+    }
+    const name = `${this.chat_name}-${this.chat_id}`;
     if (!this.channel) {
       this.channel = import_coc21.window.createOutputChannel(name);
     }
@@ -1826,39 +1883,31 @@ var BaseAiChannel = class {
       winid = await nvim.call("bufwinid", name);
       this.bufnr = await nvim.call("bufnr", name);
       await nvim.call("coc#compat#execute", [winid, "setl wrap"]);
-      await nvim.call("win_execute", [winid, `set ft=${filetye}`]);
+      await nvim.call("win_execute", [winid, "set ft=aichat"]);
     } else {
       await nvim.call("win_gotoid", [winid]);
     }
+    await nvim.call("setbufvar", [this.bufnr, "ai_name", this.chat_name]);
     await nvim.call("win_execute", [winid, "norm G"]);
   }
 };
 
 // src/ai/kimi.ts
-var KimiChat = class extends BaseAiChannel {
+var KimiChat = class extends BaseChatChannel {
   constructor(refresh_token) {
     super();
     this.refresh_token = refresh_token;
     this.rtoken = refresh_token;
-    this.chat_id = "";
     this.headers = {
       "Content-Type": "application/json",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
       Origin: "https://kimi.moonshot.cn",
       Referer: "https://kimi.moonshot.cn/"
     };
-    this.channel = null;
-    this.name = "";
-    this.winid = -1;
-    this.bufnr = -1;
     this.urls = [];
   }
-  async bufferLines() {
-    const doc = import_coc22.workspace.getDocument(this.bufnr);
-    if (doc == null) {
-      return -1;
-    }
-    return (await doc.buffer.lines).length;
+  getChatName() {
+    return "Kimi";
   }
   addUrl(url) {
     this.urls.push(url);
@@ -1981,49 +2030,12 @@ ${card.ref_doc.url}`;
     }
     return null;
   }
-  async openAutoScroll() {
-    let { nvim } = import_coc22.workspace;
-    this.winid = await nvim.call("bufwinid", `Kimi-${this.chat_id}`);
-  }
-  closeAutoScroll() {
-    this.winid = -1;
-  }
   getHeaders() {
     this.headers["X-Traffic-Id"] = Array.from(
       { length: 20 },
       () => Math.floor(Math.random() * 36).toString(36)
     ).join("");
     return this.headers;
-  }
-  append(text, newline = true) {
-    if (this.channel) {
-    } else if (this.chat_id && this.name) {
-      this.channel = import_coc22.window.createOutputChannel(`Kimi-${this.chat_id}`);
-    } else {
-      return;
-    }
-    if (newline) {
-      this.channel.appendLine(text);
-    } else {
-      this.channel.append(text);
-    }
-    if (this.winid != -1) {
-      let { nvim } = import_coc22.workspace;
-      nvim.call("win_execute", [this.winid, "norm G"]);
-    }
-  }
-  appendUserInput(datetime, text) {
-    this.append(`
->> ${datetime}`);
-    let lines = text.split("\n");
-    for (const i of lines) {
-      this.append(`>> ${i}`);
-    }
-  }
-  async show() {
-    if (this.channel || this.chat_id && this.name) {
-      await this.showChannel(`Kimi-${this.chat_id}`, "kimichat");
-    }
   }
   async getAccessToken() {
     this.headers["Authorization"] = `Bearer ${this.rtoken}`;
@@ -2043,13 +2055,6 @@ ${card.ref_doc.url}`;
       this.headers["Authorization"] = `Bearer ${obj["access_token"]}`;
     }
     return resp.statusCode ? resp.statusCode : -1;
-  }
-  getChatId() {
-    return this.chat_id;
-  }
-  setChatIdAndName(chat_id, name) {
-    this.chat_id = chat_id;
-    this.name = name;
   }
   async sendHttpRequest(req) {
     if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
@@ -2078,17 +2083,20 @@ ${card.ref_doc.url}`;
     };
     const resp = await this.sendHttpRequest(req);
     if (resp instanceof Error) {
-      logger.error(resp);
-      return -1;
+      return new CocExtError(CocExtError.ERR_KIMI, resp.message);
     }
     if (resp.statusCode == 200 && resp.body) {
       const obj = JSON.parse(resp.body.toString());
       this.chat_id = obj["id"];
-      this.name = name;
+      return null;
+    } else {
+      return new CocExtError(
+        CocExtError.ERR_KIMI,
+        `statusCode: ${resp.statusCode}`
+      );
     }
-    return resp.statusCode ? resp.statusCode : -1;
   }
-  async chatList() {
+  async getChatList() {
     const req = {
       args: {
         host: "kimi.moonshot.cn",
@@ -2107,7 +2115,10 @@ ${card.ref_doc.url}`;
     if (resp.statusCode == 200 && resp.body) {
       let obj = JSON.parse(resp.body.toString());
       if (obj["items"]) {
-        return obj["items"];
+        const chat_list = obj["items"];
+        return chat_list.map((i) => {
+          return { label: i.name, chat_id: i.id, description: i.updated_at };
+        });
       } else {
         return [];
       }
@@ -2173,8 +2184,36 @@ ${card.ref_doc.url}`;
       );
     }
   }
+  async showHistoryMessages() {
+    const items = await this.chatScroll();
+    if (items instanceof Error) {
+      return items;
+    }
+    for (const item of items) {
+      if (item.role == "user") {
+        this.appendUserInput(item.created_at, item.content);
+      } else {
+        this.append(`>> id:${item.id}
+`);
+        if (item.search_plus) {
+          for (const search of item.search_plus) {
+            if (search.msg.type == "get_res") {
+              let idx = -1;
+              if (search.msg.url) {
+                idx = this.addUrl(search.msg.url);
+              }
+              this.append(`[${idx}] ${search.msg.title}`);
+            }
+          }
+          this.append("");
+        }
+        this.append(item.content);
+      }
+    }
+    return null;
+  }
   async chat(text) {
-    if (this.chat_id.length == 0) {
+    if (!this.chat_id) {
       return;
     }
     this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
@@ -2285,56 +2324,156 @@ var kimiChat = new KimiChat(
   process.env.MY_KIMI_REFRESH_TOKEN ? process.env.MY_KIMI_REFRESH_TOKEN : ""
 );
 
-// src/ai/groq.ts
-var GroqChat = class extends BaseAiChannel {
-  constructor(api_key) {
+// src/ai/deepseek.ts
+var DeepseekChat = class extends BaseChatChannel {
+  constructor(key) {
     super();
-    this.api_key = api_key;
-    this.headers = {
-      Authorization: `Bearer ${this.api_key}`,
-      "Content-Type": "application/json"
+    this.key = key;
+    this.auth_key = key;
+  }
+  getChatName() {
+    return "Deepseek";
+  }
+  getHeader() {
+    return {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+      authorization: `Bearer ${this.auth_key}`,
+      Origin: "https://chat.deepseek.com"
     };
-    const proxy_url = getEnvHttpProxy(true);
-    this.proxy = proxy_url ? { host: proxy_url.hostname, port: parseInt(proxy_url.port) } : void 0;
   }
-  async show() {
-    await this.showChannel("GroqChat", "groqchat");
+  async httpQuery(req) {
+    const resp = await sendHttpRequest(req);
+    if (resp.statusCode != 200 || !resp.body) {
+      return new CocExtError(
+        CocExtError.ERR_DEEPSEEK,
+        `[Deepseek] statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
+      );
+    }
+    return JSON.parse(resp.body.toString());
   }
-  async debug() {
+  async httpGet(path6) {
     const req = {
       args: {
-        host: "api.groq.com",
-        path: "/openai/v1/chat/completions",
+        host: "chat.deepseek.com",
+        path: path6,
+        method: "GET",
+        protocol: "https:",
+        headers: this.getHeader()
+      }
+    };
+    return this.httpQuery(req);
+  }
+  async getChatList() {
+    var _a;
+    const resp = await this.httpGet(
+      "/api/v0/chat_session/fetch_page?count=100"
+    );
+    if (resp instanceof Error) {
+      return resp;
+    }
+    const chat_sessions = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_sessions;
+    if (chat_sessions == void 0) {
+      return new CocExtError(CocExtError.ERR_DEEPSEEK, "get sessions fail");
+    }
+    const id_set = /* @__PURE__ */ new Set();
+    const list = [];
+    for (const sess of chat_sessions) {
+      if (id_set.has(sess.id)) {
+        continue;
+      }
+      id_set.add(sess.id);
+      list.push({
+        label: sess.title,
+        chat_id: sess.id,
+        description: new Date(sess.updated_at * 1e3).toLocaleString()
+      });
+    }
+    return list;
+  }
+  async createChatId(name) {
+    return null;
+  }
+  async showHistoryMessages() {
+    return null;
+  }
+  async historyMessages(sess_id) {
+    var _a;
+    const resp = await this.httpGet(
+      `/api/v0/chat/history_messages?chat_session_id=${sess_id}`
+    );
+    if (resp instanceof Error) {
+      return resp;
+    }
+    const messages = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_messages;
+    return messages == void 0 ? new CocExtError(CocExtError.ERR_DEEPSEEK, "get messages fail") : messages;
+  }
+  async createPowChallenge(target_path) {
+    var _a;
+    const req = {
+      args: {
+        host: "chat.deepseek.com",
+        path: "/api/v0/chat/create_pow_challenge",
         method: "POST",
         protocol: "https:",
-        headers: this.headers
+        headers: this.getHeader()
       },
       data: JSON.stringify({
-        messages: [
-          {
-            role: "user",
-            content: "what is tiktoken?"
-          }
-        ],
-        model: "llama-3.1-70b-versatile"
-      }),
-      proxy: this.proxy
+        target_path
+      })
     };
-    const resp = await sendHttpRequest(req);
-    if (resp.error) {
-      logger.error(`query fail, ${resp.error.message}`);
-      return null;
+    const resp = await this.httpQuery(req);
+    if (resp instanceof Error) {
+      return resp;
     }
-    if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
-      logger.error(`groq, status: ${resp.statusCode}`);
-      return null;
-    }
-    const obj = JSON.parse(resp.body.toString());
-    logger.debug(obj);
+    const challenge = (_a = resp.data.biz_data) == null ? void 0 : _a.challenge;
+    return challenge == void 0 ? new CocExtError(CocExtError.ERR_DEEPSEEK, "get challenge fail") : challenge;
+  }
+  async chat(chat_session_id, parent_message_id, prompt, challenge, search_enabled = false, thinking_enabled = false) {
+    const req_challenge = {
+      algorithm: challenge.algorithm,
+      challenge: challenge.challenge,
+      salt: challenge.salt,
+      answer: Math.floor(Math.random() * 1e5),
+      signature: challenge.signature,
+      target_path: challenge.target_path
+    };
+    const x_ds_pow_response = Buffer.from(
+      JSON.stringify(req_challenge)
+    ).toString("base64");
+    var headers = this.getHeader();
+    headers["x-ds-pow-response"] = x_ds_pow_response;
+    const req = {
+      args: {
+        host: "chat.deepseek.com",
+        path: "/api/v0/chat/completion",
+        method: "POST",
+        protocol: "https:",
+        headers
+      },
+      data: JSON.stringify({
+        chat_session_id,
+        parent_message_id,
+        prompt,
+        ref_file_ids: [],
+        search_enabled,
+        thinking_enabled
+      })
+    };
+    const cb = {
+      onData: (chunk, rsp) => {
+        console.log(">", rsp.statusCode);
+        console.log(">", chunk.toString());
+      },
+      onError: (err) => {
+        console.log(err);
+      }
+    };
+    console.log(req);
+    await sendHttpRequestWithCallback(req, cb);
   }
 };
-var groqChat = new GroqChat(
-  process.env.MY_GROQ_API_KEY ? process.env.MY_GROQ_API_KEY : ""
+var deepseekChat = new DeepseekChat(
+  process.env.MY_DEEPSEEK_CHAT_KEY ? process.env.MY_DEEPSEEK_CHAT_KEY : ""
 );
 
 // src/coc-ext-common.ts
@@ -2485,22 +2624,14 @@ function addFormatter(context, lang, setting) {
     );
   }
 }
-async function groq_open() {
-  await groqChat.show();
-  await groqChat.debug();
-  return 0;
-}
-async function kimi_open() {
-  if (kimiChat.getChatId().length == 0) {
-    let chat_list = await kimiChat.chatList();
-    if (chat_list instanceof Error) {
-      logger.error(chat_list);
-      echoMessage("ErrorMsg", chat_list.message);
+async function ai_open(ai_chat) {
+  if (!ai_chat.getCurrentChatId()) {
+    let items = await ai_chat.getChatList();
+    if (items instanceof Error) {
+      logger.error(items);
+      echoMessage("ErrorMsg", items.message);
       return -1;
     }
-    let items = chat_list.map((i) => {
-      return { label: i.name, chat_id: i.id, description: i.updated_at };
-    });
     items.push({ label: "Create", chat_id: "", description: "" });
     let choose = await import_coc23.window.showQuickPick(items, { title: "Choose Chat" });
     if (!choose || choose.chat_id.length == 0) {
@@ -2510,48 +2641,26 @@ async function kimi_open() {
       if (new_name.length == 0) {
         return -1;
       }
-      const statusCode = await kimiChat.createChatId(new_name);
-      if (statusCode != 200) {
-        logger.error(`createChatId fail, statusCode: ${statusCode}`);
+      const err = await ai_chat.createChatId(new_name);
+      if (err instanceof Error) {
+        logger.error(err);
         return -1;
       }
     } else {
-      kimiChat.setChatIdAndName(choose.chat_id, choose.label);
-      const items2 = await kimiChat.chatScroll();
-      if (items2 instanceof Error) {
-        logger.error(items2);
-      } else {
-        for (const item of items2) {
-          if (item.role == "user") {
-            kimiChat.appendUserInput(item.created_at, item.content);
-          } else {
-            kimiChat.append(`>> id:${item.id}
-`);
-            if (item.search_plus) {
-              for (const search of item.search_plus) {
-                if (search.msg.type == "get_res") {
-                  let idx = -1;
-                  if (search.msg.url) {
-                    idx = kimiChat.addUrl(search.msg.url);
-                  }
-                  kimiChat.append(`[${idx}] ${search.msg.title}`);
-                }
-              }
-              kimiChat.append("");
-            }
-            kimiChat.append(item.content);
-          }
-        }
+      ai_chat.setCurrentChatId(choose.chat_id);
+      const err = await ai_chat.showHistoryMessages();
+      if (err instanceof Error) {
+        logger.error(err);
       }
     }
   }
-  await kimiChat.show();
+  await ai_chat.show();
   return 0;
 }
 function kimi_chat(mode) {
   return async () => {
     const text = await getText(mode);
-    let ret = await kimi_open();
+    let ret = await ai_open(kimiChat);
     if (ret != 0) {
       return;
     }
@@ -2560,11 +2669,16 @@ function kimi_chat(mode) {
     kimiChat.closeAutoScroll();
   };
 }
-function kimi_ref() {
+function ai_ref() {
   return async () => {
-    const text = await kimiChat.getRef();
-    if (text) {
-      popup(text, "", "markdown");
+    let { nvim } = import_coc23.workspace;
+    let bufnr = await nvim.call("bufnr");
+    let ai_name = await nvim.call("getbufvar", [bufnr, "ai_name"]);
+    if (ai_name == kimiChat.getChatName()) {
+      const text = await kimiChat.getRef();
+      if (text) {
+        popup(text, "", "markdown");
+      }
     }
   };
 }
@@ -2595,8 +2709,20 @@ async function activate(context) {
     //   },
     // },
     import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
-    import_coc23.commands.registerCommand("ext-groq", groq_open, { sync: true }),
-    import_coc23.commands.registerCommand("ext-kimi", kimi_open, { sync: true }),
+    import_coc23.commands.registerCommand(
+      "ext-ai-kimi",
+      async () => {
+        await ai_open(kimiChat);
+      },
+      { sync: true }
+    ),
+    import_coc23.commands.registerCommand(
+      "ext-ai-deepseek",
+      async () => {
+        await ai_open(deepseekChat);
+      },
+      { sync: true }
+    ),
     import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
     import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
@@ -2610,7 +2736,7 @@ async function activate(context) {
     import_coc23.workspace.registerKeymap(["v"], "ext-kimi", kimi_chat("v"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["n"], "ext-kimi-ref", kimi_ref(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-ai-ref", ai_ref(), {
       sync: false
     }),
     import_coc23.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
