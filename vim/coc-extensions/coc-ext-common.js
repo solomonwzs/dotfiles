@@ -2087,8 +2087,7 @@ ${card.ref_doc.url}`;
     }
     if (resp.statusCode == 200 && resp.body) {
       const obj = JSON.parse(resp.body.toString());
-      this.chat_id = obj["id"];
-      return null;
+      return obj["id"];
     } else {
       return new CocExtError(
         CocExtError.ERR_KIMI,
@@ -2330,6 +2329,8 @@ var DeepseekChat = class extends BaseChatChannel {
     super();
     this.key = key;
     this.auth_key = key;
+    this.parent_id = null;
+    this.challenge = {};
   }
   getChatName() {
     return "Deepseek";
@@ -2373,7 +2374,10 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     const chat_sessions = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_sessions;
     if (chat_sessions == void 0) {
-      return new CocExtError(CocExtError.ERR_DEEPSEEK, "get sessions fail");
+      return new CocExtError(
+        CocExtError.ERR_DEEPSEEK,
+        "[Deepseek] get sessions fail"
+      );
     }
     const id_set = /* @__PURE__ */ new Set();
     const list = [];
@@ -2385,30 +2389,55 @@ var DeepseekChat = class extends BaseChatChannel {
       list.push({
         label: sess.title,
         chat_id: sess.id,
-        description: new Date(sess.updated_at * 1e3).toLocaleString()
+        description: new Date(sess.updated_at * 1e3).toISOString()
       });
     }
     return list;
   }
-  async createChatId(name) {
-    return null;
+  async createChatId(_name) {
+    return new CocExtError(CocExtError.ERR_DEEPSEEK, "[Deepseek] not impl");
   }
   async showHistoryMessages() {
-    return null;
-  }
-  async historyMessages(sess_id) {
     var _a;
     const resp = await this.httpGet(
-      `/api/v0/chat/history_messages?chat_session_id=${sess_id}`
+      `/api/v0/chat/history_messages?chat_session_id=${this.chat_id}`
     );
     if (resp instanceof Error) {
       return resp;
     }
     const messages = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_messages;
-    return messages == void 0 ? new CocExtError(CocExtError.ERR_DEEPSEEK, "get messages fail") : messages;
+    if (messages == void 0) {
+      return new CocExtError(
+        CocExtError.ERR_DEEPSEEK,
+        "[Deepseek] get messages fail"
+      );
+    }
+    this.parent_id = null;
+    for (const msg of messages) {
+      this.parent_id = msg.message_id;
+      if (msg.role == "USER") {
+        this.appendUserInput(
+          new Date(msg.inserted_at * 1e3).toISOString(),
+          msg.content
+        );
+      } else {
+        this.append("");
+        if (msg.thinking_enabled && msg.thinking_content) {
+          this.append("```");
+          this.append(msg.thinking_content);
+          this.append("```");
+        }
+        this.append(msg.content);
+      }
+    }
+    return null;
   }
-  async createPowChallenge(target_path) {
+  async getPowChallenge(target_path) {
     var _a;
+    const ch = this.challenge[target_path];
+    if (ch && ch.expire_at + ch.expire_after < Date.now()) {
+      return ch;
+    }
     const req = {
       args: {
         host: "chat.deepseek.com",
@@ -2426,9 +2455,24 @@ var DeepseekChat = class extends BaseChatChannel {
       return resp;
     }
     const challenge = (_a = resp.data.biz_data) == null ? void 0 : _a.challenge;
-    return challenge == void 0 ? new CocExtError(CocExtError.ERR_DEEPSEEK, "get challenge fail") : challenge;
+    if (!challenge) {
+      return new CocExtError(
+        CocExtError.ERR_DEEPSEEK,
+        "[Deepseek] get challenge fail"
+      );
+    } else {
+      this.challenge[target_path] = challenge;
+      return challenge;
+    }
   }
-  async chat(chat_session_id, parent_message_id, prompt, challenge, search_enabled = false, thinking_enabled = false) {
+  async chat(prompt) {
+    const challenge = await this.getPowChallenge("/api/v0/chat/completion");
+    if (challenge instanceof Error) {
+      logger.error(challenge);
+      return;
+    }
+    this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
+    this.append("");
     const req_challenge = {
       algorithm: challenge.algorithm,
       challenge: challenge.challenge,
@@ -2451,29 +2495,142 @@ var DeepseekChat = class extends BaseChatChannel {
         headers
       },
       data: JSON.stringify({
-        chat_session_id,
-        parent_message_id,
+        chat_session_id: this.chat_id,
+        parent_message_id: this.parent_id,
         prompt,
         ref_file_ids: [],
-        search_enabled,
-        thinking_enabled
+        search_enabled: false,
+        thinking_enabled: false
       })
     };
     const cb = {
       onData: (chunk, rsp) => {
-        console.log(">", rsp.statusCode);
-        console.log(">", chunk.toString());
+        if (rsp.statusCode != 200) {
+          return;
+        }
+        try {
+          chunk.toString().split("\n").forEach((line) => {
+            if (line.length == 0) {
+              return;
+            }
+            if (line.slice(6, 12) == "[DONE]") {
+              this.append(" (END)");
+              return;
+            }
+            const data = JSON.parse(line.slice(5));
+            if (data.choices.length > 0) {
+              for (const choice of data.choices) {
+                if (choice.delta.content) {
+                  this.append(choice.delta.content, false);
+                }
+              }
+            }
+            this.parent_id = data.message_id;
+          });
+        } catch (e) {
+          logger.debug(chunk.toString());
+          logger.error(e);
+        }
       },
       onError: (err) => {
-        console.log(err);
+        this.append(" (ERROR) ");
+        this.append(err.message);
       }
     };
-    console.log(req);
     await sendHttpRequestWithCallback(req, cb);
   }
 };
 var deepseekChat = new DeepseekChat(
   process.env.MY_DEEPSEEK_CHAT_KEY ? process.env.MY_DEEPSEEK_CHAT_KEY : ""
+);
+
+// src/ai/bailian.ts
+var BailianChat = class extends BaseChatChannel {
+  constructor(key) {
+    super();
+    this.key = key;
+    this.api_key = key;
+  }
+  getChatName() {
+    return "Bailian";
+  }
+  async getChatList() {
+    return [];
+  }
+  async createChatId(name) {
+    return name;
+  }
+  async showHistoryMessages() {
+    return null;
+  }
+  async chat(prompt) {
+    this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
+    this.append("");
+    const req = {
+      args: {
+        host: "dashscope.aliyuncs.com",
+        path: "/compatible-mode/v1/chat/completions",
+        method: "POST",
+        protocol: "https:",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.api_key}`
+        }
+      },
+      data: JSON.stringify({
+        model: "deepseek-v3",
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        stream: true,
+        stream_options: {
+          include_usage: true
+        }
+      })
+    };
+    const cb = {
+      onData: (chunk, rsp) => {
+        if (rsp.statusCode != 200) {
+          return;
+        }
+        try {
+          chunk.toString().split("\n").forEach((line) => {
+            if (line.length == 0) {
+              return;
+            }
+            if (line.slice(6, 12) == "[DONE]") {
+              this.append(" (END)");
+              return;
+            }
+            const data = JSON.parse(line.slice(5));
+            if (data.choices.length > 0) {
+              for (const choice of data.choices) {
+                if (choice.delta.content) {
+                  this.append(choice.delta.content, false);
+                } else if (choice.delta.reasoning_content) {
+                  this.append(choice.delta.reasoning_content, false);
+                }
+              }
+            }
+          });
+        } catch (e) {
+          logger.debug(chunk.toString());
+          logger.error(e);
+        }
+      },
+      onError: (err) => {
+        this.append(" (ERROR) ");
+        this.append(err.message);
+      }
+    };
+    await sendHttpRequestWithCallback(req, cb);
+  }
+};
+var bailianChat = new BailianChat(
+  process.env.MY_BAILIAN_KEY ? process.env.MY_BAILIAN_KEY : ""
 );
 
 // src/coc-ext-common.ts
@@ -2624,9 +2781,9 @@ function addFormatter(context, lang, setting) {
     );
   }
 }
-async function ai_open(ai_chat) {
-  if (!ai_chat.getCurrentChatId()) {
-    let items = await ai_chat.getChatList();
+async function ai_open(aichat) {
+  if (!aichat.getCurrentChatId()) {
+    let items = await aichat.getChatList();
     if (items instanceof Error) {
       logger.error(items);
       echoMessage("ErrorMsg", items.message);
@@ -2641,32 +2798,33 @@ async function ai_open(ai_chat) {
       if (new_name.length == 0) {
         return -1;
       }
-      const err = await ai_chat.createChatId(new_name);
-      if (err instanceof Error) {
-        logger.error(err);
+      const chat_id = await aichat.createChatId(new_name);
+      if (chat_id instanceof Error) {
+        logger.error(chat_id);
         return -1;
       }
+      aichat.setCurrentChatId(chat_id);
     } else {
-      ai_chat.setCurrentChatId(choose.chat_id);
-      const err = await ai_chat.showHistoryMessages();
+      aichat.setCurrentChatId(choose.chat_id);
+      const err = await aichat.showHistoryMessages();
       if (err instanceof Error) {
         logger.error(err);
       }
     }
   }
-  await ai_chat.show();
+  await aichat.show();
   return 0;
 }
-function kimi_chat(mode) {
+function ai_chat(mode, aichat) {
   return async () => {
     const text = await getText(mode);
-    let ret = await ai_open(kimiChat);
+    let ret = await ai_open(aichat);
     if (ret != 0) {
       return;
     }
-    await kimiChat.openAutoScroll();
-    await kimiChat.chat(text);
-    kimiChat.closeAutoScroll();
+    await aichat.openAutoScroll();
+    await aichat.chat(text);
+    aichat.closeAutoScroll();
   };
 }
 function ai_ref() {
@@ -2709,6 +2867,7 @@ async function activate(context) {
     //   },
     // },
     import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
     import_coc23.commands.registerCommand(
       "ext-ai-kimi",
       async () => {
@@ -2723,7 +2882,13 @@ async function activate(context) {
       },
       { sync: true }
     ),
-    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc23.commands.registerCommand(
+      "ext-ai-bailian",
+      async () => {
+        await ai_open(bailianChat);
+      },
+      { sync: true }
+    ),
     import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
     }),
@@ -2733,7 +2898,18 @@ async function activate(context) {
     import_coc23.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-kimi", kimi_chat("v"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-kimi", ai_chat("v", kimiChat), {
+      sync: false
+    }),
+    import_coc23.workspace.registerKeymap(
+      ["v"],
+      "ext-deepseek",
+      ai_chat("v", deepseekChat),
+      {
+        sync: false
+      }
+    ),
+    import_coc23.workspace.registerKeymap(["v"], "ext-bailian", ai_chat("v", bailianChat), {
       sync: false
     }),
     import_coc23.workspace.registerKeymap(["n"], "ext-ai-ref", ai_ref(), {
