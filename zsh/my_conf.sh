@@ -41,11 +41,11 @@ MY_TMUX_COMPONENTS=("net:enp0s3" "cpu" "mem")
 # MY_GMAIL_REFRESH_TOKEN=""
 
 # kimi key
-export MY_KIMI_REFRESH_TOKEN=""
+export MY_AI_KIMI_CHAT_KEY=""
 
 # deepseek key
-export MY_DEEPSEEK_KEY=""
-export MY_DEEPSEEK_CHAT_KEY=""
+export MY_AI_DEEPSEEK_KEY=""
+export MY_AI_DEEPSEEK_CHAT_KEY=""
 
-# aliyun bailian key
-export MY_BAILIAN_KEY=""
+export MY_AI_BAILIAN_KEY=""
+export MY_AI_PPIO_KEY=""

@@ -2320,7 +2320,7 @@ ${card.ref_doc.url}`;
   // }
 };
 var kimiChat = new KimiChat(
-  process.env.MY_KIMI_REFRESH_TOKEN ? process.env.MY_KIMI_REFRESH_TOKEN : ""
+  process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : ""
 );
 
 // src/ai/deepseek.ts
@@ -2541,7 +2541,7 @@ var DeepseekChat = class extends BaseChatChannel {
   }
 };
 var deepseekChat = new DeepseekChat(
-  process.env.MY_DEEPSEEK_CHAT_KEY ? process.env.MY_DEEPSEEK_CHAT_KEY : ""
+  process.env.MY_AI_DEEPSEEK_CHAT_KEY ? process.env.MY_AI_DEEPSEEK_CHAT_KEY : ""
 );
 
 // src/ai/bailian.ts
@@ -2630,7 +2630,7 @@ var BailianChat = class extends BaseChatChannel {
   }
 };
 var bailianChat = new BailianChat(
-  process.env.MY_BAILIAN_KEY ? process.env.MY_BAILIAN_KEY : ""
+  process.env.MY_AI_BAILIAN_KEY ? process.env.MY_AI_BAILIAN_KEY : ""
 );
 
 // src/coc-ext-common.ts
