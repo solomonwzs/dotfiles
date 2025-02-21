@@ -28,3 +28,19 @@ endfunction
 function! lib#debug#lf_before_enter(a)
   call lib#py#call('logging', 'info', [2, a:a])
 endfunction
+
+function! lib#debug#promt()
+  echo '[Y]es/[N]o'
+  let choice = input('> ')
+
+  redraw
+
+  if choice =~? '^y\(es\)\?$'
+    return 1
+  elseif choice =~? '^n\(o\)\?$'
+    return 0
+  else
+    echo 'Invalid choice. Please enter Yes or No.'
+    return lib#debug#promt()
+  endif
+endfunction
