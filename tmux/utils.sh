@@ -120,7 +120,10 @@ function init_cpu_stat() {
             if [ "${a[0]:0:3}" != "cpu" ]; then
                 break
             fi
-            local idle="${a[4]}"
+
+            # 1=user, 2=nice, 3=system, 4=idle, 5=iowait,
+            # 6=irq, 7=softirq, 8=steal, 9=guest, 10=guest_nice
+            local idle="$((a[4] + a[5]))"
             local all="$((a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7]))"
             stats+=("$idle")
             stats+=("$all")

@@ -27,10 +27,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
 // src/coc-ext-common.ts
 var coc_ext_common_exports = {};
@@ -258,8 +255,7 @@ var Commands = class {
     this.actions.push({
       name: "execute",
       execute: async (item) => {
-        if (Array.isArray(item))
-          return;
+        if (Array.isArray(item)) return;
         const { command, shabang, hasArgs } = item.data;
         if (!hasArgs) {
           nvim.command(command, true);
@@ -281,11 +277,9 @@ var Commands = class {
     this.actions.push({
       name: "open",
       execute: async (item) => {
-        if (Array.isArray(item))
-          return;
+        if (Array.isArray(item)) return;
         const { command } = item.data;
-        if (!/^[A-Z]/.test(command))
-          return;
+        if (!/^[A-Z]/.test(command)) return;
         const res = await nvim.eval(
           `split(execute("verbose command ${command}"),"
 ")[-1]`
@@ -1563,12 +1557,6 @@ async function sendHttpRequestWithCallback(req, cb) {
         if (cb.onTimeout) {
           cb.onTimeout();
         }
-        resolve(
-          new CocExtError(
-            CocExtError.ERR_HTTP,
-            `query ${req.args.host} timeout`
-          )
-        );
       });
       if (req.data) {
         r.write(req.data);
@@ -2055,8 +2043,7 @@ var KimiChat = class extends BaseChatChannel {
     let start = pos.character;
     while (start >= 0) {
       let ch = line[start];
-      if (!ch || ch == "[")
-        break;
+      if (!ch || ch == "[") break;
       start -= 1;
     }
     if (start < 0) {
@@ -2065,8 +2052,7 @@ var KimiChat = class extends BaseChatChannel {
     let end = pos.character;
     while (end < line.length) {
       let ch = line[end];
-      if (!ch || ch == "]")
-        break;
+      if (!ch || ch == "]") break;
       end += 1;
     }
     if (end >= line.length) {
@@ -2444,11 +2430,11 @@ var DeepseekSha3Wasm = class {
     __publicField(this, "alloc");
     __publicField(this, "wasmSolve");
     let { instance } = src;
-    let exports = instance.exports;
-    this.memory = exports.memory;
-    this.addToStack = exports.__wbindgen_add_to_stack_pointer;
-    this.alloc = exports.__wbindgen_export_0;
-    this.wasmSolve = exports.wasm_solve;
+    let exports2 = instance.exports;
+    this.memory = exports2.memory;
+    this.addToStack = exports2.__wbindgen_add_to_stack_pointer;
+    this.alloc = exports2.__wbindgen_export_0;
+    this.wasmSolve = exports2.wasm_solve;
   }
   writeMemory(offset, data) {
     let view = new Uint8Array(this.memory.buffer);
@@ -2755,6 +2741,12 @@ var DeepseekChat = class extends BaseChatChannel {
       onError: (err) => {
         this.append(" (ERROR) ");
         this.append(err.message);
+      },
+      onEnd: (rsp) => {
+        logger.info(`[Deepseek] chat statusCode: ${rsp.statusCode}`);
+      },
+      onTimeout: () => {
+        logger.error("[Deepseek] timeout");
       }
     };
     await sendHttpRequestWithCallback(req, cb);
@@ -2957,6 +2949,7 @@ function aiChatQuickChat() {
 }
 function aiChatRef() {
   return async () => {
+    logger.debug("XXX");
     let { nvim } = import_coc23.workspace;
     let bufnr = await nvim.call("bufnr");
     let ai_name = await nvim.call("getbufvar", [bufnr, "ai_name"]);
