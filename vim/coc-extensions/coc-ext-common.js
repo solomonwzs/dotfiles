@@ -405,12 +405,21 @@ async function echoMessage(hl, msg) {
   await nvim.exec(`echo "${msg}"`);
   await nvim.exec(`echohl None`);
 }
+async function winid2bufnr(winid) {
+  let { nvim } = import_coc5.workspace;
+  let winnr = await nvim.call("win_id2win", winid);
+  if (!winnr) {
+    return -1;
+  }
+  let bufnr = await nvim.call("winbufnr", [winnr]);
+  if (!bufnr) {
+    return -1;
+  }
+  return bufnr;
+}
 async function popup(content, title, filetype, cfg) {
   if (content.length == 0) {
     return;
-  }
-  if (!filetype) {
-    filetype = "text";
   }
   if (!cfg) {
     cfg = defauleFloatWinConfig();
@@ -420,11 +429,19 @@ async function popup(content, title, filetype, cfg) {
       content: title && title.length != 0 ? `${title}
 
 ${content}` : content,
-      filetype
+      filetype: "text"
     }
   ];
   const win = import_coc5.window.createFloatFactory(cfg);
   await win.show(doc);
+  if (!win.window || !filetype) {
+    return;
+  }
+  let bufnr = await winid2bufnr(win.window.id);
+  if (bufnr == -1) {
+    return;
+  }
+  await import_coc5.workspace.nvim.call("setbufvar", [bufnr, "&filetype", filetype]);
 }
 async function openFile(filepath, opts) {
   const { nvim } = import_coc5.workspace;
@@ -1404,6 +1421,13 @@ async function fsAccess(path6, mode) {
     });
   });
 }
+async function fsMkdir(path6, opts) {
+  return new Promise((resolve) => {
+    import_fs.default.mkdir(path6, opts, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
 async function fsOpen(path6, flags, mode) {
   return new Promise((resolve) => {
     import_fs.default.open(
@@ -1430,6 +1454,13 @@ async function fsWrite(fd, buf) {
 async function fsClose(fd) {
   return new Promise((resolve) => {
     import_fs.default.close(fd, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+async function fsWriteFile(filename, data) {
+  return new Promise((resolve) => {
+    import_fs.default.writeFile(filename, data, (err) => {
       err ? resolve(new CocExtErrnoError(err)) : resolve(null);
     });
   });
@@ -1734,20 +1765,11 @@ async function getCursorSymbolList() {
 }
 
 // src/utils/debug.ts
-async function debugPrompt() {
-  let n = await import_coc19.workspace.nvim.eval("&columns");
-  let inputbox = await import_coc19.window.createInputBox("AI Chat", "", {
-    position: "center",
-    minWidth: Math.floor(n / 2)
-  });
-  let input = await new Promise((resolve) => {
-    inputbox.onDidFinish((text) => {
-      resolve(text ? text : "");
-    });
-  });
+async function debugPopup() {
+  await popup("# 123\n## abc\n---\nthis is a test", "", "markdown");
 }
 async function debug(_cmd, ..._args) {
-  await debugPrompt();
+  await debugPopup();
 }
 
 // src/utils/decoder.ts
@@ -1895,23 +1917,51 @@ async function leader_recv(cmd, ..._args) {
 // src/ai/chat.ts
 var import_coc23 = require("coc.nvim");
 
-// src/ai/kimi.ts
-var import_coc22 = require("coc.nvim");
-
 // src/ai/base.ts
 var import_coc21 = require("coc.nvim");
+var import_os = __toESM(require("os"));
 var BaseChatChannel = class {
   constructor() {
     __publicField(this, "channel");
     __publicField(this, "bufnr");
     __publicField(this, "chat_name");
     __publicField(this, "winid");
+    __publicField(this, "cache_dir");
     __publicField(this, "chat_id");
     this.channel = null;
     this.bufnr = -1;
     this.chat_id = void 0;
     this.chat_name = this.getChatName();
     this.winid = -1;
+    this.cache_dir = "";
+  }
+  async checkCacheDir() {
+    if (this.cache_dir.length != 0) {
+      return null;
+    }
+    let dir = `${import_os.default.homedir}/.cache/chat_${this.getChatName()}`;
+    let err = await fsMkdir(dir, { recursive: true, mode: 493 });
+    if (err) {
+      return err;
+    }
+    this.cache_dir = dir;
+    return null;
+  }
+  async setFileCache(key, data) {
+    let err = await this.checkCacheDir();
+    if (err) {
+      return err;
+    }
+    let cache_file = `${this.cache_dir}/${key}`;
+    return await fsWriteFile(cache_file, data);
+  }
+  async getFileCache(key) {
+    let err = await this.checkCacheDir();
+    if (err) {
+      return err;
+    }
+    let cache_file = `${this.cache_dir}/${key}`;
+    return await fsReadFile(cache_file);
   }
   getCurrentChatId() {
     return this.chat_id;
@@ -1986,6 +2036,50 @@ var BaseChatChannel = class {
     await nvim.call("win_execute", [winid, "norm G"]);
   }
 };
+async function getCurrentRef() {
+  let doc = await import_coc21.workspace.document;
+  let pos = await import_coc21.window.getCursorPosition();
+  let lines = await doc.buffer.lines;
+  let line = lines[pos.line];
+  if (!line) {
+    return null;
+  }
+  let start = pos.character;
+  while (start >= 0) {
+    let ch = line[start];
+    if (!ch || ch == "[") break;
+    start -= 1;
+  }
+  if (start < 0) {
+    return null;
+  }
+  let end = pos.character;
+  while (end < line.length) {
+    let ch = line[end];
+    if (!ch || ch == "]") break;
+    end += 1;
+  }
+  if (end >= line.length) {
+    return null;
+  }
+  let ref_text = line.substring(start, end + 1);
+  let line_start = pos.line - 1;
+  let segment_id = "";
+  for (; line_start >= 0; --line_start) {
+    const l = lines[line_start];
+    if (l.length > 6 && l.slice(0, 6) == ">> id:") {
+      segment_id = l.slice(6).trim();
+      break;
+    }
+  }
+  if (segment_id.length == 0) {
+    return null;
+  }
+  return {
+    ref_text,
+    segment_id
+  };
+}
 
 // src/ai/kimi.ts
 var KimiChat = class extends BaseChatChannel {
@@ -2000,7 +2094,8 @@ var KimiChat = class extends BaseChatChannel {
       "Content-Type": "application/json",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
       Origin: "https://kimi.moonshot.cn",
-      Referer: "https://kimi.moonshot.cn/"
+      Referer: "https://kimi.moonshot.cn",
+      "x-msh-platform": "web"
     };
     this.urls = [];
   }
@@ -2019,113 +2114,105 @@ var KimiChat = class extends BaseChatChannel {
   //   }
   //   return null;
   // }
-  parseRefId(s) {
-    const regex0 = new RegExp(/^\[\^([0-9]*)\^\]$/);
-    const arr0 = regex0.exec(s);
-    if (arr0 && arr0.length >= 2) {
-      return { type: "ref_card", id: parseInt(arr0[1]) };
-    }
-    const regex1 = new RegExp(/^\[([0-9]*)\]$/);
-    const arr1 = regex1.exec(s);
-    if (arr1 && arr1.length >= 2) {
-      return { type: "search_plus", id: parseInt(arr1[1]) };
-    }
-    return { type: "none", id: -1 };
-  }
+  // private parseRefId(s: string): {
+  //   type: 'none' | 'ref_card' | 'search_plus';
+  //   id: number;
+  // } {
+  //   const regex0 = new RegExp(/^\[\^([0-9]*)\^\]$/);
+  //   const arr0 = regex0.exec(s);
+  //   if (arr0 && arr0.length >= 2) {
+  //     return { type: 'ref_card', id: parseInt(arr0[1]) };
+  //   }
+  //   const regex1 = new RegExp(/^\[([0-9]*)\]$/);
+  //   const arr1 = regex1.exec(s);
+  //   if (arr1 && arr1.length >= 2) {
+  //     return { type: 'search_plus', id: parseInt(arr1[1]) };
+  //   }
+  //   return { type: 'none', id: -1 };
+  // }
   async getRef() {
-    const doc = await import_coc22.workspace.document;
-    const pos = await import_coc22.window.getCursorPosition();
-    const lines = await doc.buffer.lines;
-    const line = lines[pos.line];
-    if (!line) {
+    let ref_item = await getCurrentRef();
+    if (!ref_item) {
       return null;
     }
-    let start = pos.character;
-    while (start >= 0) {
-      let ch = line[start];
-      if (!ch || ch == "[") break;
-      start -= 1;
-    }
-    if (start < 0) {
+    let regex = new RegExp(/^\[\^([0-9]*)\^\]$/);
+    let arr = regex.exec(ref_item.ref_text);
+    if (!arr || arr.length < 2) {
       return null;
     }
-    let end = pos.character;
-    while (end < line.length) {
-      let ch = line[end];
-      if (!ch || ch == "]") break;
-      end += 1;
-    }
-    if (end >= line.length) {
-      return null;
-    }
-    const text = line.substring(start, end + 1);
-    const ref = this.parseRefId(text);
-    if (ref.type == "none") {
-      return null;
-    } else if (ref.type == "ref_card") {
-      const query = this.getRefCardQuery(pos, start, lines, ref.id);
-      if (query == null) {
+    let ref_id = arr[1];
+    let cache_key = `${this.chat_id}-${ref_item.segment_id}.json`;
+    let cache = await this.getFileCache(cache_key);
+    let item = null;
+    if (cache instanceof Error) {
+      let tmp = await this.refCard(ref_item.segment_id);
+      if (tmp instanceof Error) {
+        logger.error(tmp);
         return null;
+      } else {
+        item = tmp;
+        this.setFileCache(cache_key, JSON.stringify(item));
       }
-      const card = await this.refCard(query);
-      if (card instanceof Error) {
-        logger.error(card);
-        return null;
+    } else {
+      item = JSON.parse(cache.toString());
+    }
+    if (!item.refs) {
+      return null;
+    }
+    for (let ref of item.refs) {
+      if (ref.ref_id != ref_id) {
+        continue;
       }
-      let text2 = `${card.ref_doc.title}
-
-${card.ref_doc.url}`;
-      if (card.ref_doc.rag_segments) {
-        text2 += "\n\n";
-        for (const seg of card.ref_doc.rag_segments) {
-          text2 += seg.text.replace(/<\/?label>/gi, "");
-        }
+      let text = `[${ref.ref_doc.title}](${ref.ref_doc.url})
+${ref.ref_doc.source_label} - ${ref.ref_doc.published_time_str}
+`;
+      for (let seg of ref.ref_doc.rag_segments) {
+        text += `#${seg.text}`;
       }
-      return text2;
-    } else if (ref.type == "search_plus") {
-      if (ref.id > 0 && ref.id - 1 < this.urls.length) {
-        return this.urls[ref.id - 1];
-      }
+      return text;
     }
     return null;
   }
-  getRefCardQuery(pos, start, lines, ref_id) {
-    let line_start = pos.line - 1;
-    let segment_id = "";
-    for (; line_start >= 0; --line_start) {
-      const l = lines[line_start];
-      if (l.length > 6 && l.slice(0, 6) == ">> id:") {
-        segment_id = l.slice(6).trim();
-        break;
-      }
-    }
-    if (segment_id.length == 0) {
-      return null;
-    }
-    let index = 0;
-    for (let i = line_start + 1; i <= pos.line; ++i) {
-      const l = lines[i];
-      for (let j = 0; j < l.length; ) {
-        const p = l.indexOf("[^", j);
-        if (p == -1) {
-          break;
-        }
-        index += 1;
-        if (pos.line == i && start == p) {
-          return {
-            idx_s: 1,
-            idx_z: 0,
-            index,
-            ref_id,
-            segment_id
-          };
-        } else {
-          j = p + 1;
-        }
-      }
-    }
-    return null;
-  }
+  // private getRefCardQuery(
+  //   segment_id: string,
+  //   ref_id: number,
+  // ): KimiChatRefCardQuery | null {
+  //   // let line_start = pos.line - 1;
+  //   // let segment_id = '';
+  //   // for (; line_start >= 0; --line_start) {
+  //   //   const l = lines[line_start];
+  //   //   if (l.length > 6 && l.slice(0, 6) == '>> id:') {
+  //   //     segment_id = l.slice(6).trim();
+  //   //     break;
+  //   //   }
+  //   // }
+  //   // if (segment_id.length == 0) {
+  //   //   return null;
+  //   // }
+  //   let index = 0;
+  //   for (let i = line_start + 1; i <= pos.line; ++i) {
+  //     const l = lines[i];
+  //     for (let j = 0; j < l.length; ) {
+  //       const p = l.indexOf('[^', j);
+  //       if (p == -1) {
+  //         break;
+  //       }
+  //       index += 1;
+  //       if (pos.line == i && start == p) {
+  //         return {
+  //           idx_s: 1,
+  //           idx_z: 0,
+  //           index,
+  //           ref_id,
+  //           segment_id,
+  //         };
+  //       } else {
+  //         j = p + 1;
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
   getHeaders() {
     this.headers["X-Traffic-Id"] = Array.from(
       { length: 20 },
@@ -2224,25 +2311,36 @@ ${card.ref_doc.url}`;
       );
     }
   }
-  async refCard(query) {
+  async refCard(segment_id) {
     const req = {
       args: {
         host: "kimi.moonshot.cn",
-        path: "/api/chat/segment/v2/rag-refs",
+        path: "/api/chat/segment/v3/rag-refs",
         method: "POST",
         protocol: "https:",
         headers: this.getHeaders(),
         timeout: 1e3
       },
-      data: JSON.stringify({ with_rag_segs: true, query: [query] })
+      data: JSON.stringify({
+        queries: [
+          {
+            chat_id: this.chat_id,
+            sid: segment_id,
+            z_idx: 0
+          }
+        ]
+      })
     };
     const resp = await this.sendHttpRequest(req);
     if (resp instanceof Error) {
       return resp;
     }
     if (resp.statusCode == 200 && resp.body) {
-      const obj = JSON.parse(resp.body.toString());
-      return obj["items"][0];
+      let obj = JSON.parse(resp.body.toString());
+      let items = obj["items"];
+      if (items.length > 0) {
+        return items[0];
+      }
     }
     return new CocExtError(
       CocExtError.ERR_KIMI,
@@ -2420,8 +2518,8 @@ var kimiChat = new KimiChat(
 );
 
 // src/ai/deepseek.ts
+var import_coc22 = require("coc.nvim");
 var import_fs2 = __toESM(require("fs"));
-var import_os = __toESM(require("os"));
 var DeepseekSha3Wasm = class {
   constructor(src) {
     this.src = src;
@@ -2481,9 +2579,9 @@ var DeepseekSha3Wasm = class {
     return Math.floor(value);
   }
 };
-async function getWasm() {
+async function getWasm(dir) {
   let conf = getcfg("", {});
-  let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${import_os.default.homedir}/.cache/deepseek_sha3.wasm`;
+  let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${dir}/deepseek_sha3.wasm`;
   let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : "https://chat.deepseek.com/static/sha3_wasm_bg.7b9ca65ddd.wasm";
   if (await fsAccess(wasmPath, import_fs2.default.constants.R_OK) != null) {
     if (await simpleHttpDownloadFile(downloadUrl, wasmPath) == -1) {
@@ -2614,6 +2712,10 @@ var DeepseekChat = class extends BaseChatChannel {
         "[Deepseek] get messages fail"
       );
     }
+    let err = await this.checkCacheDir();
+    if (err) {
+      return err;
+    }
     this.parent_id = null;
     for (const msg of messages) {
       this.parent_id = msg.message_id;
@@ -2623,7 +2725,14 @@ var DeepseekChat = class extends BaseChatChannel {
           msg.content
         );
       } else {
-        this.append("");
+        this.append(`>> id:${msg.message_id}
+`);
+        if (msg.search_results) {
+          let cacheFile = `${this.cache_dir}/${this.chat_id}-${msg.message_id}.json`;
+          await fsWriteFile(cacheFile, JSON.stringify(msg.search_results));
+          this.append(`[search_results(${msg.search_results.length})]
+`);
+        }
         if (msg.thinking_enabled && msg.thinking_content) {
           this.append("```");
           this.append(msg.thinking_content);
@@ -2633,6 +2742,35 @@ var DeepseekChat = class extends BaseChatChannel {
       }
     }
     return null;
+  }
+  async getSearchResults() {
+    const doc = await import_coc22.workspace.document;
+    const pos = await import_coc22.window.getCursorPosition();
+    const lines = await doc.buffer.lines;
+    const line = lines[pos.line];
+    if (!line) {
+      return null;
+    }
+    let start = pos.character;
+    while (start >= 0) {
+      let ch = line[start];
+      if (!ch || ch == "[") break;
+      start -= 1;
+    }
+    if (start < 0) {
+      return null;
+    }
+    let end = pos.character;
+    while (end < line.length) {
+      let ch = line[end];
+      if (!ch || ch == "]") break;
+      end += 1;
+    }
+    if (end >= line.length) {
+      return null;
+    }
+    const text = line.substring(start, end + 1);
+    logger.debug(text);
   }
   async getPowChallenge(target_path) {
     var _a;
@@ -2660,7 +2798,11 @@ var DeepseekChat = class extends BaseChatChannel {
       );
     } else {
       if (!this.sha3_wasm) {
-        let wasm = await getWasm();
+        let err = await this.checkCacheDir();
+        if (err) {
+          return err;
+        }
+        let wasm = await getWasm(this.cache_dir);
         if (wasm instanceof Error) {
           return wasm;
         }
@@ -2689,7 +2831,6 @@ var DeepseekChat = class extends BaseChatChannel {
       return;
     }
     this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
-    this.append("");
     var headers = this.getHeader();
     headers["x-ds-pow-response"] = challenge;
     const req = {
@@ -2730,6 +2871,10 @@ var DeepseekChat = class extends BaseChatChannel {
                   this.append(choice.delta.content, false);
                 }
               }
+            }
+            if (this.parent_id != data.message_id) {
+              this.append(`>> id:${data.message_id}
+`);
             }
             this.parent_id = data.message_id;
           });
@@ -2949,15 +3094,16 @@ function aiChatQuickChat() {
 }
 function aiChatRef() {
   return async () => {
-    logger.debug("XXX");
     let { nvim } = import_coc23.workspace;
     let bufnr = await nvim.call("bufnr");
     let ai_name = await nvim.call("getbufvar", [bufnr, "ai_name"]);
     if (ai_name == kimiChat.getChatName()) {
       const text = await kimiChat.getRef();
       if (text) {
-        popup(text, "", "markdown");
+        await popup(text, "", "markdown");
       }
+    } else if (ai_name == deepseekChat.getChatName()) {
+      await deepseekChat.getSearchResults();
     }
   };
 }

@@ -44,3 +44,19 @@ function! lib#debug#promt()
     return lib#debug#promt()
   endif
 endfunction
+
+function! lib#debug#popup()
+  let lines = ['# abc', '## 123', '---', 'hello world']
+  let buf = nvim_create_buf(v:true, v:true)
+  call nvim_buf_set_lines(buf, 0, -1, v:false, lines)
+  call setbufvar(buf, '&buftype', 'nofile')
+
+  let win = nvim_open_win(buf, v:false, {
+      \ 'width': 20,
+      \ 'height': 10,
+      \ 'col': 0,
+      \ 'row': 1,
+      \ 'relative': 'cursor',
+      \ })
+  call setbufvar(buf, '&filetype', 'markdown')
+endfunction

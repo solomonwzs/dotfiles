@@ -226,7 +226,10 @@ let s:coc_ext_conf = g:vimhome.'/conf/coc-ext.vim'
 if filereadable(s:coc_ext_conf)
   exec 'so '.s:coc_ext_conf
 endif
-let s:coc_ext_lua = g:vimhome.'/lua/coc-ext.lua'
-if filereadable(s:coc_ext_lua)
-  exec 'lua require("coc-ext")'
+
+if s:is_nvim
+  let s:coc_ext_lua = g:vimhome.'/lua/coc-ext.lua'
+  if filereadable(s:coc_ext_lua)
+    exec 'lua require("coc-ext")'
+  endif
 endif
