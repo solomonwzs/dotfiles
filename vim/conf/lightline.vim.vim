@@ -83,9 +83,6 @@ let g:lightline.component_type = {
     \   'coc_fix'     : 'middle',
     \ }
 
-if lib#bundle#has_loaded('gruvbox')
-  let g:lightline.colorscheme = 'gruvbox'
-endif
 let g:lightline.separator = { 'left': '', 'right': '' }
 let g:lightline.tabline_subseparator = { 'left': '', 'right': '|' }
 

@@ -112,6 +112,9 @@ Plug 'https://github.com/godlygeek/tabular.git'
 " Retro groove color scheme for Vim
 Plug 'https://github.com/morhetz/gruvbox.git'
 
+" Lua port of the most famous vim colorscheme
+Plug 'https://github.com/ellisonleao/gruvbox.nvim.git'
+
 " An arctic, north-bluish clean and elegant Vim theme.
 " Plug 'https://github.com/arcticicestudio/nord-vim.git'
 

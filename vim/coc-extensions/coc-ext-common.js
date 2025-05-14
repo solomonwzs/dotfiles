@@ -1094,6 +1094,71 @@ var BaseFormatter = class {
 };
 
 // src/formatter/clfformatter.ts
+var import_fs2 = __toESM(require("fs"));
+var import_path6 = __toESM(require("path"));
+
+// src/utils/file.ts
+var import_fs = __toESM(require("fs"));
+async function fsAccess(path7, mode) {
+  return new Promise((resolve) => {
+    import_fs.default.access(path7, mode, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+async function fsMkdir(path7, opts) {
+  return new Promise((resolve) => {
+    import_fs.default.mkdir(path7, opts, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+async function fsOpen(path7, flags, mode) {
+  return new Promise((resolve) => {
+    import_fs.default.open(
+      path7,
+      flags,
+      mode,
+      (err, fd) => {
+        err ? resolve(new CocExtErrnoError(err)) : resolve(fd);
+      }
+    );
+  });
+}
+async function fsWrite(fd, buf) {
+  return new Promise((resolve) => {
+    import_fs.default.write(
+      fd,
+      buf,
+      (err, written, _buffer) => {
+        err ? resolve(new CocExtErrnoError(err)) : resolve(written);
+      }
+    );
+  });
+}
+async function fsClose(fd) {
+  return new Promise((resolve) => {
+    import_fs.default.close(fd, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+async function fsWriteFile(filename, data) {
+  return new Promise((resolve) => {
+    import_fs.default.writeFile(filename, data, (err) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+    });
+  });
+}
+async function fsReadFile(filename) {
+  return new Promise((resolve) => {
+    import_fs.default.readFile(filename, (err, data) => {
+      err ? resolve(new CocExtErrnoError(err)) : resolve(data);
+    });
+  });
+}
+
+// src/formatter/clfformatter.ts
 var ClfFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1102,11 +1167,21 @@ var ClfFormatter = class extends BaseFormatter {
   supportRangeFormat() {
     return false;
   }
-  async formatDocument(document, options, _token, range) {
-    if (range) {
-      return [];
+  async confFileExist(filepath) {
+    let p = import_path6.default.dirname(filepath);
+    while (true) {
+      if (await fsAccess(import_path6.default.join(p, ".clang-format"), import_fs2.default.constants.F_OK) == null || await fsAccess(import_path6.default.join(p, "_clang-format"), import_fs2.default.constants.F_OK) == null) {
+        return true;
+      }
+      let p0 = import_path6.default.dirname(p);
+      if (p == p0) {
+        return false;
+      } else {
+        p = p0;
+      }
     }
-    const filepath = import_coc12.Uri.parse(document.uri).fsPath;
+  }
+  getSetting(options) {
     const setting = {};
     if (this.setting.args) {
       for (const k in this.setting.args) {
@@ -1122,12 +1197,20 @@ var ClfFormatter = class extends BaseFormatter {
     if (!setting["BasedOnStyle"]) {
       setting["BasedOnStyle"] = "Google";
     }
-    const args = [
+    return setting;
+  }
+  async formatDocument(document, options, _token, range) {
+    if (range) {
+      return [];
+    }
+    const filepath = import_coc12.Uri.parse(document.uri).fsPath;
+    let args = await this.confFileExist(filepath) ? ["--assume-filename", filepath] : [
       "-style",
-      JSON.stringify(setting),
+      JSON.stringify(this.getSetting(options)),
       "--assume-filename",
       filepath
     ];
+    logger.debug(args);
     const exec = this.setting.exec ? this.setting.exec : "clang-format";
     const resp = await callShell(exec, args, document.getText());
     if (resp.exitCode != 0) {
@@ -1411,69 +1494,6 @@ function createTranslation(name, sl, tl, text) {
 var import_https = __toESM(require("https"));
 var import_http = __toESM(require("http"));
 var import_url2 = require("url");
-
-// src/utils/file.ts
-var import_fs = __toESM(require("fs"));
-async function fsAccess(path6, mode) {
-  return new Promise((resolve) => {
-    import_fs.default.access(path6, mode, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
-    });
-  });
-}
-async function fsMkdir(path6, opts) {
-  return new Promise((resolve) => {
-    import_fs.default.mkdir(path6, opts, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
-    });
-  });
-}
-async function fsOpen(path6, flags, mode) {
-  return new Promise((resolve) => {
-    import_fs.default.open(
-      path6,
-      flags,
-      mode,
-      (err, fd) => {
-        err ? resolve(new CocExtErrnoError(err)) : resolve(fd);
-      }
-    );
-  });
-}
-async function fsWrite(fd, buf) {
-  return new Promise((resolve) => {
-    import_fs.default.write(
-      fd,
-      buf,
-      (err, written, _buffer) => {
-        err ? resolve(new CocExtErrnoError(err)) : resolve(written);
-      }
-    );
-  });
-}
-async function fsClose(fd) {
-  return new Promise((resolve) => {
-    import_fs.default.close(fd, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
-    });
-  });
-}
-async function fsWriteFile(filename, data) {
-  return new Promise((resolve) => {
-    import_fs.default.writeFile(filename, data, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
-    });
-  });
-}
-async function fsReadFile(filename) {
-  return new Promise((resolve) => {
-    import_fs.default.readFile(filename, (err, data) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(data);
-    });
-  });
-}
-
-// src/utils/http.ts
 async function simpleHttpsProxy(host, port, target_host) {
   return new Promise((resolve) => {
     import_http.default.request({ host, port, path: target_host, method: "CONNECT" }).on("connect", (resp, socket, _head) => {
@@ -1539,16 +1559,16 @@ async function genHttpRequestArgs(req) {
   } else {
     const opts = Object.assign({}, req.args);
     opts.headers = Object.assign({}, req.args.headers);
-    var path6 = `http://${req.args.host}`;
+    var path7 = `http://${req.args.host}`;
     if (opts.port) {
-      path6 += `:${opts.port}`;
+      path7 += `:${opts.port}`;
     }
     if (opts.path) {
-      path6 += opts.path;
+      path7 += opts.path;
     }
     opts.host = req.proxy.host;
     opts.port = req.proxy.port;
-    opts.path = path6;
+    opts.path = path7;
     opts.headers.Host = req.args.host;
     return opts;
   }
@@ -2519,7 +2539,7 @@ var kimiChat = new KimiChat(
 
 // src/ai/deepseek.ts
 var import_coc22 = require("coc.nvim");
-var import_fs2 = __toESM(require("fs"));
+var import_fs3 = __toESM(require("fs"));
 var DeepseekSha3Wasm = class {
   constructor(src) {
     this.src = src;
@@ -2583,7 +2603,7 @@ async function getWasm(dir) {
   let conf = getcfg("", {});
   let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${dir}/deepseek_sha3.wasm`;
   let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : "https://chat.deepseek.com/static/sha3_wasm_bg.7b9ca65ddd.wasm";
-  if (await fsAccess(wasmPath, import_fs2.default.constants.R_OK) != null) {
+  if (await fsAccess(wasmPath, import_fs3.default.constants.R_OK) != null) {
     if (await simpleHttpDownloadFile(downloadUrl, wasmPath) == -1) {
       return new CocExtError(
         CocExtError.ERR_DEEPSEEK,
@@ -2615,7 +2635,9 @@ var DeepseekChat = class extends BaseChatChannel {
     return {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
       authorization: `Bearer ${this.auth_key}`,
-      Origin: "https://chat.deepseek.com"
+      Origin: "https://chat.deepseek.com",
+      "x-client-locale": "zh_CN",
+      "x-client-platform": "web"
     };
   }
   async httpQuery(req) {
@@ -2628,11 +2650,11 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     return JSON.parse(resp.body.toString());
   }
-  async httpGet(path6) {
+  async httpGet(path7) {
     const req = {
       args: {
         host: "chat.deepseek.com",
-        path: path6,
+        path: path7,
         method: "GET",
         protocol: "https:",
         headers: this.getHeader()
@@ -2861,7 +2883,7 @@ var DeepseekChat = class extends BaseChatChannel {
               return;
             }
             if (line.slice(6, 12) == "[DONE]") {
-              this.append(" (END)");
+              this.append("\n(END)");
               return;
             }
             const data = JSON.parse(line.slice(5));
@@ -2876,7 +2898,11 @@ var DeepseekChat = class extends BaseChatChannel {
               this.append(`>> id:${data.message_id}
 `);
             }
-            this.parent_id = data.message_id;
+            if (data.message_id < 0) {
+              logger.error(line);
+            } else {
+              this.parent_id = data.message_id;
+            }
           });
         } catch (e) {
           logger.debug(chunk.toString());
