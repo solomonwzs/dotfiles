@@ -33,11 +33,11 @@
   //   "default": "\uf29c" // 
   // },
 
-  "git.addedSign.hlGroup": "GitGutterAdd",
-  "git.changedSign.hlGroup": "GitGutterChange",
-  "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete",
-  "git.removedSign.hlGroup": "GitGutterDelete",
-  "git.topRemovedSign.hlGroup": "GitGutterDelete",
+  // "git.addedSign.hlGroup": "GitSignsAdd",
+  // "git.changedSign.hlGroup": "GitSignsChange",
+  // "git.changeRemovedSign.hlGroup": "GitSignsChange",
+  // "git.removedSign.hlGroup": "GitSignsDelete",
+  // "git.topRemovedSign.hlGroup": "GitSignsDelete",
 
   "rust-analyzer.server.path": "/home/solomon/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rust-analyzer",
 
