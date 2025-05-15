@@ -215,7 +215,7 @@ function! LightlineCocInfos() abort
 endfunction
 
 function! LightlineCocHints() abort
-  return s:lightline_coc_diagnostic('hints', '')
+  return s:lightline_coc_diagnostic('hints', '')
 endfunction
 
 let s:show_function = 0
