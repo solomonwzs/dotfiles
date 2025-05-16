@@ -25,6 +25,8 @@ require("gruvbox").setup({
 vim.cmd([[colorscheme gruvbox]])
 vim.cmd("so " .. vim.g.vimhome .. "/conf/gruvbox_conf.vim")
 
+vim.api.nvim_set_hl(0, "@markup.quote", {link = "GruvboxOrange"})
+
 local function get_gruv_color(group)
   local gui_color = vim.fn.synIDattr(vim.fn.hlID(group), "fg", "gui")
   return {gui_color, "None"}

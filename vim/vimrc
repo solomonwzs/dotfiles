@@ -26,14 +26,13 @@ set nowritebackup
 set t_Co=256
 set background=dark
 
-syntax enable
-
 set shiftwidth=4
 set tabstop=4
 set softtabstop=4
 set expandtab
 set smarttab
 set autoindent
+
 filetype plugin indent on
 
 set modeline
@@ -82,10 +81,10 @@ augroup my_vimrc
   autocmd!
 
   " autocmd SwapExists * let v:swapchoice = "o"
-  autocmd CursorMovedI * if pumvisible() == 0 | pclose | endif
-  autocmd InsertLeave * if pumvisible() == 0 | pclose | endif
+  " autocmd CursorMovedI * if pumvisible() == 0 | pclose | endif
+  " autocmd InsertLeave * if pumvisible() == 0 | pclose | endif
 
-  " Restore cursor position
+  " When opening a file, return to the last edited location
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") |
       \ exe "normal! g`\"" | endif
 
@@ -105,19 +104,14 @@ augroup my_vimrc
   autocmd FileType make setlocal noet
 augroup END
 
+syntax on
+
 let g:html_indent_inctags = 'li,body,head'
 let g:asmsyntax = 'nasm'
 
 
 "================ MAP KEY ================
 " nmap <leader>h :help <C-R>=expand("<cword>")<CR><CR>
-
-" nmap <silent> <leader>t :call lib#translate#google_async(expand("<cword>"))<CR>
-" vnoremap <leader>t :<C-U>call lib#translate#google_async(
-"     \ lib#common#visual_selection(1))<CR>
-
-" vnoremap <silent> <leader>du :<C-U>call lib#decode#decode_utf8_bytes()<CR>
-" vnoremap <silent> <leader>dm :<C-U>call lib#decode#decode_mime_str()<CR>
 
 nnoremap <silent> <F5> :let _s=@/ <Bar>
     \ :%s/\s\+$//e <Bar>

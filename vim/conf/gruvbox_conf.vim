@@ -1,30 +1,43 @@
+function! s:get_gruvbox_color(group)
+  let hid = hlID(a:group)
+  let guiColor = synIDattr(hid, 'fg', 'gui') 
+  let termColor = synIDattr(hid, 'fg', 'cterm') 
+  return [ guiColor, termColor ]
+endfunction
+
+let s:purple = s:get_gruvbox_color('GruvboxPurple')
+let s:yellow = s:get_gruvbox_color('GruvboxYellow')
+let s:orange = s:get_gruvbox_color('GruvboxOrange')
+
+let s:fg1 = s:get_gruvbox_color('GruvboxFg1')
+let s:fg2 = s:get_gruvbox_color('GruvboxFg2')
+let s:bg2 = s:get_gruvbox_color('GruvboxBg2')
+let s:bg1 = s:get_gruvbox_color('GruvboxBg1')
+
 highlight Normal ctermbg=NONE guibg=NONE
 highlight Comment cterm=italic gui=italic
 
-highlight VimSignatureMarkLine ctermbg=96 guibg=#875f87
+call lib#color#highlight('VimSignatureMarkLine', {'bg': s:purple})
 
-" highlight! clear SpellBad
-" highlight! clear SpellCap
-" highlight! clear SpellRare
-" highlight! SpellBad gui=undercurl guisp=red
-" highlight! SpellCap gui=undercurl guisp=blue
-" highlight! SpellRare gui=undercurl guisp=magenta
+highlight! link GitSignsAdd GruvboxGreen
+highlight! link GitSignsChange GruvboxYellow
+highlight! link GitSignsDelete GruvboxRed
 
-highlight ALEWarning ctermbg=208 ctermfg=223 guibg=#ff8700 guifg=#ffd7af
-highlight ALEError ctermbg=167 ctermfg=223 guibg=#d75f5f guifg=#ffd7af
-" highlight ALEWarningSign ctermbg=208 ctermfg=223
-" highlight ALEErrorSign ctermbg=167 ctermfg=223
+call lib#color#highlight('my_Warning', {'fg': s:fg1, 'bg': s:yellow})
+call lib#color#highlight('my_Error', {'fg': s:fg1, 'bg': s:orange})
 
-highlight SyntasticWarning ctermbg=208 ctermfg=223 guibg=#ff8700 guifg=#ffd7af
-highlight SyntasticError ctermbg=167 ctermfg=223 guibg=#d75f5f guifg=#ffd7af
-" highlight SyntasticWarningSign ctermbg=208 ctermfg=223
-" highlight SyntasticErrorSign ctermbg=167 ctermfg=223
+highlight! link ALEWarning my_Warning
+highlight! link ALEError my_Error
+
+highlight! link SyntasticWarning my_Warning
+highlight! link SyntasticError my_Error
 
 set cursorline
 highlight clear CursorLine
-highlight CursorLine ctermbg=237 guibg=#3a3a3a
-highlight LineNR ctermfg=240 guifg=#585858
-highlight CursorLineNR cterm=bold ctermfg=255 gui=bold guifg=#eeeeee
+call lib#color#highlight('CursorLine', {'bg': s:bg1})
+call lib#color#highlight('LineNR', {'fg': s:bg2})
+call lib#color#highlight('CursorLineNR', {'fg': s:fg2, 'attr': 'bold'})
+
 augroup my_conf_gruvbox
   autocmd!
 

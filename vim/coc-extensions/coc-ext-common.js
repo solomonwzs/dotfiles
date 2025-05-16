@@ -1210,7 +1210,6 @@ var ClfFormatter = class extends BaseFormatter {
       "--assume-filename",
       filepath
     ];
-    logger.debug(args);
     const exec = this.setting.exec ? this.setting.exec : "clang-format";
     const resp = await callShell(exec, args, document.getText());
     if (resp.exitCode != 0) {

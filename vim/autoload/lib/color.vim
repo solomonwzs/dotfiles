@@ -337,3 +337,20 @@ function! lib#color#xcterm256_color() abort
   exec 'syn cluster '.cluster_bg.' contains='.join(groups_bg, ',')
   return [cluster_fg, cluster_bg]
 endfunction
+
+function! lib#color#highlight(name, opts) abort
+  let hl = ['highlight!', a:name]
+  if has_key(a:opts, 'fg')
+    call add(hl, 'guifg='.a:opts['fg'][0])
+    call add(hl, 'ctermfg='.a:opts['fg'][1])
+  endif
+  if has_key(a:opts, 'bg')
+    call add(hl, 'guibg='.a:opts['bg'][0])
+    call add(hl, 'ctermbg='.a:opts['bg'][1])
+  endif
+  if has_key(a:opts, 'attr')
+    call add(hl, 'gui='.a:opts['attr'])
+    call add(hl, 'cterm='.a:opts['attr'])
+  endif
+  execute join(hl, ' ')
+endfunction
