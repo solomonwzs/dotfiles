@@ -1,7 +1,7 @@
 function! s:get_gruvbox_color(group)
   let hid = hlID(a:group)
-  let guiColor = synIDattr(hid, 'fg', 'gui') 
-  let termColor = synIDattr(hid, 'fg', 'cterm') 
+  let guiColor = synIDattr(hid, 'fg', 'gui')
+  let termColor = synIDattr(hid, 'fg', 'cterm')
   return [ guiColor, termColor ]
 endfunction
 
