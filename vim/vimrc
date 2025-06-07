@@ -26,6 +26,11 @@ set nowritebackup
 set t_Co=256
 set background=dark
 
+" try to use true colors & GUI colors
+if has('termguicolors') || $TERM =~ '256color' || $COLORTERM == 'truecolor'
+  set termguicolors
+endif
+
 set shiftwidth=4
 set tabstop=4
 set softtabstop=4
