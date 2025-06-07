@@ -99,7 +99,7 @@ augroup my_vimrc
   autocmd BufEnter,BufRead tigrc,.tigrc set filetype=tigrc
 
   autocmd FileType
-      \ html,xml,yaml,vue.javascript,javascript,typescript,json,lua
+      \ html,xml,yaml,vue.javascript,typescript,json,lua
       \ setlocal sw=2 tabstop=2 softtabstop=2
   autocmd FileType make setlocal noet
 augroup END

@@ -6,15 +6,15 @@ color date 109 default
 color author 106 default
 color main-commit 248 default
 color main-head 109 default
-color main-remote 166 default
+color main-remote 167 default
 color main-tracked 214 default
 color graph-commit 66 default
 color file 72 default
 
-color diff-add 118 default
-color diff-del 196 default
-color diff-index 24 default
-color diff-stat 24 default
+color diff-add 142 default
+color diff-del 124 default
+color diff-index 109 default
+color diff-stat 109 default
 
 color help-group 66 default
 

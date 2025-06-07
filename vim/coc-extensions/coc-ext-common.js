@@ -36,7 +36,7 @@ __export(coc_ext_common_exports, {
   aiChatSelectAndOpen: () => aiChatSelectAndOpen
 });
 module.exports = __toCommonJS(coc_ext_common_exports);
-var import_coc24 = require("coc.nvim");
+var import_coc23 = require("coc.nvim");
 
 // src/lists/autocmd.ts
 var import_coc = require("coc.nvim");
@@ -460,6 +460,55 @@ async function openFile(filepath, opts) {
   }
   await nvim.command(`${open} ${cmd} ${filepath}`);
 }
+async function newScratchWindow(conf) {
+  let { nvim } = import_coc5.workspace;
+  let res = await nvim.call("coc_ext#newScratchWindow", [
+    conf.ver ? 1 : 0
+  ]);
+  if (!res.new_winnr || !res.new_winid || !res.new_bufnr) {
+    return Error("create scratch window fail");
+  }
+  await nvim.call("coc#compat#buf_set_lines", [
+    res.new_bufnr,
+    0,
+    -1,
+    conf.lines
+  ]);
+  if (conf.name) {
+    await nvim.exec(`execute 'file [${conf.name}]'`);
+  }
+  if (conf.filetype) {
+    await nvim.call("setbufvar", [res.new_bufnr, "&filetype", conf.filetype]);
+  }
+  return res.new_winid;
+}
+var ScratchWindow = class {
+  constructor(name, filetype) {
+    this.name = name;
+    this.filetype = filetype;
+    __publicField(this, "winid");
+    this.winid = -1;
+  }
+  async open(lines) {
+    if (this.winid != -1) {
+      let { nvim } = import_coc5.workspace;
+      let bufnr = await nvim.call("winbufnr", [this.winid]);
+      if (bufnr != -1) {
+        await nvim.call("coc#compat#buf_set_lines", [bufnr, 0, -1, lines]);
+        await nvim.call("win_gotoid", [this.winid]);
+        return;
+      }
+    }
+    let winid = await newScratchWindow({
+      name: this.name,
+      filetype: this.filetype,
+      lines
+    });
+    if (!(winid instanceof Error)) {
+      this.winid = winid;
+    }
+  }
+};
 
 // src/lists/highlight.ts
 function parseHighlightInfo(str) {
@@ -1784,11 +1833,16 @@ async function getCursorSymbolList() {
 }
 
 // src/utils/debug.ts
-async function debugPopup() {
-  await popup("# 123\n## abc\n---\nthis is a test", "", "markdown");
+async function debugNewWin() {
+  newScratchWindow({
+    ver: true,
+    name: "DEBUG",
+    lines: ["# 123", "## abc", "---", "this is a test"],
+    filetype: "markdown"
+  });
 }
 async function debug(_cmd, ..._args) {
-  await debugPopup();
+  await debugNewWin();
 }
 
 // src/utils/decoder.ts
@@ -1934,7 +1988,7 @@ async function leader_recv(cmd, ..._args) {
 }
 
 // src/ai/chat.ts
-var import_coc23 = require("coc.nvim");
+var import_coc22 = require("coc.nvim");
 
 // src/ai/base.ts
 var import_coc21 = require("coc.nvim");
@@ -2055,7 +2109,7 @@ var BaseChatChannel = class {
     await nvim.call("win_execute", [winid, "norm G"]);
   }
 };
-async function getCurrentRef() {
+async function getCurrentRef(opts) {
   let doc = await import_coc21.workspace.document;
   let pos = await import_coc21.window.getCursorPosition();
   let lines = await doc.buffer.lines;
@@ -2063,10 +2117,12 @@ async function getCurrentRef() {
   if (!line) {
     return null;
   }
+  let ch0 = opts ? opts.start : "[";
+  let ch1 = opts ? opts.start : "]";
   let start = pos.character;
   while (start >= 0) {
     let ch = line[start];
-    if (!ch || ch == "[") break;
+    if (!ch || ch == ch0) break;
     start -= 1;
   }
   if (start < 0) {
@@ -2075,7 +2131,7 @@ async function getCurrentRef() {
   let end = pos.character;
   while (end < line.length) {
     let ch = line[end];
-    if (!ch || ch == "]") break;
+    if (!ch || ch == ch1) break;
     end += 1;
   }
   if (end >= line.length) {
@@ -2101,14 +2157,13 @@ async function getCurrentRef() {
 }
 
 // src/ai/kimi.ts
+var search_window = new ScratchWindow("Kimi Search", "markdown");
 var KimiChat = class extends BaseChatChannel {
-  constructor(refresh_token) {
+  constructor(rtoken) {
     super();
-    this.refresh_token = refresh_token;
-    __publicField(this, "rtoken");
+    this.rtoken = rtoken;
     __publicField(this, "headers");
     __publicField(this, "urls");
-    this.rtoken = refresh_token;
     this.headers = {
       "Content-Type": "application/json",
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
@@ -2125,58 +2180,60 @@ var KimiChat = class extends BaseChatChannel {
     this.urls.push(url);
     return this.urls.length;
   }
-  // private checkLineNr2Segment(line: number) {
-  //   for (const i of this.segments) {
-  //     if (i.start <= line && line <= i.end) {
-  //       return i;
-  //     }
-  //   }
-  //   return null;
-  // }
-  // private parseRefId(s: string): {
-  //   type: 'none' | 'ref_card' | 'search_plus';
-  //   id: number;
-  // } {
-  //   const regex0 = new RegExp(/^\[\^([0-9]*)\^\]$/);
-  //   const arr0 = regex0.exec(s);
-  //   if (arr0 && arr0.length >= 2) {
-  //     return { type: 'ref_card', id: parseInt(arr0[1]) };
-  //   }
-  //   const regex1 = new RegExp(/^\[([0-9]*)\]$/);
-  //   const arr1 = regex1.exec(s);
-  //   if (arr1 && arr1.length >= 2) {
-  //     return { type: 'search_plus', id: parseInt(arr1[1]) };
-  //   }
-  //   return { type: 'none', id: -1 };
-  // }
-  async getRef() {
-    let ref_item = await getCurrentRef();
-    if (!ref_item) {
-      return null;
+  async tryGetSearchResult(segment_id, ref_text) {
+    let regex = new RegExp(/^\[search result \([0-9]*\)\]$/);
+    let arr = regex.exec(ref_text);
+    if (!arr || arr.length != 1) {
+      return -1;
     }
+    let cache_key = `${this.chat_id}-${segment_id}-search.json`;
+    let cache = await this.getFileCache(cache_key);
+    if (cache instanceof Error) {
+      return;
+    }
+    let items = JSON.parse(cache.toString());
+    let lines = [];
+    let idx = 0;
+    for (let item of items) {
+      if (item.msg.type != "get_res") {
+        continue;
+      }
+      idx += 1;
+      lines.push(
+        `[${idx} - ${item.msg.site_name} - ${item.msg.date}](${item.msg.url})`
+      );
+      lines.push(`# ${item.msg.title}`);
+      lines.push(`${item.msg.snippet}`);
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+    }
+    await search_window.open(lines);
+  }
+  async tryGetRef(segment_id, ref_text) {
     let regex = new RegExp(/^\[\^([0-9]*)\^\]$/);
-    let arr = regex.exec(ref_item.ref_text);
+    let arr = regex.exec(ref_text);
     if (!arr || arr.length < 2) {
-      return null;
+      return -1;
     }
     let ref_id = arr[1];
-    let cache_key = `${this.chat_id}-${ref_item.segment_id}.json`;
+    let cache_key = `${this.chat_id}-${segment_id}.json`;
     let cache = await this.getFileCache(cache_key);
     let item = null;
     if (cache instanceof Error) {
-      let tmp = await this.refCard(ref_item.segment_id);
+      let tmp = await this.refCard(segment_id);
       if (tmp instanceof Error) {
         logger.error(tmp);
-        return null;
+        return;
       } else {
         item = tmp;
-        this.setFileCache(cache_key, JSON.stringify(item));
+        await this.setFileCache(cache_key, JSON.stringify(item));
       }
     } else {
       item = JSON.parse(cache.toString());
     }
     if (!item.refs) {
-      return null;
+      return;
     }
     for (let ref of item.refs) {
       if (ref.ref_id != ref_id) {
@@ -2188,50 +2245,21 @@ ${ref.ref_doc.source_label} - ${ref.ref_doc.published_time_str}
       for (let seg of ref.ref_doc.rag_segments) {
         text += `#${seg.text}`;
       }
-      return text;
+      await popup(text, "", "markdown");
+      return;
     }
-    return null;
   }
-  // private getRefCardQuery(
-  //   segment_id: string,
-  //   ref_id: number,
-  // ): KimiChatRefCardQuery | null {
-  //   // let line_start = pos.line - 1;
-  //   // let segment_id = '';
-  //   // for (; line_start >= 0; --line_start) {
-  //   //   const l = lines[line_start];
-  //   //   if (l.length > 6 && l.slice(0, 6) == '>> id:') {
-  //   //     segment_id = l.slice(6).trim();
-  //   //     break;
-  //   //   }
-  //   // }
-  //   // if (segment_id.length == 0) {
-  //   //   return null;
-  //   // }
-  //   let index = 0;
-  //   for (let i = line_start + 1; i <= pos.line; ++i) {
-  //     const l = lines[i];
-  //     for (let j = 0; j < l.length; ) {
-  //       const p = l.indexOf('[^', j);
-  //       if (p == -1) {
-  //         break;
-  //       }
-  //       index += 1;
-  //       if (pos.line == i && start == p) {
-  //         return {
-  //           idx_s: 1,
-  //           idx_z: 0,
-  //           index,
-  //           ref_id,
-  //           segment_id,
-  //         };
-  //       } else {
-  //         j = p + 1;
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // }
+  async showItem() {
+    let ref_item = await getCurrentRef();
+    logger.debug(ref_item);
+    if (!ref_item) {
+      return;
+    }
+    if (await this.tryGetRef(ref_item.segment_id, ref_item.ref_text) !== -1) {
+      return;
+    }
+    await this.tryGetSearchResult(ref_item.segment_id, ref_item.ref_text);
+  }
   getHeaders() {
     this.headers["X-Traffic-Id"] = Array.from(
       { length: 20 },
@@ -2407,17 +2435,22 @@ ${ref.ref_doc.source_label} - ${ref.ref_doc.published_time_str}
       } else {
         this.append(`>> id:${item.id}
 `);
-        if (item.search_plus) {
-          for (const search of item.search_plus) {
-            if (search.msg.type == "get_res") {
-              let idx = -1;
-              if (search.msg.url) {
-                idx = this.addUrl(search.msg.url);
-              }
-              this.append(`[${idx}] ${search.msg.title}`);
+        if (item.search_plus && item.search_plus.length > 0) {
+          let cnt = 0;
+          for (let i of item.search_plus) {
+            if (i.msg.type == "get_res") {
+              ++cnt;
             }
           }
-          this.append("");
+          if (cnt > 0) {
+            let cache_key = `${this.chat_id}-${item.id}-search.json`;
+            await this.setFileCache(
+              cache_key,
+              JSON.stringify(item.search_plus)
+            );
+            this.append(`[search result (${cnt})]
+`);
+          }
         }
         this.append(item.content);
       }
@@ -2537,7 +2570,6 @@ var kimiChat = new KimiChat(
 );
 
 // src/ai/deepseek.ts
-var import_coc22 = require("coc.nvim");
 var import_fs3 = __toESM(require("fs"));
 var DeepseekSha3Wasm = class {
   constructor(src) {
@@ -2616,6 +2648,16 @@ async function getWasm(dir) {
   }
   return new DeepseekSha3Wasm(await WebAssembly.instantiate(wasmBuf, {}));
 }
+function searchReault2Lines(item, idx) {
+  let lines = [];
+  let date = new Date(item.published_at * 1e3);
+  let dstr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  lines.push(`[${idx} - ${item.site_name} - ${dstr}](${item.url})`);
+  lines.push(`# ${item.title}`);
+  lines.push(`${item.snippet}`);
+  return lines;
+}
+var search_window2 = new ScratchWindow("Deepseek Search", "markdown");
 var DeepseekChat = class extends BaseChatChannel {
   constructor(key) {
     super();
@@ -2749,9 +2791,12 @@ var DeepseekChat = class extends BaseChatChannel {
         this.append(`>> id:${msg.message_id}
 `);
         if (msg.search_results) {
-          let cacheFile = `${this.cache_dir}/${this.chat_id}-${msg.message_id}.json`;
-          await fsWriteFile(cacheFile, JSON.stringify(msg.search_results));
-          this.append(`[search_results(${msg.search_results.length})]
+          let cache_key = `${this.chat_id}-${msg.message_id}-search.json`;
+          await this.setFileCache(
+            cache_key,
+            JSON.stringify(msg.search_results)
+          );
+          this.append(`[search result (${msg.search_results.length})]
 `);
         }
         if (msg.thinking_enabled && msg.thinking_content) {
@@ -2764,34 +2809,60 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     return null;
   }
-  async getSearchResults() {
-    const doc = await import_coc22.workspace.document;
-    const pos = await import_coc22.window.getCursorPosition();
-    const lines = await doc.buffer.lines;
-    const line = lines[pos.line];
-    if (!line) {
-      return null;
+  async tryGetSearchResult(message_id, ref_text) {
+    let regex = new RegExp(/^\[search result \([0-9]*\)\]$/);
+    let arr = regex.exec(ref_text);
+    if (!arr || arr.length != 1) {
+      return -1;
     }
-    let start = pos.character;
-    while (start >= 0) {
-      let ch = line[start];
-      if (!ch || ch == "[") break;
-      start -= 1;
+    let cache_key = `${this.chat_id}-${message_id}-search.json`;
+    let cache = await this.getFileCache(cache_key);
+    if (cache instanceof Error) {
+      return;
     }
-    if (start < 0) {
-      return null;
+    let items = JSON.parse(cache.toString());
+    let lines = [];
+    let idx = 0;
+    for (let item of items) {
+      idx += 1;
+      lines = lines.concat(searchReault2Lines(item, idx));
+      lines.push("");
+      lines.push("---");
+      lines.push("");
     }
-    let end = pos.character;
-    while (end < line.length) {
-      let ch = line[end];
-      if (!ch || ch == "]") break;
-      end += 1;
+    await search_window2.open(lines);
+  }
+  async tryGetRef(message_id, ref_text) {
+    let regex = new RegExp(/^\[citation:([0-9]*)\]$/);
+    let arr = regex.exec(ref_text);
+    if (!arr || arr.length != 2) {
+      return -1;
     }
-    if (end >= line.length) {
-      return null;
+    let ref_id = parseInt(arr[1]);
+    let cache_key = `${this.chat_id}-${message_id}-search.json`;
+    let cache = await this.getFileCache(cache_key);
+    if (cache instanceof Error) {
+      return -1;
     }
-    const text = line.substring(start, end + 1);
-    logger.debug(text);
+    let items = JSON.parse(cache.toString());
+    for (let item of items) {
+      if (item.cite_index !== ref_id) {
+        continue;
+      }
+      let text = searchReault2Lines(item, item.cite_index).join("\n");
+      await popup(text, "", "markdown");
+      return;
+    }
+  }
+  async showItem() {
+    let ref_item = await getCurrentRef();
+    if (!ref_item) {
+      return;
+    }
+    if (await this.tryGetRef(ref_item.segment_id, ref_item.ref_text) !== -1) {
+      return;
+    }
+    await this.tryGetSearchResult(ref_item.segment_id, ref_item.ref_text);
   }
   async getPowChallenge(target_path) {
     var _a;
@@ -3019,7 +3090,7 @@ var bailianChat = new BailianChat(
 // src/ai/chat.ts
 var aiChat = null;
 async function aiChatSelect() {
-  let choose = await import_coc23.window.showQuickPick(
+  let choose = await import_coc22.window.showQuickPick(
     [
       { label: "Kimi", chat: kimiChat },
       { label: "Deepseek", chat: deepseekChat },
@@ -3049,9 +3120,9 @@ async function aiChatOpen() {
       return -1;
     }
     items.push({ label: "Create", chat_id: "", description: "" });
-    let choose = await import_coc23.window.showQuickPick(items, { title: "Choose Chat" });
+    let choose = await import_coc22.window.showQuickPick(items, { title: "Choose Chat" });
     if (!choose || choose.chat_id.length == 0) {
-      let new_name = await import_coc23.window.requestInput("Name", "", {
+      let new_name = await import_coc22.window.requestInput("Name", "", {
         position: "center"
       });
       if (new_name.length == 0) {
@@ -3095,8 +3166,8 @@ function aiChatQuickChat() {
     if (ret != 0 || !aiChat) {
       return;
     }
-    let n = await import_coc23.workspace.nvim.eval("&columns");
-    let inputbox = await import_coc23.window.createInputBox(
+    let n = await import_coc22.workspace.nvim.eval("&columns");
+    let inputbox = await import_coc22.window.createInputBox(
       `AI Chat <${aiChat.getChatName()}>`,
       "",
       {
@@ -3117,18 +3188,15 @@ function aiChatQuickChat() {
     aiChat.closeAutoScroll();
   };
 }
-function aiChatRef() {
+function aiChatShow() {
   return async () => {
-    let { nvim } = import_coc23.workspace;
+    let { nvim } = import_coc22.workspace;
     let bufnr = await nvim.call("bufnr");
     let ai_name = await nvim.call("getbufvar", [bufnr, "ai_name"]);
     if (ai_name == kimiChat.getChatName()) {
-      const text = await kimiChat.getRef();
-      if (text) {
-        await popup(text, "", "markdown");
-      }
+      await kimiChat.showItem();
     } else if (ai_name == deepseekChat.getChatName()) {
-      await deepseekChat.getSearchResults();
+      await deepseekChat.showItem();
     }
   };
 }
@@ -3177,7 +3245,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc24.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc23.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -3210,7 +3278,7 @@ function hlPreview() {
     if (arr.length == 0) {
       return;
     }
-    const { nvim } = import_coc24.workspace;
+    const { nvim } = import_coc23.workspace;
     await nvim.exec(
       "hi HlPreview cterm=None ctermfg=None ctermbg=None gui=None guifg=None guibg=None"
     );
@@ -3257,12 +3325,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const range = await import_coc24.window.getSelectedRange("v");
+    const range = await import_coc23.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc24.workspace.document;
+    const doc = await import_coc23.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -3272,11 +3340,11 @@ function addFormatter(context, lang, setting) {
   const selector = [{ scheme: "file", language: lang }];
   const provider = new FormattingEditProvider(setting);
   context.subscriptions.push(
-    import_coc24.languages.registerDocumentFormatProvider(selector, provider, 1)
+    import_coc23.languages.registerDocumentFormatProvider(selector, provider, 1)
   );
   if (provider.supportRangeFormat()) {
     context.subscriptions.push(
-      import_coc24.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
+      import_coc23.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
     );
   }
 }
@@ -3287,7 +3355,7 @@ async function aiChatSelectAndOpen() {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc24.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -3308,40 +3376,40 @@ async function activate(context) {
     //     clearInterval(timer);
     //   },
     // },
-    import_coc24.commands.registerCommand("ext-debug", debug, { sync: true }),
-    import_coc24.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
-    import_coc24.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+    import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc23.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
+    import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatQuickChat(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatQuickChat(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-ai-ref", aiChatRef(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-ai-show", aiChatShow(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-base64",
       decodeStrFn("base64"),
@@ -3349,10 +3417,10 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-copy-xclip",
       async () => {
@@ -3361,16 +3429,16 @@ async function activate(context) {
       },
       { sync: false }
     ),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-change-name-rule",
       async () => {
-        const range = await import_coc24.window.getSelectedRange("v");
+        const range = await import_coc23.window.getSelectedRange("v");
         if (!range) {
           return;
         }
         const pythonDir = getcfg("pythonDir", "");
-        const doc = await import_coc24.workspace.document;
+        const doc = await import_coc23.workspace.document;
         const name = doc.textDocument.getText(range);
         const res = await callPython(pythonDir, "common", "change_name_rule", [
           name
@@ -3381,7 +3449,7 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-mime",
       async () => {
@@ -3393,13 +3461,13 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.listManager.registerList(new ExtList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new Commands(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new MapkeyList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new RgfilesList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new RgwordsList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new AutocmdList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new HighlightList(import_coc24.workspace.nvim))
+    import_coc23.listManager.registerList(new ExtList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new Commands(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new MapkeyList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgfilesList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgwordsList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new AutocmdList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new HighlightList(import_coc23.workspace.nvim))
     // sources.createSource({
     //   name: 'coc-ext-common completion source', // unique id
     //   doComplete: async () => {

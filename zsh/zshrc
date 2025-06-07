@@ -120,12 +120,12 @@ if hash fortune 2>/dev/null && hash cowsay 2>/dev/null && hash lolcat 2>/dev/nul
         lolcat
 fi
 
-PROMPT=$'%B%F{${MY_ZSH_COLOR_NAME:-63}}%n@%m%b %F{110}%D{[%H:%M:%S]} %F{244}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
+PROMPT=$'%B%F{${MY_ZSH_COLOR_NAME:-66}}%n@%m%b %F{109}%D{[%H:%M:%S]} %F{243}[%~] $(git_prompt_info)%F{60}\n->%B%F{69} %#%b%f%k '
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%F{29}["
+ZSH_THEME_GIT_PROMPT_PREFIX="%F{72}["
 ZSH_THEME_GIT_PROMPT_SUFFIX="]%b%f%k"
-ZSH_THEME_GIT_PROMPT_DIRTY=" %F{167}*%F{29}"
-ZSH_THEME_GIT_PROMPT_UNKNOWN=" %F{167}?%F{29}"
+ZSH_THEME_GIT_PROMPT_DIRTY=" %F{167}*%F{72}"
+ZSH_THEME_GIT_PROMPT_UNKNOWN=" %F{167}?%F{72}"
 ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 # Checks if working tree is dirty

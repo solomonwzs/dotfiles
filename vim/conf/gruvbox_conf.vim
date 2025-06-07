@@ -1,18 +1,11 @@
-function! s:get_gruvbox_color(group)
-  let hid = hlID(a:group)
-  let guiColor = synIDattr(hid, 'fg', 'gui')
-  let termColor = synIDattr(hid, 'fg', 'cterm')
-  return [ guiColor, termColor ]
-endfunction
+let s:purple = lib#color#group_color('GruvboxPurple')
+let s:yellow = lib#color#group_color('GruvboxYellow')
+let s:orange = lib#color#group_color('GruvboxOrange')
 
-let s:purple = s:get_gruvbox_color('GruvboxPurple')
-let s:yellow = s:get_gruvbox_color('GruvboxYellow')
-let s:orange = s:get_gruvbox_color('GruvboxOrange')
-
-let s:fg1 = s:get_gruvbox_color('GruvboxFg1')
-let s:fg2 = s:get_gruvbox_color('GruvboxFg2')
-let s:bg2 = s:get_gruvbox_color('GruvboxBg2')
-let s:bg1 = s:get_gruvbox_color('GruvboxBg1')
+let s:fg1 = lib#color#group_color('GruvboxFg1')
+let s:fg2 = lib#color#group_color('GruvboxFg2')
+let s:bg2 = lib#color#group_color('GruvboxBg2')
+let s:bg1 = lib#color#group_color('GruvboxBg1')
 
 highlight Normal ctermbg=NONE guibg=NONE
 highlight Comment cterm=italic gui=italic

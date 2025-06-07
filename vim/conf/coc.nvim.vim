@@ -13,29 +13,29 @@ scriptencoding utf-8
 "         \ 'coc-vimlsp',
 "         \ ]
 
-hi CocListHeader ctermfg=16 ctermbg=108 cterm=bold guifg=#000000 guibg=#87af87 gui=bold
+call lib#color#theme_hl('CocListHeader', ['bg0_s', 'blue', 'bold'])
 
-hi CocListSep0 ctermfg=108 ctermbg=167 guifg=#87af87 guibg=#d75f5f
-hi CocListArgs ctermfg=16 ctermbg=167 cterm=bold guifg=#000000 guibg=#d75f5f
+call lib#color#theme_hl('CocListSep0', ['blue', 'light_red', ''])
+call lib#color#theme_hl('CocListArgs', ['bg0_s', 'light_red', 'bold'])
 
-hi CocListSep1 ctermfg=167 ctermbg=241 guifg=#d75f5f guibg=#626262
-hi CocListPath ctermfg=195 ctermbg=241 guifg=#d7ffff guibg=#626262
+call lib#color#theme_hl('CocListSep1', ['light_red', 'bg3', 'bold'])
+call lib#color#theme_hl('CocListPath', ['fg2', 'bg3', ''])
 
-hi CocListSep2 ctermfg=241 ctermbg=237 guifg=#626262 guibg=#3a3a3a
-hi CocListBg ctermbg=237 guibg=#3a3a3a
-hi CocListSep3 ctermfg=195 ctermbg=237 guifg=#d7ffff guibg=#3a3a3a
+call lib#color#theme_hl('CocListSep2', ['bg3', 'bg1', ''])
+call lib#color#theme_hl('CocListBg', ['', 'bg1', ''])
+call lib#color#theme_hl('CocListSep3', ['light_blue', 'bg1', ''])
 
-hi CocListInfo ctermfg=16 ctermbg=195 guifg=#000000 guibg=#d7ffff
-hi CocListSep4 ctermfg=149 ctermbg=195 guifg=#afd75f guibg=#d7ffff
+call lib#color#theme_hl('CocListInfo', ['bg0_s', 'light_blue', ''])
+call lib#color#theme_hl('CocListSep4', ['light_green', 'light_blue', ''])
 
-hi CocListTotal ctermfg=16 ctermbg=149 guifg=#000000 guibg=#afd75f
+call lib#color#theme_hl('CocListTotal', ['bg0_s', 'light_green', ''])
 
 " hi clear CocFloating
 " hi CocFloating guibg=None
-hi CocFloatingBorder ctermfg=243 guifg=#767676
+call lib#color#theme_hl('CocFloatingBorder', ['bg4', '', ''])
 
-hi CocPumSearch ctermfg=255 cterm=bold guifg=#eeeeee gui=bold
-hi CocMenuSel ctermfg=239 ctermbg=109 cterm=bold guifg=#4e4e4e guibg=#87afaf gui=bold
+call lib#color#theme_hl('CocPumSearch', ['blue', '', ''])
+call lib#color#theme_hl('CocMenuSel', ['bg0_s', 'light_blue', 'bold'])
 
 let s:is_nvim = has('nvim')
 let s:hide_pum = has('nvim-0.6.1') || has('patch-8.2.3389')
