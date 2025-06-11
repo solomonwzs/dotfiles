@@ -265,6 +265,12 @@ Plug 'https://github.com/MeanderingProgrammer/render-markdown.nvim.git'
 " Provides Nerd Font icons (glyphs) for use by neovim plugins
 Plug 'https://github.com/nvim-tree/nvim-web-devicons.git'
 
+" UI Component Library for Neovim.
+Plug 'https://github.com/MunifTanjim/nui.nvim.git'
+
+" Use your Neovim like using Cursor AI IDE!
+Plug 'https://github.com/yetone/avante.nvim.git', {'branch': 'main', 'do': 'make'}
+
 call plug#end()
 
 " call LoadBundle(s:bundledir)
