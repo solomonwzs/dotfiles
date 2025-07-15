@@ -2923,7 +2923,7 @@ var DeepseekChat = class extends BaseChatChannel {
       return;
     }
     this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
-    var headers = this.getHeader();
+    let headers = this.getHeader();
     headers["x-ds-pow-response"] = challenge;
     const req = {
       args: {
@@ -2942,6 +2942,8 @@ var DeepseekChat = class extends BaseChatChannel {
         thinking_enabled: false
       })
     };
+    let event = "";
+    let p = "";
     const cb = {
       onData: (chunk, rsp) => {
         if (rsp.statusCode != 200) {
@@ -2952,26 +2954,27 @@ var DeepseekChat = class extends BaseChatChannel {
             if (line.length == 0) {
               return;
             }
-            if (line.slice(6, 12) == "[DONE]") {
-              this.append("\n(END)");
+            if (line.slice(0, 6) === "event:") {
+              event = line.slice(7).trim();
+              if (event === "close") {
+                this.append("\n(END)");
+              }
               return;
             }
-            const data = JSON.parse(line.slice(5));
-            if (data.choices.length > 0) {
-              for (const choice of data.choices) {
-                if (choice.delta.content) {
-                  this.append(choice.delta.content, false);
-                }
-              }
-            }
-            if (this.parent_id != data.message_id) {
-              this.append(`>> id:${data.message_id}
+            let comp = JSON.parse(line.slice(5));
+            if (event === "ready" && comp.request_message_id != void 0 && comp.response_message_id != void 0) {
+              this.append(`>> id:${comp.request_message_id}
 `);
+              this.parent_id = comp.response_message_id;
+              return;
             }
-            if (data.message_id < 0) {
-              logger.error(line);
-            } else {
-              this.parent_id = data.message_id;
+            if (event === "update_session") {
+              if (comp.p) {
+                p = comp.p;
+              }
+              if (p === "response/content" && typeof comp.v === "string") {
+                this.append(comp.v, false);
+              }
             }
           });
         } catch (e) {
