@@ -269,7 +269,7 @@ Plug 'https://github.com/nvim-tree/nvim-web-devicons.git'
 Plug 'https://github.com/MunifTanjim/nui.nvim.git'
 
 " Use your Neovim like using Cursor AI IDE!
-Plug 'https://github.com/yetone/avante.nvim.git', {'branch': 'main', 'do': 'make'}
+" Plug 'https://github.com/yetone/avante.nvim.git', {'branch': 'main', 'do': 'make'}
 
 call plug#end()
 

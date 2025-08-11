@@ -6,8 +6,6 @@
 let s:bundle_list = {
     \ 'DrawIt': {},
     \ 'LeaderF': {'deps': ['gruvbox']},
-    \ '#avante.nvim': {'deps': ['nvim-treesitter', 'plenary.nvim', 'nui.nvim', 'render-markdown.nvim']},
-    \ '#nui.nvim': {},
     \ 'coc.nvim': {'deps': ['render-markdown.nvim']},
     \ 'defx-git': {'vim': 0},
     \ 'defx-icons': {},
