@@ -101,6 +101,14 @@
           "--no-keep-simple-control-block-one-line"
         ]
       }
+    },
+    {
+      "languages": ["css"],
+      "setting": {
+        "provider": "prettier",
+        "args": [
+        ]
+      }
     }
   ],
 
