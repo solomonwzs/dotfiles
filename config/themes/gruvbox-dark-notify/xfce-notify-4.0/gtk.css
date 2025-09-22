@@ -9,20 +9,24 @@
   color: #d4be98;
   font-size: 14px;
 }
+
 #XfceNotifyWindow buttonbox button:not(:disabled) {
   color: #7c6f64;
   box-shadow: none;
   background-color: transparent;
 }
+
 #XfceNotifyWindow buttonbox button:not(:disabled):drop(active),
 #XfceNotifyWindow buttonbox button:not(:disabled):hover {
   box-shadow: none;
   background-color: rgba(124, 111, 100, 0.08);
 }
+
 #XfceNotifyWindow buttonbox button:not(:disabled):focus {
   box-shadow: none;
   background-color: rgba(124, 111, 100, 0.08);
 }
+
 #XfceNotifyWindow buttonbox button:not(:disabled):active {
   box-shadow: none;
   background-image: radial-gradient(
@@ -31,9 +35,11 @@
     transparent 0%
   );
 }
+
 #XfceNotifyWindow label#summary {
   font-weight: bold;
 }
+
 #XfceNotifyWindow label#summary + label {
   color: rgba(212, 190, 152, 0.7);
 }

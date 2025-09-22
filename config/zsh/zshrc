@@ -169,16 +169,8 @@ function parse_git_dirty() {
     fi
 }
 
-man() {
-    env LESS_TERMCAP_mb=$'\E[01;31m' \
-        LESS_TERMCAP_md=$'\E[01;38;5;74m' \
-        LESS_TERMCAP_me=$'\E[0m' \
-        LESS_TERMCAP_se=$'\E[0m' \
-        LESS_TERMCAP_so=$'\E[01;07;33m' \
-        LESS_TERMCAP_ue=$'\E[0m' \
-        LESS_TERMCAP_us=$'\E[04;38;5;146m' \
-        man "$@"
-}
+hash bat 2>/dev/null &&
+    export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
 
 _office_proxy() {
     export https_proxy="$MY_OFFICE_PROXY"
@@ -249,12 +241,15 @@ fi
 # Setting for kitty
 #####################
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm-256color ssh"
+[[ "$TERM" == "xterm-kitty" ]] && [[ "$GLFW_IM_MODULE" != "ibus" ]] &&
+    echo "set 'env GLFW_IM_MODULE=ibus' for fcitx input method"
 
 #####################
 # Setting for fzf
 #####################
 
-export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always --theme=gruvbox-dark {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
+hash bat 2>/dev/null && hash tree 2>/dev/null &&
+    export FZF_CTRL_T_OPTS="--preview '(bat --style=numbers --color=always --theme=gruvbox-dark {} || cat {} || tree -C {}) 2> /dev/null | head -200'"
 
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --color fg:#ebdbb2,hl:#fabd2f,fg+:#ebdbb2,bg+:#3c3836,hl+:#fabd2f --color info:#83a598,prompt:#bdae93,spinner:#fabd2f,pointer:#83a598,marker:#fe8019,header:#665c54'
 
@@ -323,6 +318,10 @@ fzf-toolbox-widget() {
 zle -N fzf-toolbox-widget
 bindkey '^T' fzf-toolbox-widget
 
+#####################
+# Setting for tmux
+#####################
+
 _tmux_set_env() {
     tmux_env_val=$(tmux show-environment 2>/dev/null)
     local var=$(echo "$tmux_env_val" | grep '^${1}=')
@@ -337,3 +336,12 @@ _tmux_set_env() {
 
 _tmux_set_env "MY_TMUX_ACTIVE_BG_COLOR" "${MY_TMUX_ACTIVE_BG_COLOR:-colour120}" 1
 # _tmux_set_env "MY_TMUX_STATUS_INTERVAL" "${MY_TMUX_STATUS_INTERVAL:-2}" 1
+
+#####################
+# Setting for bat
+#####################
+
+export MANPAGER=""
+if hash bat 2>/dev/null; then
+    MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
+fi
