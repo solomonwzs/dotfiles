@@ -105,6 +105,7 @@ function git_clone() {
 info "Common settings"
 make_dir "$HOME/bin"
 make_dir "$HOME/.config"
+make_dir "$HOME/.local/share"
 copy_file "$EXECUTE_DIRNAME/shell/my_conf.sh" "$HOME/.my_conf.sh"
 make_link "$EXECUTE_DIRNAME/shell/toolbox.txt" "$HOME/.toolbox.txt"
 make_link "$EXECUTE_DIRNAME/shell/preview_file.sh" "$HOME/bin/preview_file"
@@ -178,7 +179,8 @@ fi
 if (hash btop 2>/dev/null); then
     info "Config for btop"
     make_dir "$EXECUTE_DIRNAME/config/btop"
-    make_link "$EXECUTE_DIRNAME/config/btop/btop.conf" "$HOME/.config/btop/btop.conf"
+    make_link "$EXECUTE_DIRNAME/config/btop/btop.conf" \
+        "$HOME/.config/btop/btop.conf"
 else
     info "Skip config for btop"
 fi
@@ -193,6 +195,15 @@ fi
 if (hash bat 2>/dev/null); then
     info "Config for bat"
     make_link "$EXECUTE_DIRNAME/config/bat" "$HOME/.config/bat"
+else
+    info "Skip config for bat"
+fi
+
+if (hash fcitx5 2>/dev/null); then
+    info "Config for fcitx5"
+    make_dir "$HOME/.local/share/fcitx5"
+    make_link "$EXECUTE_DIRNAME/config/fcitx5/themes" \
+        "$HOME/.local/share/fcitx5/themes"
 else
     info "Skip config for bat"
 fi

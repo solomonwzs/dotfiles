@@ -11,8 +11,6 @@ let s:bg3 = lib#color#group_color('GruvboxBg3')
 highlight Normal ctermbg=NONE guibg=NONE
 highlight Comment cterm=italic gui=italic
 
-call lib#color#highlight('VimSignatureMarkLine', {'bg': s:purple})
-
 highlight! link GitSignsAdd GruvboxGreen
 highlight! link GitSignsChange GruvboxYellow
 highlight! link GitSignsDelete GruvboxRed

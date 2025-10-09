@@ -177,6 +177,17 @@ function! lib#color#gruvbox_color(name) abort
   return get(s:gb, a:name, s:gb.light0)
 endfunction
 
+function! lib#color#theme_color(name) abort
+  return get(s:color, a:name, s:color.white)
+endfunction
+
+function! lib#color#group_color(group) abort
+  let hid = hlID(a:group)
+  let guiColor = synIDattr(hid, 'fg', 'gui')
+  let termColor = synIDattr(hid, 'fg', 'cterm')
+  return [ guiColor, termColor ]
+endfunction
+
 function! lib#color#xcterm256_color() abort
   let prefix_fg = 'xCtermFg_'
   let prefix_bg = 'xCtermBg_'
@@ -240,11 +251,4 @@ function! lib#color#theme_hl(name, opts) abort
     call s:append_highlight_opt(hl, 'cterm', a:opts[2])
   endif
   execute join(hl, ' ')
-endfunction
-
-function! lib#color#group_color(group) abort
-  let hid = hlID(a:group)
-  let guiColor = synIDattr(hid, 'fg', 'gui')
-  let termColor = synIDattr(hid, 'fg', 'cterm')
-  return [ guiColor, termColor ]
 endfunction

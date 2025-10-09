@@ -7,8 +7,8 @@ let s:bundle_list = {
     \ 'DrawIt': {},
     \ 'LeaderF': {'deps': ['gruvbox']},
     \ 'coc.nvim': {'deps': ['render-markdown.nvim']},
-    \ 'defx-git': {'vim': 0},
-    \ 'defx-icons': {},
+    \ 'defx-git': {'vim': 0, 'deps': ['defix.nvim']},
+    \ 'defx-icons': {'vim': 0, 'deps': ['defix.nvim']},
     \ 'defx.nvim': {'vim': 0},
     \ 'diffview.nvim': {'vim': 0},
     \ 'gruvbox': {'deps': ['lightline.vim']},
@@ -25,7 +25,7 @@ let s:bundle_list = {
     \ 'vim-commentary': {},
     \ 'vim-dirdiff': {},
     \ 'vim-fugitive': {},
-    \ 'vim-signature': {},
+    \ 'vim-signature': {'deps': ['gruvbox']},
     \ }
 
 let s:loaded_bundles = {}

@@ -1,4 +1,4 @@
-let g:defx_icons_enable_syntax_highlight = 0
+let g:defx_icons_enable_syntax_highlight = 1
 
 let s:default_color = lib#color#gruvbox_color('light0')
 
@@ -40,8 +40,9 @@ let g:defx_icons_extensions = {
     \ }
 
 let g:defx_icons_exact_matches = {
-    \ 'zshrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
-    \ 'vimrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
-    \ 'tigrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ '.tigrc': {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'config': {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'tigrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'vimrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
+    \ 'zshrc':  {'icon': '', 'color': '231', 'term_color': s:default_color[1]},
     \ }

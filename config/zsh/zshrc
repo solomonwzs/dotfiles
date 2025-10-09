@@ -240,6 +240,7 @@ fi
 #####################
 # Setting for kitty
 #####################
+#
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm-256color ssh"
 [[ "$TERM" == "xterm-kitty" ]] && [[ "$GLFW_IM_MODULE" != "ibus" ]] &&
     echo "set 'env GLFW_IM_MODULE=ibus' for fcitx input method"
@@ -344,4 +345,12 @@ _tmux_set_env "MY_TMUX_ACTIVE_BG_COLOR" "${MY_TMUX_ACTIVE_BG_COLOR:-colour120}" 
 export MANPAGER=""
 if hash bat 2>/dev/null; then
     MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
+fi
+
+#####################
+# Setting for libvirt
+#####################
+
+if [[ "${LIBVIRT_DEFAULT_URI}" == "" ]]; then
+    export LIBVIRT_DEFAULT_URI="qemu:///system"
 fi
