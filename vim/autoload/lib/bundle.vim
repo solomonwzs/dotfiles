@@ -8,7 +8,7 @@ let s:bundle_list = {
     \ 'LeaderF': {'deps': ['gruvbox']},
     \ 'coc.nvim': {'deps': ['render-markdown.nvim']},
     \ 'defx-git': {'vim': 0, 'deps': ['defix.nvim']},
-    \ 'defx-icons': {'vim': 0, 'deps': ['defix.nvim']},
+    \ 'defx-icons': {},
     \ 'defx.nvim': {'vim': 0},
     \ 'diffview.nvim': {'vim': 0},
     \ 'gruvbox': {'deps': ['lightline.vim']},

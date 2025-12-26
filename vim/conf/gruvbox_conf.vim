@@ -1,3 +1,5 @@
+let s:is_nvim = has('nvim')
+
 let s:purple = lib#color#group_color('GruvboxPurple')
 let s:yellow = lib#color#group_color('GruvboxYellow')
 let s:orange = lib#color#group_color('GruvboxOrange')
@@ -18,7 +20,9 @@ highlight! link GitSignsDelete GruvboxRed
 call lib#color#highlight('my_Warning', {'fg': s:fg1, 'bg': s:yellow})
 call lib#color#highlight('my_Error', {'fg': s:fg1, 'bg': s:orange})
 
-call lib#color#highlight('@variable', {'fg': s:fg0})
+if s:is_nvim
+  call lib#color#highlight('@variable', {'fg': s:fg0})
+endif
 
 highlight! link ALEWarning my_Warning
 highlight! link ALEError my_Error

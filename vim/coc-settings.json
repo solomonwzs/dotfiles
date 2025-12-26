@@ -66,7 +66,7 @@
   "coc-ext.erlang.erlangLsPath": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
   "coc-ext.erlang.traceServer": "off",
 
-  "coc-ext.log.detail": false,
+  "coc-ext.log.detail": true,
   "coc-ext.log.level": 0,
 
   "coc-ext.formatting": [

@@ -36,7 +36,7 @@ __export(coc_ext_common_exports, {
   aiChatSelectAndOpen: () => aiChatSelectAndOpen
 });
 module.exports = __toCommonJS(coc_ext_common_exports);
-var import_coc23 = require("coc.nvim");
+var import_coc24 = require("coc.nvim");
 
 // src/lists/autocmd.ts
 var import_coc = require("coc.nvim");
@@ -60,6 +60,9 @@ function stringify(value) {
     return value;
   } else if (value instanceof String) {
     return value.toString();
+  } else if (value instanceof Error) {
+    let s = JSON.stringify(value, null, 2);
+    return `${value.stack} ${s}`;
   } else {
     return JSON.stringify(value, null, 2);
   }
@@ -98,6 +101,7 @@ __publicField(CocExtError, "ERR_HTTP", -1);
 __publicField(CocExtError, "ERR_AUTH", -2);
 __publicField(CocExtError, "ERR_KIMI", -3);
 __publicField(CocExtError, "ERR_DEEPSEEK", -4);
+__publicField(CocExtError, "ERR_COMM_AI", -5);
 var CocExtErrnoError = class extends Error {
   constructor(err) {
     super(err.message);
@@ -385,8 +389,10 @@ async function getText(mode, escape = true) {
   const doc = await import_coc5.workspace.document;
   let range = null;
   if (mode === "v") {
-    const text2 = (await import_coc5.workspace.nvim.call("lib#common#visual_selection", [escape ? 1 : 0])).toString();
-    return text2.trim();
+    let res = await import_coc5.workspace.nvim.call("lib#common#visual_selection", [
+      escape ? 1 : 0
+    ]);
+    return res ? res.toString().trim() : "";
   } else {
     const pos = await import_coc5.window.getCursorPosition();
     range = doc.getWordRangeAtPosition(pos);
@@ -460,6 +466,18 @@ async function openFile(filepath, opts) {
   }
   await nvim.command(`${open} ${cmd} ${filepath}`);
 }
+function countTextWidth(text) {
+  let w = 0;
+  for (const ch of text) {
+    const code = ch.codePointAt(0);
+    if (code <= 127) {
+      w += 1;
+    } else {
+      w += 2;
+    }
+  }
+  return w;
+}
 async function newScratchWindow(conf) {
   let { nvim } = import_coc5.workspace;
   let res = await nvim.call("coc_ext#newScratchWindow", [
@@ -507,6 +525,47 @@ var ScratchWindow = class {
     if (!(winid instanceof Error)) {
       this.winid = winid;
     }
+  }
+};
+var StringAlignHelper = class {
+  constructor(align) {
+    this.align = align;
+    __publicField(this, "alignList");
+    this.alignList = [];
+    for (let i of align) {
+      let a = i == "L" ? "L" : "R";
+      this.alignList.push({
+        align: a,
+        maxWidth: 0,
+        strList: []
+      });
+    }
+  }
+  put(...items) {
+    if (items.length != this.align.length) {
+      return -1;
+    } else {
+      for (let i = 0; i < this.align.length; ++i) {
+        let w = countTextWidth(items[i]);
+        if (this.alignList[i].maxWidth < w) {
+          this.alignList[i].maxWidth = w;
+        }
+        this.alignList[i].strList.push({
+          word: items[i],
+          width: w
+        });
+      }
+      return 0;
+    }
+  }
+  get(row, col) {
+    if (col >= this.alignList.length || row >= this.alignList[col].strList.length) {
+      return "";
+    }
+    let spaces = " ".repeat(
+      this.alignList[col].maxWidth - this.alignList[col].strList[row].width
+    );
+    return this.alignList[col].align == "L" ? `${this.alignList[col].strList[row].word}${spaces}` : `${spaces}${this.alignList[col].strList[row].word}`;
   }
 };
 
@@ -861,6 +920,9 @@ var Logger = class {
   dispose() {
     return this.channel.dispose();
   }
+  padZero(i, n) {
+    return i.toString().padStart(n, "0");
+  }
   logLevel(level, value) {
     var _a;
     const now = /* @__PURE__ */ new Date();
@@ -871,10 +933,11 @@ var Logger = class {
         const re = /at ((.*) \()?([^:]+):(\d+):(\d+)\)?/g;
         const expl = re.exec(stack[3]);
         if (expl) {
+          const func = expl[2];
           const file = import_path3.default.basename(expl[3]);
           const line = expl[4];
           this.channel.appendLine(
-            `${now.toISOString()} ${level} [${file}:${line}] ${str}`
+            `${now.getFullYear()}-${this.padZero(now.getMonth() + 1, 2)}-${this.padZero(now.getDate(), 2)} ${this.padZero(now.getHours(), 2)}:${this.padZero(now.getMinutes(), 2)}:${this.padZero(now.getSeconds(), 2)} ${level} [${file}:${func}:${line}] ${str}`
           );
           return;
         }
@@ -1131,14 +1194,36 @@ var RgwordsList = class extends import_coc11.BasicList {
 };
 
 // src/formatter/clfformatter.ts
-var import_coc12 = require("coc.nvim");
+var import_coc13 = require("coc.nvim");
 
 // src/formatter/baseformatter.ts
+var import_coc12 = require("coc.nvim");
 var BaseFormatter = class {
   constructor(s) {
     this.s = s;
     __publicField(this, "setting");
     this.setting = s;
+  }
+  async callShellFormatDocment(exec, args, doc) {
+    let resp = await callShell(exec, args, doc.getText());
+    if (resp.exitCode != 0) {
+      showNotification(`${exec} fail, ret ${resp.exitCode}`, "formatter");
+      if (resp.error) {
+        logger.error(resp.error.toString());
+      }
+    } else if (resp.data) {
+      showNotification(`${exec} ok`, "formatter");
+      return [
+        import_coc12.TextEdit.replace(
+          {
+            start: { line: 0, character: 0 },
+            end: { line: doc.lineCount, character: 0 }
+          },
+          resp.data.toString()
+        )
+      ];
+    }
+    return [];
   }
 };
 
@@ -1248,42 +1333,24 @@ var ClfFormatter = class extends BaseFormatter {
     }
     return setting;
   }
-  async formatDocument(document, options, _token, range) {
+  async formatDocument(doc, options, _token, range) {
     if (range) {
       return [];
     }
-    const filepath = import_coc12.Uri.parse(document.uri).fsPath;
+    let filepath = import_coc13.Uri.parse(doc.uri).fsPath;
     let args = await this.confFileExist(filepath) ? ["--assume-filename", filepath] : [
       "-style",
       JSON.stringify(this.getSetting(options)),
       "--assume-filename",
       filepath
     ];
-    const exec = this.setting.exec ? this.setting.exec : "clang-format";
-    const resp = await callShell(exec, args, document.getText());
-    if (resp.exitCode != 0) {
-      showNotification(`clang-format fail, ret ${resp.exitCode}`, "formatter");
-      if (resp.error) {
-        logger.error(resp.error.toString());
-      }
-    } else if (resp.data) {
-      showNotification("clang-format ok", "formatter");
-      return [
-        import_coc12.TextEdit.replace(
-          {
-            start: { line: 0, character: 0 },
-            end: { line: document.lineCount, character: 0 }
-          },
-          resp.data.toString()
-        )
-      ];
-    }
-    return [];
+    let exec = this.setting.exec ? this.setting.exec : "clang-format";
+    return this.callShellFormatDocment(exec, args, doc);
   }
 };
 
 // src/formatter/prettierformatter.ts
-var import_coc13 = require("coc.nvim");
+var import_coc14 = require("coc.nvim");
 var filetype2Parser = {
   javascript: "babel-flow",
   xml: "html"
@@ -1296,17 +1363,17 @@ var PrettierFormatter = class extends BaseFormatter {
   supportRangeFormat() {
     return false;
   }
-  async formatDocument(document, _options, _token, range) {
+  async formatDocument(doc, _options, _token, range) {
     if (range) {
       return [];
     }
-    const args = [];
+    let args = [];
     if (this.setting.args) {
       args.push(...this.setting.args);
     }
-    const { nvim } = import_coc13.workspace;
-    const filetype = await nvim.eval("&filetype");
-    const parser = filetype2Parser[filetype];
+    let { nvim } = import_coc14.workspace;
+    let filetype = await nvim.eval("&filetype");
+    let parser = filetype2Parser[filetype];
     if (parser) {
       args.push(`--parser=${parser}`);
     } else {
@@ -1315,31 +1382,12 @@ var PrettierFormatter = class extends BaseFormatter {
     if (parser == "html") {
       args.push("--html-whitespace-sensitivity=ignore");
     }
-    const exec = this.setting.exec ? this.setting.exec : "prettier";
-    const resp = await callShell(exec, args, document.getText());
-    if (resp.exitCode != 0) {
-      showNotification(`prettier fail, ret ${resp.exitCode}`, "formatter");
-      if (resp.error) {
-        logger.error(resp.error.toString());
-      }
-    } else if (resp.data) {
-      showNotification("prettier ok", "formatter");
-      return [
-        import_coc13.TextEdit.replace(
-          {
-            start: { line: 0, character: 0 },
-            end: { line: document.lineCount, character: 0 }
-          },
-          resp.data.toString()
-        )
-      ];
-    }
-    return [];
+    let exec = this.setting.exec ? this.setting.exec : "prettier";
+    return this.callShellFormatDocment(exec, args, doc);
   }
 };
 
 // src/formatter/bazelformatter.ts
-var import_coc14 = require("coc.nvim");
 var BazelFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1348,35 +1396,16 @@ var BazelFormatter = class extends BaseFormatter {
   supportRangeFormat() {
     return false;
   }
-  async formatDocument(document, _options, _token, range) {
+  async formatDocument(doc, _options, _token, range) {
     if (range) {
       return [];
     }
     const exec = this.setting.exec ? this.setting.exec : "buildifier";
-    const resp = await callShell(exec, [], document.getText());
-    if (resp.exitCode != 0) {
-      showNotification(`buildifier fail, ret ${resp.exitCode}`, "formatter");
-      if (resp.error) {
-        logger.error(resp.error.toString());
-      }
-    } else if (resp.data) {
-      showNotification("buildifier ok", "formatter");
-      return [
-        import_coc14.TextEdit.replace(
-          {
-            start: { line: 0, character: 0 },
-            end: { line: document.lineCount, character: 0 }
-          },
-          resp.data.toString()
-        )
-      ];
-    }
-    return [];
+    return this.callShellFormatDocment(exec, [], doc);
   }
 };
 
 // src/formatter/luaformatter.ts
-var import_coc15 = require("coc.nvim");
 var LuaFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1401,11 +1430,11 @@ var LuaFormatter = class extends BaseFormatter {
   supportRangeFormat() {
     return false;
   }
-  async formatDocument(document, options, _token, range) {
+  async formatDocument(doc, options, _token, range) {
     if (range) {
       return [];
     }
-    const opts = [];
+    let opts = [];
     if (options.tabSize !== void 0 && !this.opts_has_indent_width) {
       opts.push(`--indent-width=${options.tabSize}`);
     }
@@ -1416,35 +1445,12 @@ var LuaFormatter = class extends BaseFormatter {
         opts.push("--use-tab");
       }
     }
-    const exec = this.setting.exec ? this.setting.exec : "lua-format";
-    const resp = await callShell(
-      exec,
-      this.opts.concat(opts),
-      document.getText()
-    );
-    if (resp.exitCode != 0) {
-      showNotification(`lua-format fail, ret ${resp.exitCode}`, "formatter");
-      if (resp.error) {
-        logger.error(resp.error.toString());
-      }
-    } else if (resp.data) {
-      showNotification("lua-format ok", "formatter");
-      return [
-        import_coc15.TextEdit.replace(
-          {
-            start: { line: 0, character: 0 },
-            end: { line: document.lineCount, character: 0 }
-          },
-          resp.data.toString()
-        )
-      ];
-    }
-    return [];
+    let exec = this.setting.exec ? this.setting.exec : "lua-format";
+    return this.callShellFormatDocment(exec, this.opts.concat(opts), doc);
   }
 };
 
 // src/formatter/shellformatter.ts
-var import_coc16 = require("coc.nvim");
 var ShellFormatter = class extends BaseFormatter {
   constructor(setting) {
     super(setting);
@@ -1458,30 +1464,33 @@ var ShellFormatter = class extends BaseFormatter {
   supportRangeFormat() {
     return false;
   }
-  async formatDocument(document, _options, _token, range) {
+  async formatDocument(doc, _options, _token, range) {
     if (range) {
       return [];
     }
-    const exec = this.setting.exec ? this.setting.exec : "shfmt";
-    const resp = await callShell(exec, this.opts, document.getText());
-    if (resp.exitCode != 0) {
-      showNotification(`shfmt fail, ret ${resp.exitCode}`, "formatter");
-      if (resp.error) {
-        logger.error(resp.error.toString());
-      }
-    } else if (resp.data) {
-      showNotification("shfmt ok", "formatter");
-      return [
-        import_coc16.TextEdit.replace(
-          {
-            start: { line: 0, character: 0 },
-            end: { line: document.lineCount, character: 0 }
-          },
-          resp.data.toString()
-        )
-      ];
+    let exec = this.setting.exec ? this.setting.exec : "shfmt";
+    return this.callShellFormatDocment(exec, this.opts, doc);
+  }
+};
+
+// src/formatter/cmakeformatter.ts
+var import_coc15 = require("coc.nvim");
+var CmakeFormatter = class extends BaseFormatter {
+  constructor(setting) {
+    super(setting);
+    this.setting = setting;
+  }
+  supportRangeFormat() {
+    return false;
+  }
+  async formatDocument(doc, _options, _token, range) {
+    if (range) {
+      return [];
     }
-    return [];
+    let filepath = import_coc15.Uri.parse(doc.uri).fsPath;
+    let exec = this.setting.exec ? this.setting.exec : "cmake-format";
+    let args = [filepath];
+    return this.callShellFormatDocment(exec, args, doc);
   }
 };
 
@@ -1499,6 +1508,8 @@ var FormattingEditProvider = class {
       this.formatter = new LuaFormatter(setting);
     } else if (setting.provider == "shfmt") {
       this.formatter = new ShellFormatter(setting);
+    } else if (setting.provider == "cmake-format") {
+      this.formatter = new CmakeFormatter(setting);
     } else {
       this.formatter = null;
     }
@@ -1666,7 +1677,7 @@ async function sendHttpRequestWithCallback(req, cb) {
 }
 async function simpleHttpDownloadFile(addr, pathname) {
   const url = new import_url2.URL(addr);
-  const proxy_url = getEnvHttpProxy(url.protocol == "https:");
+  const proxyUrl = getEnvHttpProxy(url.protocol == "https:");
   const req = {
     args: {
       headers: {
@@ -1677,7 +1688,7 @@ async function simpleHttpDownloadFile(addr, pathname) {
       method: "GET",
       protocol: url.protocol
     },
-    proxy: proxy_url ? { host: proxy_url.hostname, port: parseInt(proxy_url.port) } : void 0
+    proxy: proxyUrl ? { host: proxyUrl.hostname, port: parseInt(proxyUrl.port) } : void 0
   };
   const fd = await fsOpen(pathname, "w");
   if (fd instanceof Error) {
@@ -1752,10 +1763,10 @@ async function bingTranslate(text, sl, tl, proxy_url) {
 var import_coc19 = require("coc.nvim");
 
 // src/lightbulb/lightbulb.ts
-var import_coc17 = require("coc.nvim");
+var import_coc16 = require("coc.nvim");
 
 // src/utils/symbol.ts
-var import_coc18 = require("coc.nvim");
+var import_coc17 = require("coc.nvim");
 var symbolKind2Info = {
   1: { name: "File", icon: "\uF40E", short_name: "F" },
   2: { name: "Module", icon: "\uF0E8", short_name: "M" },
@@ -1785,18 +1796,18 @@ var symbolKind2Info = {
   26: { name: "TypeParameter", icon: "\uF671", short_name: "T" }
 };
 async function getDocumentSymbols(bufnr0) {
-  const { nvim } = import_coc18.workspace;
+  const { nvim } = import_coc17.workspace;
   const bufnr = bufnr0 ? bufnr0 : await nvim.call("bufnr", ["%"]);
-  const doc = import_coc18.workspace.getDocument(bufnr);
+  const doc = import_coc17.workspace.getDocument(bufnr);
   if (!doc || !doc.attached) {
     return null;
   }
-  if (!import_coc18.languages.hasProvider("documentSymbol", doc.textDocument)) {
+  if (!import_coc17.languages.hasProvider("documentSymbol", doc.textDocument)) {
     return null;
   }
-  const tokenSource = new import_coc18.CancellationTokenSource();
+  const tokenSource = new import_coc17.CancellationTokenSource();
   const { token } = tokenSource;
-  const docSymList = await import_coc18.languages.getDocumentSymbol(
+  const docSymList = await import_coc17.languages.getDocumentSymbol(
     doc.textDocument,
     token
   );
@@ -1807,7 +1818,7 @@ async function getCursorSymbolList() {
   if (!docSymList) {
     return null;
   }
-  const pos = await import_coc18.window.getCursorPosition();
+  const pos = await import_coc17.window.getCursorPosition();
   const symList = [];
   let slist = docSymList;
   let ok = true;
@@ -1832,17 +1843,219 @@ async function getCursorSymbolList() {
   return symList;
 }
 
+// src/ai/base.ts
+var import_coc18 = require("coc.nvim");
+var import_os = __toESM(require("os"));
+var FileCache = class {
+  constructor(dir) {
+    this.dir = dir;
+    __publicField(this, "ready", false);
+  }
+  async checkDir() {
+    if (this.ready) {
+      return null;
+    }
+    let err = await fsMkdir(this.dir, { recursive: true, mode: 493 });
+    if (err) {
+      return err;
+    }
+    this.ready = true;
+    return null;
+  }
+  async set(key, data) {
+    let err = await this.checkDir();
+    if (err) {
+      return err;
+    }
+    let cacheFile = `${this.dir}/${key}`;
+    return await fsWriteFile(cacheFile, data);
+  }
+  async get(key) {
+    let err = await this.checkDir();
+    if (err) {
+      return err;
+    }
+    let cacheFile = `${this.dir}/${key}`;
+    return await fsReadFile(cacheFile);
+  }
+};
+var ChatChannel = class {
+  constructor(chatName) {
+    this.chatName = chatName;
+    __publicField(this, "channel");
+    __publicField(this, "winid");
+    this.channel = import_coc18.window.createOutputChannel(chatName);
+    this.winid = -1;
+  }
+  async show() {
+    let { nvim } = import_coc18.workspace;
+    let winid = await nvim.call("bufwinid", this.chatName);
+    if (winid == -1) {
+      this.channel.show();
+      winid = await nvim.call("bufwinid", this.chatName);
+      await nvim.call("win_execute", [winid, "setl wrap"]);
+      await nvim.call("win_execute", [winid, "set ft=aichat"]);
+    } else {
+      await nvim.call("win_gotoid", [winid]);
+    }
+    await nvim.call("win_execute", [winid, "norm G"]);
+  }
+  async hide() {
+    this.channel.hide();
+  }
+  async openAutoScroll() {
+    let { nvim } = import_coc18.workspace;
+    this.winid = await nvim.call("bufwinid", this.chatName);
+  }
+  async closeAutoScroll() {
+    this.winid = -1;
+  }
+  append(text, newline = true) {
+    if (newline) {
+      this.channel.appendLine(text);
+    } else {
+      this.channel.append(text);
+    }
+    if (this.winid != -1) {
+      let { nvim } = import_coc18.workspace;
+      nvim.call("win_execute", [this.winid, "norm G"]);
+    }
+  }
+  appendUserInput(datetime, text) {
+    this.append(`
+>> ${datetime}`);
+    let lines = text.split("\n");
+    for (const i of lines) {
+      this.append(`>> ${i}`);
+    }
+  }
+  clear() {
+    if (this.channel.content.length != 0) {
+      this.channel.dispose();
+      this.channel = import_coc18.window.createOutputChannel(this.chatName);
+      this.winid = -1;
+    }
+  }
+};
+var ChunkDecoder = class {
+  constructor() {
+    __publicField(this, "cache");
+    this.cache = Buffer.from("");
+  }
+  decode(buf) {
+    this.cache = Buffer.concat([this.cache, buf]);
+    let out = [];
+    while (this.cache.length > 0) {
+      let pos = this.cache.indexOf("\n");
+      if (pos < 0) {
+        break;
+      } else {
+        let str = this.cache.subarray(0, pos).toString();
+        this.cache = this.cache.subarray(pos + 1);
+        let pos0 = str.indexOf(":");
+        if (pos0 >= 0) {
+          out.push({
+            type: str.substring(0, pos0).trim(),
+            data: str.substring(pos0 + 1).trim()
+          });
+        } else if (str.length > 0) {
+          logger.debug(str);
+        }
+      }
+    }
+    return out;
+  }
+};
+var BaseChatChannel = class {
+  constructor() {
+    __publicField(this, "chatId");
+    __publicField(this, "cache");
+    __publicField(this, "chan");
+    this.chatId = void 0;
+    this.cache = new FileCache(
+      `${import_os.default.homedir}/.cache/chat_${this.getChatName()}`
+    );
+    this.chan = new ChatChannel(this.getChatName());
+  }
+  getCurrentChatId() {
+    return this.chatId;
+  }
+  setCurrentChatId(chatId) {
+    this.chatId = chatId;
+    this.chan.clear();
+  }
+  async sendChat(text) {
+    await this.chan.openAutoScroll();
+    await this.chat(text);
+    this.chan.closeAutoScroll();
+  }
+  async show() {
+    await this.chan.show();
+  }
+  hide() {
+    this.chan.hide();
+  }
+  clear() {
+    this.chan.clear();
+  }
+};
+async function getCurrentRef(opts) {
+  let doc = await import_coc18.workspace.document;
+  let pos = await import_coc18.window.getCursorPosition();
+  let lines = await doc.buffer.lines;
+  let line = lines[pos.line];
+  if (!line) {
+    return null;
+  }
+  let ch0 = opts ? opts.start : "[";
+  let ch1 = opts ? opts.start : "]";
+  let start = pos.character;
+  while (start >= 0) {
+    let ch = line[start];
+    if (!ch || ch == ch0) break;
+    start -= 1;
+  }
+  if (start < 0) {
+    return null;
+  }
+  let end = pos.character;
+  while (end < line.length) {
+    let ch = line[end];
+    if (!ch || ch == ch1) break;
+    end += 1;
+  }
+  if (end >= line.length) {
+    return null;
+  }
+  let refText = line.substring(start, end + 1);
+  let lineStart = pos.line - 1;
+  let segmentId = "";
+  for (; lineStart >= 0; --lineStart) {
+    const l = lines[lineStart];
+    if (l.length > 6 && l.slice(0, 6) == ">> id:") {
+      segmentId = l.slice(6).trim();
+      break;
+    }
+  }
+  if (segmentId.length == 0) {
+    return null;
+  }
+  return {
+    refText,
+    segmentId
+  };
+}
+
 // src/utils/debug.ts
-async function debugNewWin() {
-  newScratchWindow({
-    ver: true,
-    name: "DEBUG",
-    lines: ["# 123", "## abc", "---", "this is a test"],
-    filetype: "markdown"
-  });
+async function debugChat() {
+  let chan = new ChatChannel("---");
+  await chan.show();
+  await chan.appendUserInput("now", "hello");
+  chan.clear();
+  await chan.appendUserInput("now", "hello");
 }
 async function debug(_cmd, ..._args) {
-  await debugNewWin();
+  await debugChat();
 }
 
 // src/utils/decoder.ts
@@ -1990,588 +2203,184 @@ async function leader_recv(cmd, ..._args) {
 // src/ai/chat.ts
 var import_coc22 = require("coc.nvim");
 
-// src/ai/base.ts
+// src/ai/llmcommon.ts
+var import_fs3 = __toESM(require("fs"));
 var import_coc21 = require("coc.nvim");
-var import_os = __toESM(require("os"));
-var BaseChatChannel = class {
-  constructor() {
-    __publicField(this, "channel");
-    __publicField(this, "bufnr");
-    __publicField(this, "chat_name");
-    __publicField(this, "winid");
-    __publicField(this, "cache_dir");
-    __publicField(this, "chat_id");
-    this.channel = null;
-    this.bufnr = -1;
-    this.chat_id = void 0;
-    this.chat_name = this.getChatName();
-    this.winid = -1;
-    this.cache_dir = "";
-  }
-  async checkCacheDir() {
-    if (this.cache_dir.length != 0) {
-      return null;
-    }
-    let dir = `${import_os.default.homedir}/.cache/chat_${this.getChatName()}`;
-    let err = await fsMkdir(dir, { recursive: true, mode: 493 });
-    if (err) {
-      return err;
-    }
-    this.cache_dir = dir;
-    return null;
-  }
-  async setFileCache(key, data) {
-    let err = await this.checkCacheDir();
-    if (err) {
-      return err;
-    }
-    let cache_file = `${this.cache_dir}/${key}`;
-    return await fsWriteFile(cache_file, data);
-  }
-  async getFileCache(key) {
-    let err = await this.checkCacheDir();
-    if (err) {
-      return err;
-    }
-    let cache_file = `${this.cache_dir}/${key}`;
-    return await fsReadFile(cache_file);
-  }
-  getCurrentChatId() {
-    return this.chat_id;
-  }
-  setCurrentChatId(chat_id) {
-    this.chat_id = chat_id;
-  }
-  async openAutoScroll() {
-    let { nvim } = import_coc21.workspace;
-    this.winid = await nvim.call(
-      "bufwinid",
-      `${this.chat_name}-${this.chat_id}`
-    );
-  }
-  closeAutoScroll() {
-    this.winid = -1;
-  }
-  async bufferLines() {
-    const doc = import_coc21.workspace.getDocument(this.bufnr);
-    if (doc == null) {
-      return -1;
-    }
-    return (await doc.buffer.lines).length;
-  }
-  append(text, newline = true) {
-    if (this.channel) {
-    } else if (this.chat_id) {
-      this.channel = import_coc21.window.createOutputChannel(
-        `${this.chat_name}-${this.chat_id}`
-      );
-    } else {
-      return;
-    }
-    if (newline) {
-      this.channel.appendLine(text);
-    } else {
-      this.channel.append(text);
-    }
-    if (this.winid != -1) {
-      let { nvim } = import_coc21.workspace;
-      nvim.call("win_execute", [this.winid, "norm G"]);
-    }
-  }
-  appendUserInput(datetime, text) {
-    this.append(`
->> ${datetime}`);
-    let lines = text.split("\n");
-    for (const i of lines) {
-      this.append(`>> ${i}`);
-    }
-  }
-  async show() {
-    if (!this.chat_id) {
-      return;
-    }
-    const name = `${this.chat_name}-${this.chat_id}`;
-    if (!this.channel) {
-      this.channel = import_coc21.window.createOutputChannel(name);
-    }
-    let { nvim } = import_coc21.workspace;
-    let winid = await nvim.call("bufwinid", name);
-    if (winid == -1) {
-      this.channel.show();
-      winid = await nvim.call("bufwinid", name);
-      this.bufnr = await nvim.call("bufnr", name);
-      await nvim.call("win_execute", [winid, "setl wrap"]);
-      await nvim.call("win_execute", [winid, "set ft=aichat"]);
-    } else {
-      await nvim.call("win_gotoid", [winid]);
-    }
-    await nvim.call("setbufvar", [this.bufnr, "ai_name", this.chat_name]);
-    await nvim.call("win_execute", [winid, "norm G"]);
-  }
-};
-async function getCurrentRef(opts) {
-  let doc = await import_coc21.workspace.document;
-  let pos = await import_coc21.window.getCursorPosition();
-  let lines = await doc.buffer.lines;
-  let line = lines[pos.line];
-  if (!line) {
-    return null;
-  }
-  let ch0 = opts ? opts.start : "[";
-  let ch1 = opts ? opts.start : "]";
-  let start = pos.character;
-  while (start >= 0) {
-    let ch = line[start];
-    if (!ch || ch == ch0) break;
-    start -= 1;
-  }
-  if (start < 0) {
-    return null;
-  }
-  let end = pos.character;
-  while (end < line.length) {
-    let ch = line[end];
-    if (!ch || ch == ch1) break;
-    end += 1;
-  }
-  if (end >= line.length) {
-    return null;
-  }
-  let ref_text = line.substring(start, end + 1);
-  let line_start = pos.line - 1;
-  let segment_id = "";
-  for (; line_start >= 0; --line_start) {
-    const l = lines[line_start];
-    if (l.length > 6 && l.slice(0, 6) == ">> id:") {
-      segment_id = l.slice(6).trim();
-      break;
-    }
-  }
-  if (segment_id.length == 0) {
-    return null;
-  }
-  return {
-    ref_text,
-    segment_id
-  };
-}
-
-// src/ai/kimi.ts
-var search_window = new ScratchWindow("Kimi Search", "markdown");
-var KimiChat = class extends BaseChatChannel {
-  constructor(rtoken) {
+var LlmCommonChat = class extends BaseChatChannel {
+  constructor(servConf) {
     super();
-    this.rtoken = rtoken;
+    __publicField(this, "endpoint");
     __publicField(this, "headers");
-    __publicField(this, "urls");
-    this.headers = {
-      "Content-Type": "application/json",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
-      Origin: "https://kimi.moonshot.cn",
-      Referer: "https://kimi.moonshot.cn",
-      "x-msh-platform": "web"
+    __publicField(this, "chatChain");
+    __publicField(this, "proxy");
+    __publicField(this, "model");
+    this.endpoint = new URL(servConf.endpoint);
+    this.headers = {};
+    for (let key in servConf.auth_headers) {
+      this.headers[key] = servConf.auth_headers[key];
+    }
+    this.chatChain = {
+      model: "",
+      messages: [],
+      temperature: 1,
+      top_p: 0.95,
+      stream: true
     };
-    this.urls = [];
+    if (servConf.proxy) {
+      let proxyUrl = new URL(servConf.proxy);
+      this.proxy = {
+        host: proxyUrl.hostname,
+        port: parseInt(proxyUrl.port)
+      };
+    }
+  }
+  reset() {
+    this.chatChain.messages = [];
   }
   getChatName() {
-    return "Kimi";
-  }
-  addUrl(url) {
-    this.urls.push(url);
-    return this.urls.length;
-  }
-  async tryGetSearchResult(segment_id, ref_text) {
-    let regex = new RegExp(/^\[search result \([0-9]*\)\]$/);
-    let arr = regex.exec(ref_text);
-    if (!arr || arr.length != 1) {
-      return -1;
-    }
-    let cache_key = `${this.chat_id}-${segment_id}-search.json`;
-    let cache = await this.getFileCache(cache_key);
-    if (cache instanceof Error) {
-      return;
-    }
-    let items = JSON.parse(cache.toString());
-    let lines = [];
-    let idx = 0;
-    for (let item of items) {
-      if (item.msg.type != "get_res") {
-        continue;
-      }
-      idx += 1;
-      lines.push(
-        `[${idx} - ${item.msg.site_name} - ${item.msg.date}](${item.msg.url})`
-      );
-      lines.push(`# ${item.msg.title}`);
-      lines.push(`${item.msg.snippet}`);
-      lines.push("");
-      lines.push("---");
-      lines.push("");
-    }
-    await search_window.open(lines);
-  }
-  async tryGetRef(segment_id, ref_text) {
-    let regex = new RegExp(/^\[\^([0-9]*)\^\]$/);
-    let arr = regex.exec(ref_text);
-    if (!arr || arr.length < 2) {
-      return -1;
-    }
-    let ref_id = arr[1];
-    let cache_key = `${this.chat_id}-${segment_id}.json`;
-    let cache = await this.getFileCache(cache_key);
-    let item = null;
-    if (cache instanceof Error) {
-      let tmp = await this.refCard(segment_id);
-      if (tmp instanceof Error) {
-        logger.error(tmp);
-        return;
-      } else {
-        item = tmp;
-        await this.setFileCache(cache_key, JSON.stringify(item));
-      }
-    } else {
-      item = JSON.parse(cache.toString());
-    }
-    if (!item.refs) {
-      return;
-    }
-    for (let ref of item.refs) {
-      if (ref.ref_id != ref_id) {
-        continue;
-      }
-      let text = `[${ref.ref_doc.title}](${ref.ref_doc.url})
-${ref.ref_doc.source_label} - ${ref.ref_doc.published_time_str}
-`;
-      for (let seg of ref.ref_doc.rag_segments) {
-        text += `#${seg.text}`;
-      }
-      await popup(text, "", "markdown");
-      return;
-    }
-  }
-  async showItem() {
-    let ref_item = await getCurrentRef();
-    logger.debug(ref_item);
-    if (!ref_item) {
-      return;
-    }
-    if (await this.tryGetRef(ref_item.segment_id, ref_item.ref_text) !== -1) {
-      return;
-    }
-    await this.tryGetSearchResult(ref_item.segment_id, ref_item.ref_text);
-  }
-  getHeaders() {
-    this.headers["X-Traffic-Id"] = Array.from(
-      { length: 20 },
-      () => Math.floor(Math.random() * 36).toString(36)
-    ).join("");
-    return this.headers;
-  }
-  async getAccessToken() {
-    this.headers["Authorization"] = `Bearer ${this.rtoken}`;
-    const refresh_req = {
-      args: {
-        host: "kimi.moonshot.cn",
-        path: "/api/auth/token/refresh",
-        method: "GET",
-        protocol: "https:",
-        headers: this.getHeaders(),
-        timeout: 1e3
-      }
-    };
-    const resp = await sendHttpRequest(refresh_req);
-    if (resp.statusCode == 200 && resp.body) {
-      const obj = JSON.parse(resp.body.toString());
-      this.headers["Authorization"] = `Bearer ${obj["access_token"]}`;
-    }
-    return resp.statusCode ? resp.statusCode : -1;
-  }
-  async sendHttpRequest(req) {
-    if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
-      return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
-    }
-    let resp = await sendHttpRequest(req);
-    if (resp.statusCode == 401) {
-      if (await this.getAccessToken() != 200) {
-        return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
-      }
-      resp = await sendHttpRequest(req);
-    }
-    return resp;
-  }
-  async createChatId(name) {
-    const req = {
-      args: {
-        host: "kimi.moonshot.cn",
-        path: "/api/chat",
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeaders(),
-        timeout: 1e3
-      },
-      data: JSON.stringify({ name, is_example: false })
-    };
-    const resp = await this.sendHttpRequest(req);
-    if (resp instanceof Error) {
-      return new CocExtError(CocExtError.ERR_KIMI, resp.message);
-    }
-    if (resp.statusCode == 200 && resp.body) {
-      const obj = JSON.parse(resp.body.toString());
-      return obj["id"];
-    } else {
-      return new CocExtError(
-        CocExtError.ERR_KIMI,
-        `statusCode: ${resp.statusCode}`
-      );
-    }
+    return "LlmCommon";
   }
   async getChatList() {
-    const req = {
+    return [];
+  }
+  async createChatId(_name) {
+    var _a;
+    let req = {
       args: {
-        host: "kimi.moonshot.cn",
-        path: "/api/chat/list",
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeaders(),
+        host: this.endpoint.hostname,
+        path: `${this.endpoint.pathname}/v1/models`,
+        method: "GET",
+        protocol: this.endpoint.protocol,
+        headers: this.headers,
         timeout: 1e3
       },
-      data: JSON.stringify({ kimiplus_id: "", offset: 0, size: 50 })
+      proxy: this.proxy
     };
-    const resp = await this.sendHttpRequest(req);
-    if (resp instanceof Error) {
-      return resp;
-    }
-    if (resp.statusCode == 200 && resp.body) {
-      let obj = JSON.parse(resp.body.toString());
-      if (obj["items"]) {
-        const chat_list = obj["items"];
-        return chat_list.map((i) => {
-          return { label: i.name, chat_id: i.id, description: i.updated_at };
-        });
-      } else {
-        return [];
-      }
-    } else {
+    let resp = await sendHttpRequest(req);
+    if (resp.statusCode != 200 || !resp.body) {
       return new CocExtError(
-        CocExtError.ERR_KIMI,
-        `[Kimi] statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
+        CocExtError.ERR_COMM_AI,
+        `[CommAI] statusCode: ${resp.statusCode}, path: ${req.args.path}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
       );
     }
-  }
-  async refCard(segment_id) {
-    const req = {
-      args: {
-        host: "kimi.moonshot.cn",
-        path: "/api/chat/segment/v3/rag-refs",
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeaders(),
-        timeout: 1e3
-      },
-      data: JSON.stringify({
-        queries: [
-          {
-            chat_id: this.chat_id,
-            sid: segment_id,
-            z_idx: 0
-          }
-        ]
-      })
-    };
-    const resp = await this.sendHttpRequest(req);
-    if (resp instanceof Error) {
-      return resp;
-    }
-    if (resp.statusCode == 200 && resp.body) {
-      let obj = JSON.parse(resp.body.toString());
-      let items = obj["items"];
-      if (items.length > 0) {
-        return items[0];
+    let llmResp = JSON.parse(resp.body.toString());
+    let alignHelper = new StringAlignHelper("LR");
+    for (let i of llmResp.models) {
+      if (!i.enabled) {
+        continue;
       }
+      alignHelper.put(i.alias, i.tokenLimit.toString());
     }
-    return new CocExtError(
-      CocExtError.ERR_KIMI,
-      `query ref fail, path: ${req.args.path}`
-    );
-  }
-  async chatScroll() {
-    const req = {
-      args: {
-        host: "kimi.moonshot.cn",
-        path: `/api/chat/${this.chat_id}/segment/scroll`,
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeaders(),
-        timeout: 1e3
-      },
-      data: JSON.stringify({ last: 50 })
-    };
-    const resp = await this.sendHttpRequest(req);
-    if (resp instanceof Error) {
-      return resp;
-    }
-    if (resp.statusCode == 200 && resp.body) {
-      let obj = JSON.parse(resp.body.toString());
-      if (obj["items"]) {
-        return obj["items"];
-      } else {
-        return [];
+    let quickItems = [];
+    for (let i of llmResp.models) {
+      if (!i.enabled) {
+        continue;
       }
+      let n = quickItems.length;
+      quickItems.push({
+        label: `${alignHelper.get(n, 0)}    f[${i.enableFunctionCall ? "o" : "x"}] m[${i.multimodalEnabled ? "o" : "x"}] t[${alignHelper.get(n, 1)}]`,
+        data: i
+      });
+    }
+    let choose = await import_coc21.window.showQuickPick(quickItems, {
+      title: "Choose model"
+    });
+    if (choose) {
+      logger.debug(choose);
+      this.model = choose.data;
+      this.chatChain.model = choose.data.name;
     } else {
-      return new CocExtError(
-        CocExtError.ERR_KIMI,
-        `statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
-      );
+      return new CocExtError(CocExtError.ERR_COMM_AI, "choose model fail");
     }
+    let chatId = crypto.randomUUID();
+    this.headers["X-Conversation-Id"] = chatId;
+    return chatId;
   }
   async showHistoryMessages() {
-    const items = await this.chatScroll();
-    if (items instanceof Error) {
-      return items;
-    }
-    for (const item of items) {
-      if (item.role == "user") {
-        this.appendUserInput(item.created_at, item.content);
-      } else {
-        this.append(`>> id:${item.id}
-`);
-        if (item.search_plus && item.search_plus.length > 0) {
-          let cnt = 0;
-          for (let i of item.search_plus) {
-            if (i.msg.type == "get_res") {
-              ++cnt;
-            }
-          }
-          if (cnt > 0) {
-            let cache_key = `${this.chat_id}-${item.id}-search.json`;
-            await this.setFileCache(
-              cache_key,
-              JSON.stringify(item.search_plus)
-            );
-            this.append(`[search result (${cnt})]
-`);
-          }
-        }
-        this.append(item.content);
-      }
-    }
     return null;
   }
+  async showItem() {
+  }
   async chat(text) {
-    if (!this.chat_id) {
-      return;
-    }
-    this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
-    let statusCode = -1;
-    const cb = {
+    let reqId = crypto.randomUUID();
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
+    this.chan.append(`>> id:${reqId}
+`);
+    this.chatChain.messages.push({
+      role: "user",
+      content: text
+    });
+    let decoder = new ChunkDecoder();
+    let respText = "";
+    let cb = {
       onData: (chunk, rsp) => {
         if (rsp.statusCode != 200) {
+          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
           return;
         }
-        try {
-          chunk.toString().split("\n").forEach((line) => {
-            if (line.length == 0) {
-              return;
+        let msgList = decoder.decode(chunk);
+        for (let m of msgList) {
+          let data = JSON.parse(m.data);
+          for (let c of data.choices) {
+            if (c.finish_reason === "stop") {
+              this.chatChain.messages.push({
+                role: "assistant",
+                content: respText
+              });
+              this.chan.append(
+                ` (END, tokens: in ${data.usage.prompt_tokens}, out ${data.usage.completion_tokens}, all ${data.usage.total_tokens})`
+              );
+            } else if (c.delta.content) {
+              respText += c.delta.content;
+              this.chan.append(c.delta.content, false);
             }
-            const data = JSON.parse(line.slice(5));
-            if (data.event == "cmpl") {
-              if (data.text) {
-                this.append(data.text, false);
-              }
-            } else if (data.event == "resp") {
-              this.append(`>> id:${data.id}
-`);
-            } else if (data.event == "search_plus") {
-              if (data.msg && data.msg.type == "get_res" && data.msg.title && data.msg.url) {
-                const idx = this.addUrl(data.msg.url);
-                this.append(`[${idx}] ${data.msg.title}`);
-              }
-            } else if (data.event == "all_done") {
-              this.append(" (END)");
-            }
-          });
-        } catch (e) {
-          logger.error(e);
+          }
         }
-      },
-      onEnd: (rsp) => {
-        statusCode = rsp.statusCode ? rsp.statusCode : -1;
-      },
-      onError: (err) => {
-        this.append(" (ERROR) ");
-        this.append(err.message);
-        statusCode = -1;
-      },
-      onTimeout: () => {
-        statusCode = -1;
       }
     };
-    const req = {
+    this.headers["Content-Type"] = "application/json";
+    this.headers["X-Request-Id"] = reqId;
+    let req = {
       args: {
-        host: "kimi.moonshot.cn",
-        path: `/api/chat/${this.chat_id}/completion/stream`,
+        host: this.endpoint.hostname,
+        path: `${this.endpoint.pathname}/v1/chat/completions?alt=sse`,
         method: "POST",
-        protocol: "https:",
-        headers: this.getHeaders()
+        protocol: this.endpoint.protocol,
+        headers: this.headers,
+        timeout: 1e3
       },
-      data: JSON.stringify({
-        messages: [
-          {
-            role: "user",
-            content: text
-          }
-        ],
-        refs: [],
-        use_search: true
-      })
+      proxy: this.proxy,
+      data: JSON.stringify(this.chatChain)
     };
     await sendHttpRequestWithCallback(req, cb);
-    if (statusCode == 401) {
-      if (await this.getAccessToken() != 200) {
-        logger.error("Authorization Expired");
-        return;
-      }
-      await sendHttpRequestWithCallback(req, cb);
-    }
-    logger.info(statusCode);
   }
-  // public async debug() {
-  //   console.log(await this.getAccessToken());
-  //   console.log(await this.createChatId('Kimi'));
-  //   console.log(this.chat_id);
-  //   const req: HttpRequest = {
-  //     args: {
-  //       host: 'kimi.moonshot.cn',
-  //       path: `/api/chat/${this.chat_id}/completion/stream`,
-  //       method: 'POST',
-  //       protocol: 'https:',
-  //       headers: this.getHeaders(),
-  //     },
-  //     data: JSON.stringify({
-  //       messages: [
-  //         {
-  //           role: 'user',
-  //           content: '你是翻译员，请翻译成中文：I has a pen',
-  //         },
-  //       ],
-  //       refs: [],
-  //       user_search: true,
-  //     }),
-  //   };
-  //   sendHttpRequestWithCallback(req, {
-  //     onData: (chunk: Buffer) => {
-  //       console.log(chunk.toString());
-  //     },
-  //   });
-  // }
+  async delSession(_chatId) {
+    return null;
+  }
 };
-var kimiChat = new KimiChat(
-  process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : ""
-);
+function create_llm_common_chat() {
+  if (process.env.MY_AI_COMMON_CONF_PATH) {
+    let confPath = process.env.MY_AI_COMMON_CONF_PATH;
+    try {
+      import_fs3.default.accessSync(confPath, import_fs3.default.constants.R_OK);
+      let conf = JSON.parse(
+        import_fs3.default.readFileSync(confPath).toString()
+      );
+      return new LlmCommonChat(conf);
+    } catch (err) {
+      logger.error(err);
+    }
+  }
+  return new LlmCommonChat({
+    auth_headers: {},
+    endpoint: "http://127.0.0.1"
+  });
+}
+var llmCommonChat = create_llm_common_chat();
 
 // src/ai/deepseek.ts
-var import_fs3 = __toESM(require("fs"));
-var DeepseekSha3Wasm = class {
+var import_fs4 = __toESM(require("fs"));
+var Sha3Wasm = class {
   constructor(src) {
     this.src = src;
     __publicField(this, "memory");
@@ -2634,7 +2443,7 @@ async function getWasm(dir) {
   let conf = getcfg("", {});
   let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${dir}/deepseek_sha3.wasm`;
   let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : "https://chat.deepseek.com/static/sha3_wasm_bg.7b9ca65ddd.wasm";
-  if (await fsAccess(wasmPath, import_fs3.default.constants.R_OK) != null) {
+  if (await fsAccess(wasmPath, import_fs4.default.constants.R_OK) != null) {
     if (await simpleHttpDownloadFile(downloadUrl, wasmPath) == -1) {
       return new CocExtError(
         CocExtError.ERR_DEEPSEEK,
@@ -2646,28 +2455,32 @@ async function getWasm(dir) {
   if (wasmBuf instanceof Error) {
     return wasmBuf;
   }
-  return new DeepseekSha3Wasm(await WebAssembly.instantiate(wasmBuf, {}));
+  let bytes = wasmBuf.buffer;
+  return new Sha3Wasm(await WebAssembly.instantiate(bytes, {}));
 }
 function searchReault2Lines(item, idx) {
   let lines = [];
   let date = new Date(item.published_at * 1e3);
   let dstr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  lines.push(`[${idx} - ${item.site_name} - ${dstr}](${item.url})`);
-  lines.push(`# ${item.title}`);
-  lines.push(`${item.snippet}`);
+  lines.push(`# ${idx} - ${item.title}`);
+  lines.push("");
+  lines.push(`[${item.site_name} - ${dstr}](${item.url})`);
+  lines.push("");
+  lines.push(item.snippet);
   return lines;
 }
-var search_window2 = new ScratchWindow("Deepseek Search", "markdown");
+var searchWindow = new ScratchWindow("Deepseek Search", "markdown");
 var DeepseekChat = class extends BaseChatChannel {
-  constructor(key) {
+  constructor(authKey) {
     super();
-    this.key = key;
-    __publicField(this, "auth_key");
-    __publicField(this, "parent_id");
-    __publicField(this, "sha3_wasm");
-    this.auth_key = key;
-    this.parent_id = null;
-    this.sha3_wasm = null;
+    this.authKey = authKey;
+    __publicField(this, "currentMsgid");
+    __publicField(this, "sha3Wasm");
+    this.currentMsgid = null;
+    this.sha3Wasm = null;
+  }
+  reset() {
+    this.currentMsgid = null;
   }
   getChatName() {
     return "Deepseek";
@@ -2675,14 +2488,26 @@ var DeepseekChat = class extends BaseChatChannel {
   getHeader() {
     return {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
-      authorization: `Bearer ${this.auth_key}`,
+      authorization: `Bearer ${this.authKey}`,
       Origin: "https://chat.deepseek.com",
       "x-client-locale": "zh_CN",
       "x-client-platform": "web"
     };
   }
-  async httpQuery(req) {
-    const resp = await sendHttpRequest(req);
+  async httpQuery(method, path7, d) {
+    let req = {
+      args: {
+        host: "chat.deepseek.com",
+        path: path7,
+        method,
+        protocol: "https:",
+        headers: this.getHeader()
+      }
+    };
+    if (d) {
+      req.data = JSON.stringify(d);
+    }
+    let resp = await sendHttpRequest(req);
     if (resp.statusCode != 200 || !resp.body) {
       return new CocExtError(
         CocExtError.ERR_DEEPSEEK,
@@ -2691,43 +2516,32 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     return JSON.parse(resp.body.toString());
   }
-  async httpGet(path7) {
-    const req = {
-      args: {
-        host: "chat.deepseek.com",
-        path: path7,
-        method: "GET",
-        protocol: "https:",
-        headers: this.getHeader()
-      }
-    };
-    return this.httpQuery(req);
-  }
   async getChatList() {
     var _a;
-    const resp = await this.httpGet(
+    let resp = await this.httpQuery(
+      "GET",
       "/api/v0/chat_session/fetch_page?count=100"
     );
     if (resp instanceof Error) {
       return resp;
     }
-    const chat_sessions = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_sessions;
-    if (chat_sessions == void 0) {
+    let chatSessions = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_sessions;
+    if (chatSessions == void 0) {
       return new CocExtError(
         CocExtError.ERR_DEEPSEEK,
         "[Deepseek] get sessions fail"
       );
     }
-    const id_set = /* @__PURE__ */ new Set();
+    const idSet = /* @__PURE__ */ new Set();
     const list = [];
-    for (const sess of chat_sessions) {
-      if (id_set.has(sess.id)) {
+    for (const sess of chatSessions) {
+      if (idSet.has(sess.id)) {
         continue;
       }
-      id_set.add(sess.id);
+      idSet.add(sess.id);
       list.push({
         label: sess.title,
-        chat_id: sess.id,
+        chatId: sess.id,
         description: new Date(sess.updated_at * 1e3).toISOString()
       });
     }
@@ -2735,19 +2549,9 @@ var DeepseekChat = class extends BaseChatChannel {
   }
   async createChatId(_name) {
     var _a;
-    let req = {
-      args: {
-        host: "chat.deepseek.com",
-        path: "/api/v0/chat_session/create",
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeader()
-      },
-      data: JSON.stringify({
-        character_id: null
-      })
-    };
-    let resp = await this.httpQuery(req);
+    let resp = await this.httpQuery("POST", "/api/v0/chat_session/create", {
+      character_id: null
+    });
     if (resp instanceof Error) {
       return resp;
     }
@@ -2762,8 +2566,9 @@ var DeepseekChat = class extends BaseChatChannel {
   }
   async showHistoryMessages() {
     var _a;
-    const resp = await this.httpGet(
-      `/api/v0/chat/history_messages?chat_session_id=${this.chat_id}`
+    let resp = await this.httpQuery(
+      "GET",
+      `/api/v0/chat/history_messages?chat_session_id=${this.chatId}`
     );
     if (resp instanceof Error) {
       return resp;
@@ -2775,48 +2580,43 @@ var DeepseekChat = class extends BaseChatChannel {
         "[Deepseek] get messages fail"
       );
     }
-    let err = await this.checkCacheDir();
-    if (err) {
-      return err;
-    }
-    this.parent_id = null;
+    this.currentMsgid = null;
     for (const msg of messages) {
-      this.parent_id = msg.message_id;
+      this.currentMsgid = msg.message_id;
       if (msg.role == "USER") {
-        this.appendUserInput(
+        this.chan.appendUserInput(
           new Date(msg.inserted_at * 1e3).toISOString(),
           msg.content
         );
       } else {
-        this.append(`>> id:${msg.message_id}
+        this.chan.append(`>> id:${msg.message_id}
 `);
         if (msg.search_results) {
-          let cache_key = `${this.chat_id}-${msg.message_id}-search.json`;
-          await this.setFileCache(
-            cache_key,
-            JSON.stringify(msg.search_results)
+          let cacheKey = `${this.chatId}-${msg.message_id}-search.json`;
+          await this.cache.set(cacheKey, JSON.stringify(msg.search_results));
+          this.chan.append(
+            `\uE68F [search result (${msg.search_results.length})]
+`
           );
-          this.append(`[search result (${msg.search_results.length})]
-`);
         }
         if (msg.thinking_enabled && msg.thinking_content) {
-          this.append("```");
-          this.append(msg.thinking_content);
-          this.append("```");
+          this.chan.append("---");
+          this.chan.append(msg.thinking_content);
+          this.chan.append("\n---\n");
         }
-        this.append(msg.content);
+        this.chan.append(msg.content);
       }
     }
     return null;
   }
-  async tryGetSearchResult(message_id, ref_text) {
+  async tryGetSearchResult(messageId, refText) {
     let regex = new RegExp(/^\[search result \([0-9]*\)\]$/);
-    let arr = regex.exec(ref_text);
+    let arr = regex.exec(refText);
     if (!arr || arr.length != 1) {
       return -1;
     }
-    let cache_key = `${this.chat_id}-${message_id}-search.json`;
-    let cache = await this.getFileCache(cache_key);
+    let cacheKey = `${this.chatId}-${messageId}-search.json`;
+    let cache = await this.cache.get(cacheKey);
     if (cache instanceof Error) {
       return;
     }
@@ -2825,28 +2625,28 @@ var DeepseekChat = class extends BaseChatChannel {
     let idx = 0;
     for (let item of items) {
       idx += 1;
-      lines = lines.concat(searchReault2Lines(item, idx));
+      lines.push(...searchReault2Lines(item, idx));
       lines.push("");
       lines.push("---");
       lines.push("");
     }
-    await search_window2.open(lines);
+    await searchWindow.open(lines);
   }
-  async tryGetRef(message_id, ref_text) {
+  async tryGetRef(messageId, refText) {
     let regex = new RegExp(/^\[citation:([0-9]*)\]$/);
-    let arr = regex.exec(ref_text);
+    let arr = regex.exec(refText);
     if (!arr || arr.length != 2) {
       return -1;
     }
-    let ref_id = parseInt(arr[1]);
-    let cache_key = `${this.chat_id}-${message_id}-search.json`;
-    let cache = await this.getFileCache(cache_key);
+    let refId = parseInt(arr[1]);
+    let cacheKey = `${this.chatId}-${messageId}-search.json`;
+    let cache = await this.cache.get(cacheKey);
     if (cache instanceof Error) {
       return -1;
     }
     let items = JSON.parse(cache.toString());
     for (let item of items) {
-      if (item.cite_index !== ref_id) {
+      if (item.cite_index !== refId) {
         continue;
       }
       let text = searchReault2Lines(item, item.cite_index).join("\n");
@@ -2855,50 +2655,42 @@ var DeepseekChat = class extends BaseChatChannel {
     }
   }
   async showItem() {
-    let ref_item = await getCurrentRef();
-    if (!ref_item) {
+    let refItem = await getCurrentRef();
+    if (!refItem) {
       return;
     }
-    if (await this.tryGetRef(ref_item.segment_id, ref_item.ref_text) !== -1) {
+    if (await this.tryGetRef(refItem.segmentId, refItem.refText) !== -1) {
       return;
     }
-    await this.tryGetSearchResult(ref_item.segment_id, ref_item.ref_text);
+    await this.tryGetSearchResult(refItem.segmentId, refItem.refText);
   }
-  async getPowChallenge(target_path) {
+  async getPowChallenge(targetPath) {
     var _a;
-    const req = {
-      args: {
-        host: "chat.deepseek.com",
-        path: "/api/v0/chat/create_pow_challenge",
-        method: "POST",
-        protocol: "https:",
-        headers: this.getHeader()
-      },
-      data: JSON.stringify({
-        target_path
-      })
-    };
-    const resp = await this.httpQuery(req);
+    let resp = await this.httpQuery(
+      "POST",
+      "/api/v0/chat/create_pow_challenge",
+      { target_path: targetPath }
+    );
     if (resp instanceof Error) {
       return resp;
     }
-    const challenge = (_a = resp.data.biz_data) == null ? void 0 : _a.challenge;
+    let challenge = (_a = resp.data.biz_data) == null ? void 0 : _a.challenge;
     if (!challenge) {
       return new CocExtError(
         CocExtError.ERR_DEEPSEEK,
         "[Deepseek] get challenge fail"
       );
     } else {
-      if (!this.sha3_wasm) {
-        let err = await this.checkCacheDir();
+      if (!this.sha3Wasm) {
+        let err = await this.cache.checkDir();
         if (err) {
           return err;
         }
-        let wasm = await getWasm(this.cache_dir);
+        let wasm = await getWasm(this.cache.dir);
         if (wasm instanceof Error) {
           return wasm;
         }
-        this.sha3_wasm = wasm;
+        this.sha3Wasm = wasm;
       }
       let obj = {
         algorithm: challenge.algorithm,
@@ -2906,7 +2698,7 @@ var DeepseekChat = class extends BaseChatChannel {
         salt: challenge.salt,
         signature: challenge.signature,
         target_path: challenge.target_path,
-        answer: this.sha3_wasm.computePowAnswer(
+        answer: this.sha3Wasm.computePowAnswer(
           challenge.challenge,
           challenge.salt,
           challenge.difficulty,
@@ -2922,7 +2714,7 @@ var DeepseekChat = class extends BaseChatChannel {
       logger.error(challenge);
       return;
     }
-    this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
     let headers = this.getHeader();
     headers["x-ds-pow-response"] = challenge;
     const req = {
@@ -2934,14 +2726,16 @@ var DeepseekChat = class extends BaseChatChannel {
         headers
       },
       data: JSON.stringify({
-        chat_session_id: this.chat_id,
-        parent_message_id: this.parent_id,
+        chat_session_id: this.chatId,
+        parent_message_id: this.currentMsgid,
         prompt,
         ref_file_ids: [],
         search_enabled: true,
         thinking_enabled: false
       })
     };
+    let decoder = new ChunkDecoder();
+    let searchResults = [];
     let event = "";
     let p = "";
     const cb = {
@@ -2949,42 +2743,57 @@ var DeepseekChat = class extends BaseChatChannel {
         if (rsp.statusCode != 200) {
           return;
         }
-        try {
-          chunk.toString().split("\n").forEach((line) => {
-            if (line.length == 0) {
-              return;
+        let msgList = decoder.decode(chunk);
+        for (let m of msgList) {
+          if (m.type === "event") {
+            event = m.data;
+            if (event === "close") {
+              this.chan.append("\n(END)");
             }
-            if (line.slice(0, 6) === "event:") {
-              event = line.slice(7).trim();
-              if (event === "close") {
-                this.append("\n(END)");
-              }
-              return;
-            }
-            let comp = JSON.parse(line.slice(5));
-            if (event === "ready" && comp.request_message_id != void 0 && comp.response_message_id != void 0) {
-              this.append(`>> id:${comp.request_message_id}
+          } else if (m.type === "data") {
+            let d = JSON.parse(m.data);
+            if (event === "ready") {
+              if (d.request_message_id != void 0 && d.response_message_id != void 0) {
+                this.chan.append(`>> id:${d.response_message_id}
 `);
-              this.parent_id = comp.response_message_id;
-              return;
-            }
-            if (event === "update_session") {
-              if (comp.p) {
-                p = comp.p;
+                this.currentMsgid = d.response_message_id;
               }
-              if (p === "response/content" && typeof comp.v === "string") {
-                this.append(comp.v, false);
+            } else if (event === "update_session") {
+              if (d.p) {
+                p = d.p;
+              }
+              if (p === "response/search_status") {
+                if (d.v === "FINISHED" && searchResults.length > 0) {
+                  this.chan.append(
+                    `\uE68F [search result (${searchResults.length})]
+`
+                  );
+                }
+              } else if (p === "response/search_results") {
+                if (Array.isArray(d.v)) {
+                  searchResults.push(...d.v);
+                }
+              } else if (p === "response/content" && typeof d.v === "string") {
+                this.chan.append(d.v, false);
+              } else if (p === "response/thinking_content") {
+                if (d.p === "response/thinking_content") {
+                  this.chan.append("---");
+                }
+                if (typeof d.v === "string") {
+                  this.chan.append(d.v, false);
+                }
+              } else if (p === "response/thinking_elapsed_secs") {
+                this.chan.append("\n\n---\n");
               }
             }
-          });
-        } catch (e) {
-          logger.debug(chunk.toString());
-          logger.error(e);
+          } else {
+            logger.debug(m);
+          }
         }
       },
       onError: (err) => {
-        this.append(" (ERROR) ");
-        this.append(err.message);
+        this.chan.append(" (ERROR) ");
+        this.chan.append(err.message);
       },
       onEnd: (rsp) => {
         logger.info(`[Deepseek] chat statusCode: ${rsp.statusCode}`);
@@ -2994,215 +2803,632 @@ var DeepseekChat = class extends BaseChatChannel {
       }
     };
     await sendHttpRequestWithCallback(req, cb);
+    if (searchResults.length > 0) {
+      let cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
+      await this.cache.set(cacheKey, JSON.stringify(searchResults));
+    }
+  }
+  async delSession(chatId) {
+    let resp = await this.httpQuery("POST", "/api/v0/chat_session/delete", {
+      chat_session_id: chatId
+    });
+    return resp instanceof Error ? resp : null;
   }
 };
 var deepseekChat = new DeepseekChat(
   process.env.MY_AI_DEEPSEEK_CHAT_KEY ? process.env.MY_AI_DEEPSEEK_CHAT_KEY : ""
 );
 
-// src/ai/bailian.ts
-var BailianChat = class extends BaseChatChannel {
-  constructor(key) {
+// src/ai/kimi_v2.ts
+var globalKimi = {
+  searchWindow: new ScratchWindow("Kimi Search", "markdown"),
+  host: "www.kimi.com"
+};
+var StreamDecoder = class {
+  constructor() {
+    __publicField(this, "cache");
+    this.cache = Buffer.from("");
+  }
+  decode(buf) {
+    this.cache = Buffer.concat([this.cache, buf]);
+    let out = [];
+    while (true) {
+      let msgLen = 0;
+      if (this.cache.length >= 5) {
+        msgLen = this.cache.readUInt32BE(1);
+        if (this.cache.length >= 5 + msgLen) {
+          out.push(this.cache.subarray(5, 5 + msgLen).toString("utf8"));
+          this.cache = this.cache.subarray(5 + msgLen);
+        } else {
+          break;
+        }
+      } else {
+        break;
+      }
+    }
+    return out;
+  }
+};
+var KimiChatV2 = class extends BaseChatChannel {
+  constructor(rtoken) {
     super();
-    this.key = key;
-    __publicField(this, "api_key");
-    this.api_key = key;
+    this.rtoken = rtoken;
+    __publicField(this, "headers");
+    __publicField(this, "currentMsgid");
+    this.headers = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+      Origin: `https://${globalKimi.host}`,
+      Referer: `https://${globalKimi.host}`,
+      "x-msh-platform": "web",
+      "x-language": "zh-CN",
+      "r-timezone": "Asia/Shanghai"
+    };
+    this.currentMsgid = "";
+  }
+  reset() {
+    this.currentMsgid = "";
   }
   getChatName() {
-    return "Bailian";
+    return "Kimi";
   }
-  async getChatList() {
-    return [];
+  async tryGetSearchResult(segmentId, refText) {
+    let regex = new RegExp(/^\[search result \([0-9]*\)\]$/);
+    let arr = regex.exec(refText);
+    if (!arr || arr.length != 1) {
+      return -1;
+    }
+    let cacheKey = `${this.chatId}-${segmentId}-search.json`;
+    let cache = await this.cache.get(cacheKey);
+    if (cache instanceof Error) {
+      logger.error(cache);
+      return 0;
+    }
+    let block = JSON.parse(cache.toString());
+    if (!block.webPages) {
+      return 0;
+    }
+    let lines = [];
+    let idx = 0;
+    for (let web of block.webPages) {
+      idx += 1;
+      lines.push(`# ${idx} - ${web.title}`);
+      lines.push("");
+      lines.push(`[${web.siteName} - ${web.publishTime}](${web.url})`);
+      lines.push("");
+      if (web.snippet) {
+        lines.push(...web.snippet.split(/\r?\n/));
+        lines.push("");
+      }
+      lines.push("---");
+      lines.push("");
+    }
+    await globalKimi.searchWindow.open(lines);
+    return 0;
   }
-  async createChatId(name) {
-    return name;
+  async tryGetRef(segment_id, ref_text) {
+    let regex = new RegExp(/^\[\^([0-9]*)\^\]$/);
+    let arr = regex.exec(ref_text);
+    if (!arr || arr.length < 2) {
+      return -1;
+    }
+    let refId = arr[1];
+    let cacheKey = `${this.chatId}-${segment_id}-refs.json`;
+    let cache = await this.cache.get(cacheKey);
+    if (cache instanceof Error) {
+      logger.error(cache);
+      return 0;
+    }
+    let refs = JSON.parse(cache.toString());
+    for (let chunk of refs) {
+      if (chunk.id != refId) {
+        continue;
+      }
+      let text = `# ${chunk.base.title}
+
+[${chunk.base.siteName} - ${chunk.base.publishTime}](${chunk.base.url})
+
+` + chunk.base.snippet;
+      await popup(text, "", "markdown");
+      break;
+    }
+    return 0;
   }
-  async showHistoryMessages() {
-    return null;
+  async showItem() {
+    let refItem = await getCurrentRef();
+    if (!refItem) {
+      return;
+    }
+    if (await this.tryGetRef(refItem.segmentId, refItem.refText) !== -1) {
+      return;
+    }
+    await this.tryGetSearchResult(refItem.segmentId, refItem.refText);
   }
-  async chat(prompt) {
-    this.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
-    this.append("");
-    const req = {
+  getHeaders(contentType = "application/json") {
+    this.headers["X-Traffic-Id"] = Array.from(
+      { length: 20 },
+      () => Math.floor(Math.random() * 36).toString(36)
+    ).join("");
+    this.headers["Content-Type"] = contentType;
+    return this.headers;
+  }
+  async getAccessToken() {
+    this.headers["Authorization"] = `Bearer ${this.rtoken}`;
+    const refreshReq = {
       args: {
-        host: "dashscope.aliyuncs.com",
-        path: "/compatible-mode/v1/chat/completions",
+        host: globalKimi.host,
+        path: "/api/auth/token/refresh",
+        method: "GET",
+        protocol: "https:",
+        headers: this.getHeaders(),
+        timeout: 1e3
+      }
+    };
+    const resp = await sendHttpRequest(refreshReq);
+    if (resp.statusCode == 200 && resp.body) {
+      logger.debug(resp.body.toString());
+      const obj = JSON.parse(resp.body.toString());
+      this.headers["Authorization"] = `Bearer ${obj["access_token"]}`;
+    }
+    return resp.statusCode ? resp.statusCode : -1;
+  }
+  async postJsonRequest(path7, data) {
+    var _a;
+    let req = {
+      args: {
+        host: globalKimi.host,
+        path: path7,
         method: "POST",
         protocol: "https:",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.api_key}`
-        }
+        headers: this.getHeaders(),
+        timeout: 1e3
       },
-      data: JSON.stringify({
-        model: "deepseek-v3",
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        stream: true,
-        stream_options: {
-          include_usage: true
-        }
-      })
+      data: JSON.stringify(data)
     };
-    const cb = {
+    if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
+      return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
+    }
+    let resp = await sendHttpRequest(req);
+    if (resp.statusCode == 401) {
+      if (await this.getAccessToken() != 200) {
+        return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
+      }
+      resp = await sendHttpRequest(req);
+    }
+    if (resp.statusCode != 200 || !resp.body) {
+      return new CocExtError(
+        CocExtError.ERR_KIMI,
+        `[Kimi] statusCode: ${resp.statusCode}, path: ${path7}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
+      );
+    }
+    return resp.body;
+  }
+  async createChatId(name) {
+    let resp = await this.postJsonRequest("/api/chat", {
+      name,
+      is_example: false
+    });
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let obj = JSON.parse(resp.toString());
+    return obj["id"];
+  }
+  async getChatList() {
+    let resp = await this.postJsonRequest(
+      "/apiv2/kimi.chat.v1.ChatService/ListChats",
+      {
+        page_size: 50,
+        project_id: "",
+        query: ""
+      }
+    );
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let obj = JSON.parse(resp.toString());
+    if (obj.chats.length > 0) {
+      return obj.chats.map((i) => {
+        return { label: i.name, chatId: i.id, description: i.updateTime };
+      });
+    } else {
+      return [];
+    }
+  }
+  async chatScroll() {
+    let resp = await this.postJsonRequest(
+      "/apiv2/kimi.gateway.chat.v1.ChatService/ListMessages",
+      {
+        chat_id: this.chatId,
+        page_size: 1e3
+      }
+    );
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let obj = JSON.parse(resp.toString());
+    return obj.messages ? obj.messages.reverse() : [];
+  }
+  async showHistoryMessages() {
+    let msgList = await this.chatScroll();
+    if (msgList instanceof Error) {
+      return msgList;
+    }
+    for (const msg of msgList) {
+      if (!msg.blocks || msg.blocks.length == 0) {
+        continue;
+      }
+      if (msg.role == "user") {
+        for (let block of msg.blocks.reverse()) {
+          if (block.text) {
+            this.chan.appendUserInput(
+              msg.createTime ? msg.createTime : "",
+              block.text.content
+            );
+          } else if (block.file) {
+            this.chan.appendUserInput(
+              block.file.meta.createTime,
+              `\uEA7B [file: ${block.file.meta.name}](${block.file.blob.previewUrl})`
+            );
+          } else {
+            logger.debug(block);
+          }
+        }
+      } else if (msg.role == "assistant") {
+        this.currentMsgid = msg.id;
+        this.chan.append(`>> id:${msg.id}
+`);
+        for (let block of msg.blocks) {
+          if (block.search) {
+            let cacheKey = `${this.chatId}-${msg.id}-search.json`;
+            await this.cache.set(cacheKey, JSON.stringify(block.search));
+            if (block.search && block.search.webPages) {
+              this.chan.append(
+                `\uE68F [search result (${block.search.webPages.length})]
+`
+              );
+            }
+          } else if (block.text) {
+            this.chan.append(block.text.content);
+          } else if (block.exception) {
+            this.chan.append(
+              `\uEA87 ${block.exception.error.localizedMessage.message}`
+            );
+          } else {
+            logger.debug(block);
+          }
+        }
+        if (msg.refs && msg.refs.searchChunks && msg.refs.searchChunks.length > 0) {
+          let cacheKey = `${this.chatId}-${msg.id}-refs.json`;
+          await this.cache.set(cacheKey, JSON.stringify(msg.refs.searchChunks));
+        }
+      }
+    }
+    return null;
+  }
+  encodeBuffer(o) {
+    let oBuf = Buffer.from(JSON.stringify(o), "utf8");
+    let out = Buffer.alloc(5 + oBuf.length);
+    out.writeUInt8(0);
+    out.writeUInt32BE(oBuf.length, 1);
+    oBuf.copy(out, 5);
+    return out;
+  }
+  async chat(text) {
+    if (!this.chatId) {
+      return;
+    }
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
+    let keywords = [];
+    let webPages = [];
+    let refs = [];
+    let decoder = new StreamDecoder();
+    let searchEnd = false;
+    let cb = {
       onData: (chunk, rsp) => {
         if (rsp.statusCode != 200) {
+          logger.error(`statusCode: ${rsp.statusCode}`);
           return;
         }
-        try {
-          chunk.toString().split("\n").forEach((line) => {
-            if (line.length == 0) {
-              return;
-            }
-            if (line.slice(6, 12) == "[DONE]") {
-              this.append(" (END)");
-              return;
-            }
-            const data = JSON.parse(line.slice(5));
-            if (data.choices.length > 0) {
-              for (const choice of data.choices) {
-                if (choice.delta.content) {
-                  this.append(choice.delta.content, false);
-                } else if (choice.delta.reasoning_content) {
-                  this.append(choice.delta.reasoning_content, false);
+        let msgList = decoder.decode(chunk);
+        for (const strMsg of msgList) {
+          try {
+            let msg = JSON.parse(strMsg);
+            if (msg.op === "set" && msg.mask === "message" && msg.message && msg.message.status === "MESSAGE_STATUS_GENERATING") {
+              this.chan.append(`>> id:${msg.message.id}
+`);
+              this.currentMsgid = msg.message.id;
+            } else if (msg.op === "set" && msg.mask === "block.text" && msg.block && msg.block.text && msg.block.text.content) {
+              this.chan.append(msg.block.text.content, false);
+            } else if (msg.op === "append" && msg.block) {
+              if (msg.block.text && msg.block.text.content && msg.mask === "block.text.content") {
+                if (!searchEnd) {
+                  searchEnd = true;
+                  if (webPages.length > 0) {
+                    this.chan.append(
+                      `\uE68F [search result (${webPages.length})]
+`
+                    );
+                  }
                 }
+                this.chan.append(msg.block.text.content, false);
+              } else if (msg.block.search && msg.block.search.keywords && msg.mask === "block.search.keywords") {
+                keywords.push(...msg.block.search.keywords);
+              } else if (msg.block.search && msg.block.search.webPages && msg.mask === "block.search.webPages") {
+                webPages.push(...msg.block.search.webPages);
               }
+            } else if (msg.ref) {
+              refs.push(msg.ref.search);
+            } else if (msg.done) {
+              this.chan.append(" (END)");
+            } else if (msg.heartbeat) {
+            } else {
+              logger.debug(msg);
             }
-          });
-        } catch (e) {
-          logger.debug(chunk.toString());
-          logger.error(e);
+          } catch (e) {
+            logger.error(e);
+            logger.debug(strMsg);
+          }
         }
       },
       onError: (err) => {
-        this.append(" (ERROR) ");
-        this.append(err.message);
+        logger.error(err);
+      },
+      onEnd: (rsp) => {
+        logger.debug(rsp.statusCode);
+      },
+      onTimeout: () => {
+        logger.error("time out");
       }
     };
+    let chatReq = {
+      chatId: this.chatId,
+      scenario: "SCENARIO_K2",
+      tools: [{ type: "TOOL_TYPE_SEARCH", search: {} }],
+      message: {
+        parent_id: this.currentMsgid,
+        role: "user",
+        blocks: [{ message_id: "", text: { content: text } }],
+        scenario: "SCENARIO_K2"
+      }
+    };
+    const req = {
+      args: {
+        host: globalKimi.host,
+        path: "/apiv2/kimi.gateway.chat.v1.ChatService/Chat",
+        method: "POST",
+        protocol: "https:",
+        headers: this.getHeaders("application/connect+json")
+      },
+      data: this.encodeBuffer(chatReq)
+    };
     await sendHttpRequestWithCallback(req, cb);
+    if (keywords.length > 0 || webPages.length > 0) {
+      let cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
+      await this.cache.set(cacheKey, JSON.stringify({ keywords, webPages }));
+    }
+    if (refs.length > 0) {
+      let cacheKey = `${this.chatId}-${this.currentMsgid}-refs.json`;
+      await this.cache.set(cacheKey, JSON.stringify(refs));
+    }
+  }
+  async delSession(chatId) {
+    let resp = await this.postJsonRequest(
+      "/apiv2/kimi.chat.v1.ChatService/DeleteChat",
+      { chatId }
+    );
+    return resp instanceof Error ? resp : null;
   }
 };
-var bailianChat = new BailianChat(
-  process.env.MY_AI_BAILIAN_KEY ? process.env.MY_AI_BAILIAN_KEY : ""
+var kimiChatV2 = new KimiChatV2(
+  process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : ""
 );
 
 // src/ai/chat.ts
-var aiChat = null;
+var import_coc23 = require("coc.nvim");
+var name2AiChat = /* @__PURE__ */ new Map([
+  [kimiChatV2.getChatName(), kimiChatV2],
+  [deepseekChat.getChatName(), deepseekChat],
+  [llmCommonChat.getChatName(), llmCommonChat]
+]);
+var globalAiChat = null;
+var globalScratchWindow = new ScratchWindow("Chat Input", "text");
 async function aiChatSelect() {
-  let choose = await import_coc22.window.showQuickPick(
-    [
-      { label: "Kimi", chat: kimiChat },
-      { label: "Deepseek", chat: deepseekChat },
-      { label: "Bailian", chat: bailianChat }
-    ],
-    { title: "Choose AI" }
-  );
+  let quickItems = [];
+  for (let [k, v] of name2AiChat) {
+    quickItems.push({ label: k, chat: v });
+  }
+  let choose = await import_coc22.window.showQuickPick(quickItems, { title: "Choose AI" });
   if (choose) {
-    aiChat = choose.chat;
-    if (!aiChat) {
+    globalAiChat = choose.chat;
+    if (!globalAiChat) {
       return;
     }
   }
 }
+function aiChatInputOpen() {
+  return async () => {
+    globalScratchWindow.open([""]);
+  };
+}
 async function aiChatOpen() {
-  if (!aiChat) {
+  if (!globalAiChat) {
     await aiChatSelect();
-    if (!aiChat) {
+    if (!globalAiChat) {
       return -1;
     }
   }
-  if (!aiChat.getCurrentChatId()) {
-    let items = await aiChat.getChatList();
+  if (!globalAiChat.getCurrentChatId()) {
+    let items = await globalAiChat.getChatList();
     if (items instanceof Error) {
       logger.error(items);
       echoMessage("ErrorMsg", items.message);
       return -1;
     }
-    items.push({ label: "Create", chat_id: "", description: "" });
+    items.push({ label: "Create", chatId: "", description: "" });
     let choose = await import_coc22.window.showQuickPick(items, { title: "Choose Chat" });
-    if (!choose || choose.chat_id.length == 0) {
+    if (!choose || choose.chatId.length == 0) {
       let new_name = await import_coc22.window.requestInput("Name", "", {
         position: "center"
       });
       if (new_name.length == 0) {
         return -1;
       }
-      const chat_id = await aiChat.createChatId(new_name);
-      if (chat_id instanceof Error) {
-        logger.error(chat_id);
+      let chatId = await globalAiChat.createChatId(new_name);
+      if (chatId instanceof Error) {
+        logger.error(chatId);
         return -1;
       }
-      aiChat.setCurrentChatId(chat_id);
+      globalAiChat.setCurrentChatId(chatId);
     } else {
-      aiChat.setCurrentChatId(choose.chat_id);
-      const err = await aiChat.showHistoryMessages();
+      globalAiChat.setCurrentChatId(choose.chatId);
+      let err = await globalAiChat.showHistoryMessages();
       if (err instanceof Error) {
         logger.error(err);
       }
     }
   }
-  await aiChat.show();
+  await globalAiChat.show();
   return 0;
 }
 function aiChatChat() {
   return async () => {
-    const text = await getText("v");
+    let text = await getText("v");
     if (text.length == 0) {
       return;
     }
     let ret = await aiChatOpen();
-    if (ret != 0 || !aiChat) {
+    if (ret != 0 || !globalAiChat) {
       return;
     }
-    await aiChat.openAutoScroll();
-    await aiChat.chat(text);
-    aiChat.closeAutoScroll();
-  };
-}
-function aiChatQuickChat() {
-  return async () => {
-    let ret = await aiChatOpen();
-    if (ret != 0 || !aiChat) {
-      return;
-    }
-    let n = await import_coc22.workspace.nvim.eval("&columns");
-    let inputbox = await import_coc22.window.createInputBox(
-      `AI Chat <${aiChat.getChatName()}>`,
-      "",
-      {
-        position: "center",
-        minWidth: Math.floor(n / 2)
-      }
-    );
-    let text = await new Promise((resolve) => {
-      inputbox.onDidFinish((text2) => {
-        resolve(text2 ? text2 : "");
-      });
-    });
-    if (text.length == 0) {
-      return;
-    }
-    await aiChat.openAutoScroll();
-    await aiChat.chat(text);
-    aiChat.closeAutoScroll();
+    await globalAiChat.sendChat(text);
   };
 }
 function aiChatShow() {
   return async () => {
-    let { nvim } = import_coc22.workspace;
-    let bufnr = await nvim.call("bufnr");
-    let ai_name = await nvim.call("getbufvar", [bufnr, "ai_name"]);
-    if (ai_name == kimiChat.getChatName()) {
-      await kimiChat.showItem();
-    } else if (ai_name == deepseekChat.getChatName()) {
-      await deepseekChat.showItem();
+    if (globalAiChat != null) {
+      await globalAiChat.showItem();
     }
   };
 }
+var AiChatList = class extends import_coc23.BasicList {
+  constructor(name, aiChat) {
+    super();
+    this.name = name;
+    this.aiChat = aiChat;
+    // public readonly name: string;
+    __publicField(this, "description", "CocList for coc-ext-common");
+    __publicField(this, "defaultAction", "open");
+    __publicField(this, "actions", []);
+    let newAction = async (_item, _context) => {
+      let new_name = await import_coc22.window.requestInput("Name", "", {
+        position: "center"
+      });
+      if (new_name.length == 0) {
+        echoMessage("ErrorMsg", "Input name first");
+        return;
+      }
+      let chatId = await this.aiChat.createChatId(new_name);
+      if (chatId instanceof Error) {
+        logger.error(chatId);
+        echoMessage("ErrorMsg", "create session fail");
+        return;
+      }
+      this.aiChat.reset();
+      this.aiChat.setCurrentChatId(chatId);
+      await this.aiChat.show();
+      globalAiChat = this.aiChat;
+    };
+    this.addAction("open", async (item, context) => {
+      if (globalAiChat != null) {
+        if (globalAiChat == this.aiChat) {
+          globalAiChat.clear();
+        } else {
+          globalAiChat.hide();
+        }
+      }
+      if (item.data === "$new") {
+        await newAction(item, context);
+      } else {
+        let data = item.data;
+        this.aiChat.setCurrentChatId(data.chatId);
+        let err = await this.aiChat.showHistoryMessages();
+        if (err instanceof Error) {
+          logger.error(err);
+        }
+        globalAiChat = this.aiChat;
+        await globalAiChat.show();
+      }
+    });
+    this.addAction(
+      "delete",
+      async (item, _context) => {
+        let i = item.data;
+        let del = await import_coc22.window.showPrompt(`Delete session [ ${i.label} ]`);
+        if (del) {
+          let err = await this.aiChat.delSession(i.chatId);
+          if (err instanceof Error) {
+            logger.error(err);
+          }
+          if (this.aiChat.getCurrentChatId() === i.chatId) {
+            this.aiChat.clear();
+          }
+          if (globalAiChat == this.aiChat) {
+            globalAiChat = null;
+          }
+        }
+      },
+      {
+        reload: true,
+        persist: true
+      }
+    );
+    this.addAction("new", newAction);
+  }
+  async loadItems(_context) {
+    let items = await this.aiChat.getChatList();
+    if (items instanceof Error) {
+      logger.error(items);
+      echoMessage("ErrorMsg", items.message);
+      return null;
+    }
+    let maxWidth = 0;
+    for (let i of items) {
+      let w = countTextWidth(i.label);
+      if (w > maxWidth) {
+        maxWidth = w;
+      }
+    }
+    let res = [];
+    for (let i of items) {
+      let lableWidth = countTextWidth(i.label);
+      let labelByteLen = Buffer.byteLength(i.label);
+      let spaces = " ".repeat(maxWidth - lableWidth + 2);
+      let label = `${i.label}${spaces}${i.description}`;
+      res.push({
+        label,
+        data: i,
+        ansiHighlights: [
+          {
+            span: [labelByteLen, Buffer.byteLength(label)],
+            hlGroup: "Comment"
+          }
+        ]
+      });
+    }
+    let newLabel = "[ \uE676 New Session ]";
+    res.push({
+      label: newLabel,
+      data: "$new",
+      ansiHighlights: [
+        {
+          span: [0, Buffer.byteLength(newLabel)],
+          hlGroup: "Cursor"
+        }
+      ]
+    });
+    return res;
+  }
+};
 
 // src/coc-ext-common.ts
 var cppFmtSetting = {
@@ -3230,9 +3456,13 @@ var shFmtSetting = {
   provider: "shfmt",
   args: ["-i", "4"]
 };
+var cmakeFmtSetting = {
+  provider: "cmake-format"
+};
 var defaultFmtSetting = {
   bzl: bzlFmtSteeing,
   c: cppFmtSetting,
+  cmake: cmakeFmtSetting,
   cpp: cppFmtSetting,
   html: prettierFmtSetting,
   javascript: prettierFmtSetting,
@@ -3248,7 +3478,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc23.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc24.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -3281,7 +3511,7 @@ function hlPreview() {
     if (arr.length == 0) {
       return;
     }
-    const { nvim } = import_coc23.workspace;
+    const { nvim } = import_coc24.workspace;
     await nvim.exec(
       "hi HlPreview cterm=None ctermfg=None ctermbg=None gui=None guifg=None guibg=None"
     );
@@ -3328,12 +3558,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const range = await import_coc23.window.getSelectedRange("v");
+    const range = await import_coc24.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc23.workspace.document;
+    const doc = await import_coc24.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -3343,11 +3573,11 @@ function addFormatter(context, lang, setting) {
   const selector = [{ scheme: "file", language: lang }];
   const provider = new FormattingEditProvider(setting);
   context.subscriptions.push(
-    import_coc23.languages.registerDocumentFormatProvider(selector, provider, 1)
+    import_coc24.languages.registerDocumentFormatProvider(selector, provider, 1)
   );
   if (provider.supportRangeFormat()) {
     context.subscriptions.push(
-      import_coc23.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
+      import_coc24.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
     );
   }
 }
@@ -3358,7 +3588,7 @@ async function aiChatSelectAndOpen() {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc24.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -3379,40 +3609,40 @@ async function activate(context) {
     //     clearInterval(timer);
     //   },
     // },
-    import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
-    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
-    import_coc23.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
-    import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+    import_coc24.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc24.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc24.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
+    import_coc24.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    import_coc24.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatQuickChat(), {
+    import_coc24.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatInputOpen(), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["n"], "ext-ai-show", aiChatShow(), {
+    import_coc24.workspace.registerKeymap(["n"], "ext-ai-show", aiChatShow(), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(
+    import_coc24.workspace.registerKeymap(
       ["v"],
       "ext-decode-base64",
       decodeStrFn("base64"),
@@ -3420,10 +3650,10 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc23.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
+    import_coc24.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(
+    import_coc24.workspace.registerKeymap(
       ["v"],
       "ext-copy-xclip",
       async () => {
@@ -3432,16 +3662,16 @@ async function activate(context) {
       },
       { sync: false }
     ),
-    import_coc23.workspace.registerKeymap(
+    import_coc24.workspace.registerKeymap(
       ["v"],
       "ext-change-name-rule",
       async () => {
-        const range = await import_coc23.window.getSelectedRange("v");
+        const range = await import_coc24.window.getSelectedRange("v");
         if (!range) {
           return;
         }
         const pythonDir = getcfg("pythonDir", "");
-        const doc = await import_coc23.workspace.document;
+        const doc = await import_coc24.workspace.document;
         const name = doc.textDocument.getText(range);
         const res = await callPython(pythonDir, "common", "change_name_rule", [
           name
@@ -3452,7 +3682,7 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc23.workspace.registerKeymap(
+    import_coc24.workspace.registerKeymap(
       ["v"],
       "ext-decode-mime",
       async () => {
@@ -3464,13 +3694,13 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc23.listManager.registerList(new ExtList(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new Commands(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new MapkeyList(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new RgfilesList(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new RgwordsList(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new AutocmdList(import_coc23.workspace.nvim)),
-    import_coc23.listManager.registerList(new HighlightList(import_coc23.workspace.nvim))
+    import_coc24.listManager.registerList(new ExtList(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new Commands(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new MapkeyList(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new RgfilesList(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new RgwordsList(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new AutocmdList(import_coc24.workspace.nvim)),
+    import_coc24.listManager.registerList(new HighlightList(import_coc24.workspace.nvim))
     // sources.createSource({
     //   name: 'coc-ext-common completion source', // unique id
     //   doComplete: async () => {
@@ -3486,6 +3716,11 @@ async function activate(context) {
     //   },
     // })
   );
+  for (let [k, v] of name2AiChat) {
+    context.subscriptions.push(
+      import_coc24.listManager.registerList(new AiChatList(`aichat_${k}`, v))
+    );
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
