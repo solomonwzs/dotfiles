@@ -15,8 +15,9 @@ line=200
 width=120
 height=120
 ratio=0.9
+brief=0
 
-while getopts "l:w:r:h:" opt; do
+while getopts "l:w:r:h:b" opt; do
     case $opt in
     l)
         line="$OPTARG"
@@ -30,6 +31,9 @@ while getopts "l:w:r:h:" opt; do
     r)
         ratio="$OPTARG"
         ;;
+    b)
+        brief=1
+        ;;
     *) ;;
     esac
 done
@@ -37,14 +41,21 @@ done
 shift $((OPTIND - 1))
 filename="$1"
 
+if [[ $brief -ne 0 ]]; then
+    stat --printf="Perm:\t(%A)\tSize:\t%s\nOwner:\t(%U/%G)\nAccess:\t%x\nModify:\t%y\nBirth:\t%w\nMime:\t" "$filename"
+    file --mime --brief "$filename"
+    printf "%${width}s\n" | tr " " "="
+fi
+
 mime=$(file --mime "$filename")
-if [[ "$mime" =~ text || "$mime" =~ us-ascii || "$mime" =~ utf-8 ||
-    "$mime" =~ iso-8859-1 ]]; then
-    (bat --style=numbers --color=always --theme=gruvbox-dark "$filename" ||
-        highlight -O ansi -l "$filename" ||
-        coderay "$filename" ||
-        rougify "$filename" ||
-        cat "$filename") 2>/dev/null | head -"$line"
+if [[ "$mime" =~ application/pdf ||
+    "$mime" =~ application/vnd.openxmlformats-officedocument ||
+    "$mime" =~ application/msword ||
+    "$mime" =~ application/vnd.ms-excel ||
+    "$mime" =~ application/vnd.ms-powerpoint ]] &&
+    _loc="$(type -p "document2text")" &&
+    [[ -n $_loc ]]; then
+    document2text "$filename" 2>/dev/null
 elif [[ "$mime" =~ image ]]; then
     height=$((height * 2 - 1))
     image_view --width "$width" --height "$height" --ratio "$ratio" "$filename"
@@ -52,16 +63,16 @@ elif [[ "$mime" =~ application/zip ]]; then
     unzip -l "$filename"
 elif [[ "$mime" =~ application/x-rar ]]; then
     unrar l "$filename"
-elif [[ "$mime" =~ application/gzip || "$mime" =~ application/x-xz ]]; then
+elif [[ "$mime" =~ application/gzip || "$mime" =~ application/x-xz ||
+    "$mime" =~ application/zstd ]]; then
     tar tvf "$filename"
-elif [[ "$mime" =~ application/pdf ||
-    "$mime" =~ application/vnd.openxmlformats-officedocument ||
-    "$mime" =~ application/msword ||
-    "$mime" =~ application/vnd.ms-excel ||
-    "$mime" =~ application/vnd.ms-powerpoint ]] &&
-    _loc="$(type -p "document2text")" &&
-    [[ -n $_loc ]]; then
-    document2text "$filename"
+elif [[ "$mime" =~ text || "$mime" =~ us-ascii || "$mime" =~ utf-8 ||
+    "$mime" =~ iso-8859-1 ]]; then
+    (bat --style=numbers --color=always --theme=gruvbox-dark "$filename" ||
+        highlight -O ansi -l "$filename" ||
+        coderay "$filename" ||
+        rougify "$filename" ||
+        cat "$filename") 2>/dev/null | head -"$line"
 else
     echo "$mime"
 fi
