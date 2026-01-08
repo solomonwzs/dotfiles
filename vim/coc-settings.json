@@ -106,14 +106,13 @@
       "languages": ["css"],
       "setting": {
         "provider": "prettier",
-        "args": [
-        ]
+        "args": []
       }
     }
   ],
 
   // coc-pyright
-  "python.pythonPath":"/home/solomon/.local/lib/python/bin/python",
+  "python.pythonPath": "/home/solomon/.local/lib/python/bin/python",
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["-l", "80"],
   "inlayHint.enable": false,

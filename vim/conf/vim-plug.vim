@@ -240,7 +240,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
 " Nvim Treesitter configurations and abstraction layer.
-Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'do': ':TSUpdate'}
+Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'branch': 'master', 'do': ':TSUpdate'}
 
 " plenary: full; complete; entire; absolute; unqualified. All the lua functions
 " I don't want to write twice.
