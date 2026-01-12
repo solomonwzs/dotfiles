@@ -61,3 +61,13 @@
 
 > jmtpfs $path
 # 将手机挂载到挂载点
+
+> openssl enc -aes-256-cbc -d -salt -pbkdf2 -base64 -p -pass pass:"$PASSWORD" <<< "$CONTENT"
+# 加/解密内容
+# -aes-256-cbc: 算法与模式
+# -d:           解密
+# -salt:        加随机盐
+# -pdkdf2:      启用 PBKDF2
+# -base64:      Base64 编码输出
+# -p:           打印实际使用的 salt/key/iv（调试用）
+# -pass:        用「密码」派生密钥
