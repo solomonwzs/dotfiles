@@ -50,6 +50,11 @@ update-mime-database $HOME/.local/share/mime
 update-desktop-database $HOME/.local/share/applications
 ```
 
+reload xfce4 panel
+```sh
+xfce4-panel -r
+```
+
 # Start Waydroid
 
 start weston first, then start waydroid session
