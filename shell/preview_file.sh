@@ -61,11 +61,13 @@ elif [[ "$mime" =~ image ]]; then
     image_view --width "$width" --height "$height" --ratio "$ratio" "$filename"
 elif [[ "$mime" =~ application/zip ]]; then
     unzip -l "$filename"
-elif [[ "$mime" =~ application/x-rar ]]; then
+elif [[ "$mime" =~ application/x-rar || "$mime" =~ application/vnd.rar ]]; then
     unrar l "$filename"
 elif [[ "$mime" =~ application/gzip || "$mime" =~ application/x-xz ||
     "$mime" =~ application/zstd ]]; then
     tar tvf "$filename"
+elif [[ "$mime" =~ application/x-7z-compressed ]]; then
+    7z l "$filename"
 elif [[ "$mime" =~ text || "$mime" =~ us-ascii || "$mime" =~ utf-8 ||
     "$mime" =~ iso-8859-1 ]]; then
     (bat --style=numbers --color=always --theme=gruvbox-dark "$filename" ||
