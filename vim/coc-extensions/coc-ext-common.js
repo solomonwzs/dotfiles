@@ -36,7 +36,7 @@ __export(coc_ext_common_exports, {
   aiChatSelectAndOpen: () => aiChatSelectAndOpen
 });
 module.exports = __toCommonJS(coc_ext_common_exports);
-var import_coc24 = require("coc.nvim");
+var import_coc23 = require("coc.nvim");
 
 // src/lists/autocmd.ts
 var import_coc = require("coc.nvim");
@@ -102,6 +102,7 @@ __publicField(CocExtError, "ERR_AUTH", -2);
 __publicField(CocExtError, "ERR_KIMI", -3);
 __publicField(CocExtError, "ERR_DEEPSEEK", -4);
 __publicField(CocExtError, "ERR_COMM_AI", -5);
+__publicField(CocExtError, "ERR_ZAI", -6);
 var CocExtErrnoError = class extends Error {
   constructor(err) {
     super(err.message);
@@ -525,47 +526,6 @@ var ScratchWindow = class {
     if (!(winid instanceof Error)) {
       this.winid = winid;
     }
-  }
-};
-var StringAlignHelper = class {
-  constructor(align) {
-    this.align = align;
-    __publicField(this, "alignList");
-    this.alignList = [];
-    for (let i of align) {
-      let a = i == "L" ? "L" : "R";
-      this.alignList.push({
-        align: a,
-        maxWidth: 0,
-        strList: []
-      });
-    }
-  }
-  put(...items) {
-    if (items.length != this.align.length) {
-      return -1;
-    } else {
-      for (let i = 0; i < this.align.length; ++i) {
-        let w = countTextWidth(items[i]);
-        if (this.alignList[i].maxWidth < w) {
-          this.alignList[i].maxWidth = w;
-        }
-        this.alignList[i].strList.push({
-          word: items[i],
-          width: w
-        });
-      }
-      return 0;
-    }
-  }
-  get(row, col) {
-    if (col >= this.alignList.length || row >= this.alignList[col].strList.length) {
-      return "";
-    }
-    let spaces = " ".repeat(
-      this.alignList[col].maxWidth - this.alignList[col].strList[row].width
-    );
-    return this.alignList[col].align == "L" ? `${this.alignList[col].strList[row].word}${spaces}` : `${spaces}${this.alignList[col].strList[row].word}`;
   }
 };
 
@@ -2201,31 +2161,41 @@ async function leader_recv(cmd, ..._args) {
 }
 
 // src/ai/chat.ts
-var import_coc22 = require("coc.nvim");
+var import_coc21 = require("coc.nvim");
+
+// src/ai/context.ts
+var LlmContextManager = class {
+  constructor() {
+    __publicField(this, "ctx");
+    this.ctx = {
+      fullHistory: [],
+      tokens: 0
+    };
+  }
+  appendMessage(msg) {
+    this.ctx.fullHistory.push(msg);
+  }
+  getMessages() {
+    let msgs = [];
+    for (let i of this.ctx.fullHistory) {
+      msgs.push(i.oriMessage);
+    }
+    return msgs;
+  }
+};
 
 // src/ai/llmcommon.ts
 var import_fs3 = __toESM(require("fs"));
-var import_coc21 = require("coc.nvim");
-var LlmCommonChat = class extends BaseChatChannel {
+var LlmCaller = class {
   constructor(servConf) {
-    super();
     __publicField(this, "endpoint");
     __publicField(this, "headers");
-    __publicField(this, "chatChain");
     __publicField(this, "proxy");
-    __publicField(this, "model");
     this.endpoint = new URL(servConf.endpoint);
     this.headers = {};
     for (let key in servConf.auth_headers) {
       this.headers[key] = servConf.auth_headers[key];
     }
-    this.chatChain = {
-      model: "",
-      messages: [],
-      temperature: 1,
-      top_p: 0.95,
-      stream: true
-    };
     if (servConf.proxy) {
       let proxyUrl = new URL(servConf.proxy);
       this.proxy = {
@@ -2234,27 +2204,19 @@ var LlmCommonChat = class extends BaseChatChannel {
       };
     }
   }
-  reset() {
-    this.chatChain.messages = [];
-  }
-  getChatName() {
-    return "LlmCommon";
-  }
-  async getChatList() {
-    return [];
-  }
-  async createChatId(_name) {
+  async httpQuery(method, path7, data) {
     var _a;
     let req = {
       args: {
         host: this.endpoint.hostname,
-        path: `${this.endpoint.pathname}/v1/models`,
-        method: "GET",
+        path: `${this.endpoint.pathname}${path7}`,
+        method,
         protocol: this.endpoint.protocol,
         headers: this.headers,
         timeout: 1e3
       },
-      proxy: this.proxy
+      proxy: this.proxy,
+      data
     };
     let resp = await sendHttpRequest(req);
     if (resp.statusCode != 200 || !resp.body) {
@@ -2263,83 +2225,32 @@ var LlmCommonChat = class extends BaseChatChannel {
         `[CommAI] statusCode: ${resp.statusCode}, path: ${req.args.path}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
       );
     }
-    let llmResp = JSON.parse(resp.body.toString());
-    let alignHelper = new StringAlignHelper("LR");
-    for (let i of llmResp.models) {
-      if (!i.enabled) {
-        continue;
-      }
-      alignHelper.put(i.alias, i.tokenLimit.toString());
-    }
-    let quickItems = [];
-    for (let i of llmResp.models) {
-      if (!i.enabled) {
-        continue;
-      }
-      let n = quickItems.length;
-      quickItems.push({
-        label: `${alignHelper.get(n, 0)}    f[${i.enableFunctionCall ? "o" : "x"}] m[${i.multimodalEnabled ? "o" : "x"}] t[${alignHelper.get(n, 1)}]`,
-        data: i
-      });
-    }
-    let choose = await import_coc21.window.showQuickPick(quickItems, {
-      title: "Choose model"
-    });
-    if (choose) {
-      logger.debug(choose);
-      this.model = choose.data;
-      this.chatChain.model = choose.data.name;
-    } else {
-      return new CocExtError(CocExtError.ERR_COMM_AI, "choose model fail");
-    }
-    let chatId = crypto.randomUUID();
-    this.headers["X-Conversation-Id"] = chatId;
-    return chatId;
+    return resp.body.toString();
   }
-  async showHistoryMessages() {
-    return null;
+  setConersationId(id) {
+    this.headers["X-Conversation-Id"] = id;
   }
-  async showItem() {
+  async models() {
+    delete this.headers["Content-Type"];
+    delete this.headers["X-Request-Id"];
+    let res = await this.httpQuery("GET", "/v1/models");
+    return res instanceof Error ? res : JSON.parse(res);
   }
-  async chat(text) {
-    let reqId = crypto.randomUUID();
-    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
-    this.chan.append(`>> id:${reqId}
-`);
-    this.chatChain.messages.push({
-      role: "user",
-      content: text
-    });
-    let decoder = new ChunkDecoder();
-    let respText = "";
-    let cb = {
-      onData: (chunk, rsp) => {
-        if (rsp.statusCode != 200) {
-          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
-          return;
-        }
-        let msgList = decoder.decode(chunk);
-        for (let m of msgList) {
-          let data = JSON.parse(m.data);
-          for (let c of data.choices) {
-            if (c.finish_reason === "stop") {
-              this.chatChain.messages.push({
-                role: "assistant",
-                content: respText
-              });
-              this.chan.append(
-                ` (END, tokens: in ${data.usage.prompt_tokens}, out ${data.usage.completion_tokens}, all ${data.usage.total_tokens})`
-              );
-            } else if (c.delta.content) {
-              respText += c.delta.content;
-              this.chan.append(c.delta.content, false);
-            }
-          }
-        }
-      }
-    };
+  async completions(data) {
     this.headers["Content-Type"] = "application/json";
-    this.headers["X-Request-Id"] = reqId;
+    this.headers["X-Request-Id"] = crypto.randomUUID();
+    data.stream = false;
+    let res = await this.httpQuery(
+      "POST",
+      "/v1/chat/completions",
+      JSON.stringify(data)
+    );
+    return res instanceof Error ? res : JSON.parse(res);
+  }
+  async completionsSSE(data, cb) {
+    this.headers["Content-Type"] = "application/json";
+    this.headers["X-Request-Id"] = crypto.randomUUID();
+    data.stream = true;
     let req = {
       args: {
         host: this.endpoint.hostname,
@@ -2350,9 +2261,195 @@ var LlmCommonChat = class extends BaseChatChannel {
         timeout: 1e3
       },
       proxy: this.proxy,
-      data: JSON.stringify(this.chatChain)
+      data: JSON.stringify(data)
     };
     await sendHttpRequestWithCallback(req, cb);
+  }
+};
+var LlmCommonChat = class extends BaseChatChannel {
+  constructor(servConf) {
+    super();
+    __publicField(this, "caller");
+    __publicField(this, "chatReq");
+    __publicField(this, "ctxManager");
+    this.caller = new LlmCaller(servConf);
+    this.chatReq = {
+      model: "",
+      messages: [],
+      tools: [
+        // {
+        //   type: 'function',
+        //   function: {
+        //     name: 'get_weather',
+        //     description: '查询指定城市天气',
+        //     parameters: {
+        //       type: 'object',
+        //       required: ['location'],
+        //       properties: {
+        //         location: { type: 'string', description: '城市名称' },
+        //       },
+        //     },
+        //   },
+        // },
+        // {
+        //   type: 'function',
+        //   function: {
+        //     name: 'get_traffic_info',
+        //     description: '查询指定城市交通信息',
+        //     parameters: {
+        //       type: 'object',
+        //       required: ['location'],
+        //       properties: {
+        //         location: { type: 'string', description: '城市名称' },
+        //       },
+        //     },
+        //   },
+        // },
+      ],
+      temperature: 1,
+      top_p: 0.95,
+      stream: true,
+      // stream: false,
+      thinking: {
+        type: "enabled"
+      }
+    };
+    this.ctxManager = new LlmContextManager();
+  }
+  reset() {
+    this.chatReq.messages = [];
+  }
+  getChatName() {
+    return "LlmCommon";
+  }
+  async getChatList() {
+    return [];
+  }
+  async createChatId(_name) {
+    let llmResp = await this.caller.models();
+    if (llmResp instanceof Error) {
+      return llmResp;
+    }
+    logger.debug(llmResp);
+    if (llmResp.data && llmResp.data.length > 0) {
+      let model = llmResp.data[0];
+      logger.debug(model.id);
+      this.chatReq.model = model.id;
+      let chatId = crypto.randomUUID();
+      this.caller.setConersationId(chatId);
+      return chatId;
+    }
+    return new CocExtError(CocExtError.ERR_COMM_AI, "choose model fail");
+  }
+  async showHistoryMessages() {
+    return null;
+  }
+  async showItem() {
+  }
+  async chat(text) {
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
+    this.ctxManager.appendMessage({
+      oriMessage: {
+        role: "user",
+        content: text
+      }
+    });
+    const kStatusNone = 0;
+    const kStatusReasoning = 1;
+    const kStatusContent = 2;
+    const kStatusStop = 3;
+    let reqId = "";
+    let fcList = [];
+    let decoder = new ChunkDecoder();
+    let respText = "";
+    let status = kStatusNone;
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let cb = {
+      onData: (chunk, rsp) => {
+        if (rsp.statusCode != 200) {
+          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
+          return;
+        }
+        let msgList = decoder.decode(chunk);
+        for (let m of msgList) {
+          if (m.data == "[DONE]") {
+            continue;
+          }
+          try {
+            let data = JSON.parse(m.data);
+            if (reqId.length == 0) {
+              reqId = data.id;
+              this.chan.append(`>> id:${reqId}
+`);
+            }
+            for (let c of data.choices) {
+              if (c.delta && c.delta.reasoning_content) {
+                if (status != kStatusReasoning) {
+                  this.chan.append("\n---");
+                }
+                status = kStatusReasoning;
+                respText += c.delta.reasoning_content;
+                this.chan.append(c.delta.reasoning_content, false);
+              }
+              if (c.delta && c.delta.content) {
+                if (status == kStatusReasoning) {
+                  this.chan.append("\n---");
+                }
+                status = kStatusContent;
+                respText += c.delta.content;
+                this.chan.append(c.delta.content, false);
+              }
+              if (c.delta && c.delta.tool_calls) {
+                for (let t of c.delta.tool_calls) {
+                  if (fcList.length == 0 || t.id) {
+                    fcList.push({
+                      id: t.id,
+                      name: t.function.name ? t.function.name : "",
+                      arguments: t.function.arguments ? t.function.arguments : ""
+                    });
+                  } else {
+                    let func = fcList[fcList.length - 1];
+                    if (t.function.name) {
+                      func.name += t.function.name;
+                    }
+                    if (t.function.arguments) {
+                      func.arguments += t.function.arguments;
+                    }
+                  }
+                }
+              }
+              if (c.finish_reason) {
+                status = kStatusStop;
+                this.ctxManager.appendMessage({
+                  oriMessage: {
+                    role: "assistant",
+                    content: respText
+                  }
+                });
+              }
+            }
+            if (data.usage) {
+              promptTokens = data.usage.prompt_tokens;
+              completionTokens = data.usage.completion_tokens;
+            }
+          } catch (e) {
+            logger.error(e);
+            logger.debug(m.data);
+          }
+        }
+      },
+      onEnd: (rsp) => {
+        logger.debug(rsp.statusCode);
+        this.chan.append(
+          `
+(\`END\`, usage: in \`${promptTokens}\`, out \`${completionTokens}\`, total \`${promptTokens + completionTokens}\`)`
+        );
+        logger.debug(fcList);
+      }
+    };
+    this.chatReq.messages = this.ctxManager.getMessages();
+    await this.caller.completionsSSE(this.chatReq, cb);
   }
   async delSession(_chatId) {
     return null;
@@ -2380,6 +2477,11 @@ var llmCommonChat = create_llm_common_chat();
 
 // src/ai/deepseek.ts
 var import_fs4 = __toESM(require("fs"));
+var globalDeepseek = {
+  searchWindow: new ScratchWindow("Deepseek Search", "markdown"),
+  host: "chat.deepseek.com",
+  timeout: 5e3
+};
 var Sha3Wasm = class {
   constructor(src) {
     this.src = src;
@@ -2394,18 +2496,18 @@ var Sha3Wasm = class {
     this.alloc = exports2.__wbindgen_export_0;
     this.wasmSolve = exports2.wasm_solve;
   }
-  writeMemory(offset, data) {
+  writeBuffer(offset, data) {
     let view = new Uint8Array(this.memory.buffer);
     view.set(data, offset);
   }
-  readMemory(offset, size) {
+  readBuffer(offset, size) {
     let view = new Uint8Array(this.memory.buffer);
     return view.slice(offset, offset + size);
   }
   encodeString(text) {
     let data = Buffer.from(text);
     let ptr = this.alloc(data.length, 1);
-    this.writeMemory(ptr, data);
+    this.writeBuffer(ptr, data);
     return [ptr, data.length];
   }
   computePowAnswer(challenge, salt, difficulty, expire_at) {
@@ -2420,13 +2522,13 @@ var Sha3Wasm = class {
       lenPrefix,
       difficulty
     );
-    const statusBytes = this.readMemory(retptr, 4);
+    const statusBytes = this.readBuffer(retptr, 4);
     if (statusBytes.length !== 4) {
       this.addToStack(16);
       return new CocExtError(CocExtError.ERR_DEEPSEEK, "read status fail");
     }
     let status = new DataView(statusBytes.buffer).getInt32(0, true);
-    let valueBytes = this.readMemory(retptr + 8, 8);
+    let valueBytes = this.readBuffer(retptr + 8, 8);
     if (valueBytes.length !== 8) {
       this.addToStack(16);
       return new CocExtError(CocExtError.ERR_DEEPSEEK, "read value fail");
@@ -2442,7 +2544,7 @@ var Sha3Wasm = class {
 async function getWasm(dir) {
   let conf = getcfg("", {});
   let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${dir}/deepseek_sha3.wasm`;
-  let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : "https://chat.deepseek.com/static/sha3_wasm_bg.7b9ca65ddd.wasm";
+  let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : `https://${globalDeepseek.host}/static/sha3_wasm_bg.7b9ca65ddd.wasm`;
   if (await fsAccess(wasmPath, import_fs4.default.constants.R_OK) != null) {
     if (await simpleHttpDownloadFile(downloadUrl, wasmPath) == -1) {
       return new CocExtError(
@@ -2469,7 +2571,6 @@ function searchReault2Lines(item, idx) {
   lines.push(item.snippet);
   return lines;
 }
-var searchWindow = new ScratchWindow("Deepseek Search", "markdown");
 var DeepseekChat = class extends BaseChatChannel {
   constructor(authKey) {
     super();
@@ -2489,15 +2590,16 @@ var DeepseekChat = class extends BaseChatChannel {
     return {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
       authorization: `Bearer ${this.authKey}`,
-      Origin: "https://chat.deepseek.com",
+      Origin: `https://${globalDeepseek.host}`,
       "x-client-locale": "zh_CN",
-      "x-client-platform": "web"
+      "x-client-platform": "web",
+      "Content-Type": "application/json"
     };
   }
   async httpQuery(method, path7, d) {
     let req = {
       args: {
-        host: "chat.deepseek.com",
+        host: globalDeepseek.host,
         path: path7,
         method,
         protocol: "https:",
@@ -2630,7 +2732,7 @@ var DeepseekChat = class extends BaseChatChannel {
       lines.push("---");
       lines.push("");
     }
-    await searchWindow.open(lines);
+    await globalDeepseek.searchWindow.open(lines);
   }
   async tryGetRef(messageId, refText) {
     let regex = new RegExp(/^\[citation:([0-9]*)\]$/);
@@ -2719,7 +2821,7 @@ var DeepseekChat = class extends BaseChatChannel {
     headers["x-ds-pow-response"] = challenge;
     const req = {
       args: {
-        host: "chat.deepseek.com",
+        host: globalDeepseek.host,
         path: "/api/v0/chat/completion",
         method: "POST",
         protocol: "https:",
@@ -2796,7 +2898,9 @@ var DeepseekChat = class extends BaseChatChannel {
         this.chan.append(err.message);
       },
       onEnd: (rsp) => {
-        logger.info(`[Deepseek] chat statusCode: ${rsp.statusCode}`);
+        logger.info(
+          `[Deepseek] chat statusCode: ${rsp.statusCode}, msg: ${rsp.statusMessage}`
+        );
       },
       onTimeout: () => {
         logger.error("[Deepseek] timeout");
@@ -2822,7 +2926,9 @@ var deepseekChat = new DeepseekChat(
 // src/ai/kimi_v2.ts
 var globalKimi = {
   searchWindow: new ScratchWindow("Kimi Search", "markdown"),
-  host: "www.kimi.com"
+  host: "www.kimi.com",
+  scenario: "SCENARIO_K2D5",
+  timeout: 5e3
 };
 var StreamDecoder = class {
   constructor() {
@@ -2960,7 +3066,7 @@ var KimiChatV2 = class extends BaseChatChannel {
         method: "GET",
         protocol: "https:",
         headers: this.getHeaders(),
-        timeout: 1e3
+        timeout: globalKimi.timeout
       }
     };
     const resp = await sendHttpRequest(refreshReq);
@@ -2980,7 +3086,7 @@ var KimiChatV2 = class extends BaseChatChannel {
         method: "POST",
         protocol: "https:",
         headers: this.getHeaders(),
-        timeout: 1e3
+        timeout: globalKimi.timeout
       },
       data: JSON.stringify(data)
     };
@@ -3159,7 +3265,7 @@ var KimiChatV2 = class extends BaseChatChannel {
             } else if (msg.ref) {
               refs.push(msg.ref.search);
             } else if (msg.done) {
-              this.chan.append(" (END)");
+              this.chan.append("\n(END)");
             } else if (msg.heartbeat) {
             } else {
               logger.debug(msg);
@@ -3182,13 +3288,13 @@ var KimiChatV2 = class extends BaseChatChannel {
     };
     let chatReq = {
       chatId: this.chatId,
-      scenario: "SCENARIO_K2",
+      scenario: globalKimi.scenario,
       tools: [{ type: "TOOL_TYPE_SEARCH", search: {} }],
       message: {
         parent_id: this.currentMsgid,
         role: "user",
         blocks: [{ message_id: "", text: { content: text } }],
-        scenario: "SCENARIO_K2"
+        scenario: globalKimi.scenario
       }
     };
     const req = {
@@ -3223,12 +3329,304 @@ var kimiChatV2 = new KimiChatV2(
   process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : ""
 );
 
+// src/ai/zai.ts
+var import_url3 = require("url");
+var import_crypto = require("crypto");
+var globalZAi = {
+  host: "chat.z.ai",
+  timeout: 5e3,
+  model: "glm-5",
+  enable_thinking: false,
+  auto_web_search: true,
+  // mcp_servers: ['advanced-search'],
+  mcp_servers: [],
+  user_language: "zh-CN",
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+  client_version: "prod-fe-1.0.237",
+  hmac_key: "key-@@@@)))()((9))-xxxx&&&%%%%%"
+};
+function hmacSha256Hex(key, data) {
+  const hmac = (0, import_crypto.createHmac)("sha256", key);
+  hmac.update(data);
+  return hmac.digest("hex");
+}
+function generateSignature(userId, requestId, userContent, timestamp) {
+  const requestInfo = `requestId,${requestId},timestamp,${timestamp},user_id,${userId}`;
+  const contentBase64 = Buffer.from(userContent).toString("base64");
+  const signData = `${requestInfo}|${contentBase64}|${timestamp}`;
+  const period = Math.floor(timestamp / (5 * 60 * 1e3));
+  const firstHmac = hmacSha256Hex(globalZAi.hmac_key, `${period}`);
+  const signature = hmacSha256Hex(firstHmac, signData);
+  return signature;
+}
+var ZAiChat = class extends BaseChatChannel {
+  constructor(token) {
+    super();
+    this.token = token;
+    __publicField(this, "headers");
+    __publicField(this, "currentId");
+    __publicField(this, "userId");
+    this.headers = {
+      "User-Agent": globalZAi.user_agent,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.token}`,
+      "X-FE-Version": "prod-fe-1.0.237"
+    };
+    this.currentId = null;
+    this.userId = "";
+  }
+  reset() {
+  }
+  getChatName() {
+    return "ZAi";
+  }
+  async sendRequest(method, path7, data = null) {
+    var _a;
+    let req = {
+      args: {
+        host: globalZAi.host,
+        path: path7,
+        method,
+        protocol: "https:",
+        headers: this.headers,
+        timeout: globalZAi.timeout
+      },
+      data: data == null ? void 0 : JSON.stringify(data)
+    };
+    let resp = await sendHttpRequest(req);
+    if (resp.statusCode != 200 || !resp.body) {
+      return new CocExtError(
+        CocExtError.ERR_ZAI,
+        `[Z.ai] statusCode: ${resp.statusCode}, path: ${path7}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
+      );
+    }
+    return resp.body;
+  }
+  async auth() {
+    let resp = await this.sendRequest("GET", "/api/v1/auths/");
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let au = JSON.parse(resp.toString());
+    logger.debug(au);
+    if (au.token) {
+      this.token = au.token;
+    }
+  }
+  async getChatList() {
+    let chats = [];
+    for (let page = 1; page < 10; ++page) {
+      let resp = await this.sendRequest("GET", `/api/v1/chats/?page=${page}`);
+      if (resp instanceof Error) {
+        return resp;
+      }
+      let list = JSON.parse(resp.toString());
+      if (list.length == 0) {
+        break;
+      }
+      for (const i of list) {
+        chats.push({
+          label: i.title,
+          chatId: i.id,
+          description: new Date(i.updated_at * 1e3).toISOString()
+        });
+      }
+    }
+    return chats;
+  }
+  async createChatId(_name) {
+    return "";
+  }
+  async showHistoryMessages() {
+    let resp = await this.sendRequest("GET", `/api/v1/chats/${this.chatId}`);
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let firstMsg = null;
+    let historyMsgids = [];
+    let chatInfo = JSON.parse(resp.toString());
+    Object.entries(chatInfo.chat.history.messages).forEach(([key, value]) => {
+      historyMsgids.push(key);
+      if (value.parentId == null) {
+        firstMsg = value;
+      }
+    });
+    if (firstMsg == null) {
+      return null;
+    }
+    this.currentId = chatInfo.chat.history.currentId;
+    this.userId = chatInfo.user_id;
+    resp = await this.sendRequest(
+      "POST",
+      `/api/v1/chats/${this.chatId}/messages/batch`,
+      { ids: historyMsgids }
+    );
+    if (resp instanceof Error) {
+      return resp;
+    }
+    let historyChatDetail = JSON.parse(resp.toString());
+    let messages = [firstMsg];
+    let currIdx = 0;
+    while (currIdx < messages.length) {
+      let currMsg = messages[currIdx];
+      let detail = historyChatDetail.data[currMsg.id];
+      if (detail.role == "user") {
+        let time = new Date(detail.created_at * 1e3).toISOString();
+        if (detail.content) {
+          this.chan.appendUserInput(time, detail.content);
+        } else if (detail.content_blocks) {
+          let cont = "";
+          for (const i of detail.content_blocks) {
+            cont += i.content;
+          }
+          this.chan.appendUserInput(time, cont);
+        }
+        this.chan.append("");
+      } else {
+        if (detail.content) {
+          this.chan.append(detail.content);
+        } else if (detail.content_blocks) {
+          for (let i of detail.content_blocks) {
+            if (typeof i.content == "string") {
+              if (i.type == "reasoning") {
+                this.chan.append("---");
+                this.chan.append(i.content);
+                this.chan.append("---");
+              } else {
+                this.chan.append(i.content);
+              }
+            }
+          }
+        }
+      }
+      for (let id of currMsg.childrenIds) {
+        messages.push(chatInfo.chat.history.messages[id]);
+      }
+      currIdx += 1;
+    }
+    return null;
+  }
+  async showItem() {
+    return;
+  }
+  async chat(text) {
+    if (!this.chatId) {
+      return;
+    }
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
+    let chatReq = {
+      stream: true,
+      model: globalZAi.model,
+      messages: [{ role: "user", content: text }],
+      signature_prompt: text,
+      params: {},
+      extra: {},
+      mcp_servers: globalZAi.mcp_servers,
+      features: {
+        image_generation: false,
+        web_search: true,
+        auto_web_search: globalZAi.auto_web_search,
+        preview_mode: true,
+        flags: [],
+        enable_thinking: globalZAi.enable_thinking
+      },
+      variables: {
+        "{{USER_LANGUAGE}}": globalZAi.user_language
+      },
+      chat_id: this.chatId,
+      id: crypto.randomUUID(),
+      current_user_message_id: crypto.randomUUID(),
+      current_user_message_parent_id: this.currentId,
+      background_tasks: {
+        title_generation: true,
+        tags_generation: true
+      }
+    };
+    logger.debug(chatReq);
+    const kStatusNone = 0;
+    const kStatusReasoning = 1;
+    const kStatusContent = 2;
+    const kStatusStop = 3;
+    let decoder = new ChunkDecoder();
+    let status = kStatusNone;
+    let cb = {
+      onData: (chunk, rsp) => {
+        if (rsp.statusCode != 200) {
+          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
+          return;
+        }
+        let msgList = decoder.decode(chunk);
+        for (let m of msgList) {
+          try {
+            let d = JSON.parse(m.data);
+            logger.debug(d);
+            if (d.data.phase == "thinking" && d.data.delta_content) {
+              if (status != kStatusReasoning) {
+                this.chan.append("\n---");
+              }
+              status = kStatusReasoning;
+              this.chan.append(d.data.delta_content, false);
+            } else if (d.data.phase == "answer" && d.data.delta_content) {
+              if (status == kStatusReasoning) {
+                this.chan.append("\n---");
+              }
+              status = kStatusContent;
+              this.chan.append(d.data.delta_content, false);
+            } else if (d.data.phase == "tool_response" && d.data.metadata && d.data.metadata.browser && d.data.metadata.browser.search_result) {
+            } else if (d.data.done) {
+              status = kStatusStop;
+              this.chan.append("\n(END)");
+            }
+          } catch (e) {
+            logger.error(e);
+            logger.debug(m.data);
+          }
+        }
+      }
+    };
+    let timestamp = Date.now();
+    let requestId = crypto.randomUUID();
+    let params = new import_url3.URLSearchParams({
+      timestamp: timestamp.toString(),
+      requestId,
+      user_id: this.userId,
+      version: "0.0.1",
+      platform: "web",
+      user_agent: globalZAi.user_agent,
+      browser_name: "Firefox",
+      signature_timestamp: timestamp.toString()
+    });
+    let sign = generateSignature(this.userId, requestId, text, timestamp);
+    logger.debug(params.toString());
+    this.headers["X-Signature"] = sign;
+    let req = {
+      args: {
+        host: globalZAi.host,
+        path: `/api/v2/chat/completions?${params.toString()}`,
+        method: "POST",
+        protocol: "https:",
+        headers: this.headers
+      },
+      data: JSON.stringify(chatReq)
+    };
+    await sendHttpRequestWithCallback(req, cb);
+    return;
+  }
+  async delSession(_chatId) {
+    return null;
+  }
+};
+var zaiChat = new ZAiChat(
+  process.env.MY_AI_ZAI_CHAT_KEY ? process.env.MY_AI_ZAI_CHAT_KEY : ""
+);
+
 // src/ai/chat.ts
-var import_coc23 = require("coc.nvim");
+var import_coc22 = require("coc.nvim");
 var name2AiChat = /* @__PURE__ */ new Map([
   [kimiChatV2.getChatName(), kimiChatV2],
   [deepseekChat.getChatName(), deepseekChat],
-  [llmCommonChat.getChatName(), llmCommonChat]
+  [llmCommonChat.getChatName(), llmCommonChat],
+  [zaiChat.getChatName(), zaiChat]
 ]);
 var globalAiChat = null;
 var globalScratchWindow = new ScratchWindow("Chat Input", "text");
@@ -3237,7 +3635,7 @@ async function aiChatSelect() {
   for (let [k, v] of name2AiChat) {
     quickItems.push({ label: k, chat: v });
   }
-  let choose = await import_coc22.window.showQuickPick(quickItems, { title: "Choose AI" });
+  let choose = await import_coc21.window.showQuickPick(quickItems, { title: "Choose AI" });
   if (choose) {
     globalAiChat = choose.chat;
     if (!globalAiChat) {
@@ -3265,9 +3663,9 @@ async function aiChatOpen() {
       return -1;
     }
     items.push({ label: "Create", chatId: "", description: "" });
-    let choose = await import_coc22.window.showQuickPick(items, { title: "Choose Chat" });
+    let choose = await import_coc21.window.showQuickPick(items, { title: "Choose Chat" });
     if (!choose || choose.chatId.length == 0) {
-      let new_name = await import_coc22.window.requestInput("Name", "", {
+      let new_name = await import_coc21.window.requestInput("Name", "", {
         position: "center"
       });
       if (new_name.length == 0) {
@@ -3310,7 +3708,7 @@ function aiChatShow() {
     }
   };
 }
-var AiChatList = class extends import_coc23.BasicList {
+var AiChatList = class extends import_coc22.BasicList {
   constructor(name, aiChat) {
     super();
     this.name = name;
@@ -3320,7 +3718,7 @@ var AiChatList = class extends import_coc23.BasicList {
     __publicField(this, "defaultAction", "open");
     __publicField(this, "actions", []);
     let newAction = async (_item, _context) => {
-      let new_name = await import_coc22.window.requestInput("Name", "", {
+      let new_name = await import_coc21.window.requestInput("Name", "", {
         position: "center"
       });
       if (new_name.length == 0) {
@@ -3363,7 +3761,7 @@ var AiChatList = class extends import_coc23.BasicList {
       "delete",
       async (item, _context) => {
         let i = item.data;
-        let del = await import_coc22.window.showPrompt(`Delete session [ ${i.label} ]`);
+        let del = await import_coc21.window.showPrompt(`Delete session [ ${i.label} ]`);
         if (del) {
           let err = await this.aiChat.delSession(i.chatId);
           if (err instanceof Error) {
@@ -3478,7 +3876,7 @@ var defaultFmtSetting = {
 async function replaceExecText(doc, range, res) {
   var _a;
   if (res.exitCode == 0 && res.data) {
-    const ed = import_coc24.TextEdit.replace(range, res.data.toString("utf8"));
+    const ed = import_coc23.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
     logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
@@ -3511,7 +3909,7 @@ function hlPreview() {
     if (arr.length == 0) {
       return;
     }
-    const { nvim } = import_coc24.workspace;
+    const { nvim } = import_coc23.workspace;
     await nvim.exec(
       "hi HlPreview cterm=None ctermfg=None ctermbg=None gui=None guifg=None guibg=None"
     );
@@ -3558,12 +3956,12 @@ function decodeStrFn(enc) {
 }
 function encodeStrFn(enc) {
   return async () => {
-    const range = await import_coc24.window.getSelectedRange("v");
+    const range = await import_coc23.window.getSelectedRange("v");
     if (!range) {
       return;
     }
     const pythonDir = getcfg("pythonDir", "");
-    const doc = await import_coc24.workspace.document;
+    const doc = await import_coc23.workspace.document;
     const text = doc.textDocument.getText(range);
     const res = await callPython(pythonDir, "coder", "encode_str", [text, enc]);
     replaceExecText(doc, range, res);
@@ -3573,11 +3971,11 @@ function addFormatter(context, lang, setting) {
   const selector = [{ scheme: "file", language: lang }];
   const provider = new FormattingEditProvider(setting);
   context.subscriptions.push(
-    import_coc24.languages.registerDocumentFormatProvider(selector, provider, 1)
+    import_coc23.languages.registerDocumentFormatProvider(selector, provider, 1)
   );
   if (provider.supportRangeFormat()) {
     context.subscriptions.push(
-      import_coc24.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
+      import_coc23.languages.registerDocumentRangeFormatProvider(selector, provider, 1)
     );
   }
 }
@@ -3588,7 +3986,7 @@ async function aiChatSelectAndOpen() {
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
   logger.info(`coc-ext-common works`);
-  logger.info(import_coc24.workspace.getConfiguration("coc-ext.common"));
+  logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
   logger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
@@ -3609,40 +4007,40 @@ async function activate(context) {
     //     clearInterval(timer);
     //   },
     // },
-    import_coc24.commands.registerCommand("ext-debug", debug, { sync: true }),
-    import_coc24.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
-    import_coc24.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
+    import_coc23.commands.registerCommand("ext-debug", debug, { sync: true }),
+    import_coc23.commands.registerCommand("ext-leaderf", leader_recv, { sync: true }),
+    import_coc23.commands.registerCommand("ext-ai", aiChatSelectAndOpen, { sync: true }),
+    import_coc23.workspace.registerKeymap(["n"], "ext-cursor-symbol", getCursorSymbolInfo, {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-translate", translateFn("n"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-translate-v", translateFn("v"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatInputOpen(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-ai-chat-n", aiChatInputOpen(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-ai-chat-v", aiChatChat(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["n"], "ext-ai-show", aiChatShow(), {
+    import_coc23.workspace.registerKeymap(["n"], "ext-ai-show", aiChatShow(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-utf8", encodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-encode-gbk", encodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-utf8", decodeStrFn("utf8"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-base64",
       decodeStrFn("base64"),
@@ -3650,10 +4048,10 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
+    import_coc23.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-copy-xclip",
       async () => {
@@ -3662,16 +4060,16 @@ async function activate(context) {
       },
       { sync: false }
     ),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-change-name-rule",
       async () => {
-        const range = await import_coc24.window.getSelectedRange("v");
+        const range = await import_coc23.window.getSelectedRange("v");
         if (!range) {
           return;
         }
         const pythonDir = getcfg("pythonDir", "");
-        const doc = await import_coc24.workspace.document;
+        const doc = await import_coc23.workspace.document;
         const name = doc.textDocument.getText(range);
         const res = await callPython(pythonDir, "common", "change_name_rule", [
           name
@@ -3682,7 +4080,7 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.workspace.registerKeymap(
+    import_coc23.workspace.registerKeymap(
       ["v"],
       "ext-decode-mime",
       async () => {
@@ -3694,13 +4092,13 @@ async function activate(context) {
         sync: false
       }
     ),
-    import_coc24.listManager.registerList(new ExtList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new Commands(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new MapkeyList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new RgfilesList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new RgwordsList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new AutocmdList(import_coc24.workspace.nvim)),
-    import_coc24.listManager.registerList(new HighlightList(import_coc24.workspace.nvim))
+    import_coc23.listManager.registerList(new ExtList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new Commands(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new MapkeyList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgfilesList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new RgwordsList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new AutocmdList(import_coc23.workspace.nvim)),
+    import_coc23.listManager.registerList(new HighlightList(import_coc23.workspace.nvim))
     // sources.createSource({
     //   name: 'coc-ext-common completion source', // unique id
     //   doComplete: async () => {
@@ -3718,7 +4116,7 @@ async function activate(context) {
   );
   for (let [k, v] of name2AiChat) {
     context.subscriptions.push(
-      import_coc24.listManager.registerList(new AiChatList(`aichat_${k}`, v))
+      import_coc23.listManager.registerList(new AiChatList(`aichat_${k}`, v))
     );
   }
 }

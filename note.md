@@ -171,6 +171,8 @@ sudo systemctl hibernate
 # Reload psmouse for thinkpad
 ```sh
 sudo modprobe -r psmouse
+sudo modprobe -r rmi_smbus rmi_core
+sudo modprobe rmi_smbus rmi_core
 sudo modprobe psmouse
 ```
 
@@ -179,4 +181,21 @@ sudo modprobe psmouse
 ## setting for fcitx
 ```
 env GLFW_IM_MODULE=ibus kitty
+```
+
+# Setting for DPMS (Display Power Management Signaling)
+
+## get info
+```sh
+xset q
+```
+
+## screen lock & force screen off
+```sh
+sh -c "xfce4-screensaver-command --lock && sleep 1 && xset dpms force off"
+```
+
+## Disable automatic screen off
+```sh
+xset dpms 0 0 0
 ```

@@ -179,7 +179,7 @@ fi
 if (hash btop 2>/dev/null); then
     info "Config for btop"
     make_dir "$EXECUTE_DIRNAME/config/btop"
-    make_link "$EXECUTE_DIRNAME/config/btop/btop.conf" \
+    copy_file "$EXECUTE_DIRNAME/config/btop/btop.conf" \
         "$HOME/.config/btop/btop.conf"
 else
     info "Skip config for btop"

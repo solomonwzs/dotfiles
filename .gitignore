@@ -4,3 +4,4 @@ __pycache__
 vim/coc-extensions/node_modules
 vim/coc-extensions/package-lock.json
 vim/coc-extensions/package.json
+AGENTS.md
