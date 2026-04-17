@@ -114,6 +114,10 @@ make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
 make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
 make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
 
+info "Niri settings"
+make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
+make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
+
 if (hash vim 2>/dev/null || hash nvim 2>/dev/null); then
     info "Config for vim/neovim"
     make_link "$EXECUTE_DIRNAME/vim" "$HOME/.vim"

@@ -327,6 +327,12 @@ window-rule {
     open-floating true
 }
 
+window-rule {
+    // 匹配企业微信窗口（根据实际 app-id 调整）
+    match app-id="explorer.exe"
+    open-floating true
+}
+
 // Example: block out two password managers from screen capture.
 // (This example rule is commented out with a "/-" in front.)
 /-window-rule {

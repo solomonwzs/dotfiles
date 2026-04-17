@@ -23,6 +23,16 @@ update-desktop-database $HOME/.local/share/applications
 
 Chromium 高分屏缩放：`chromium --force-device-scale-factor=2`
 
+### xdg-desktop-portal-gtk 文件对话框 DPI 问题
+
+Chromium/Firefox 的文件选择对话框通过 xdg-desktop-portal 弹出，portal 使用 gtk.portal，但其 `UseIn=gnome`，在 XFCE 下 GTK 实现未正确读取 DPI 设置。
+
+**问题链路：**
+1. X server 报告物理尺寸 344x193mm + 4K 分辨率 → 计算 DPI ≈ 284
+2. 但 xdpyinfo 显示 resolution 96x96 — X 服务器忽略了真实 DPI
+3. XFCE 设了 `Xft.dpi: 192`、GTK settings 也设了，但 xdg-desktop-portal-gtk 是独立进程，启动时不继承这些设置
+4. Chromium/Firefox 的文件对话框走 portal，portal-gtk 用默认 96 DPI 渲染 → 在 4K 屏上对话框巨大
+
 ## 屏幕电源管理 (DPMS)
 
 查看状态：`xset q`

@@ -1193,24 +1193,24 @@ var import_path6 = __toESM(require("path"));
 
 // src/utils/file.ts
 var import_fs = __toESM(require("fs"));
-async function fsAccess(path7, mode) {
+async function fsAccess(path8, mode) {
   return new Promise((resolve) => {
-    import_fs.default.access(path7, mode, (err) => {
+    import_fs.default.access(path8, mode, (err) => {
       err ? resolve(new CocExtErrnoError(err)) : resolve(null);
     });
   });
 }
-async function fsMkdir(path7, opts) {
+async function fsMkdir(path8, opts) {
   return new Promise((resolve) => {
-    import_fs.default.mkdir(path7, opts, (err) => {
+    import_fs.default.mkdir(path8, opts, (err) => {
       err ? resolve(new CocExtErrnoError(err)) : resolve(null);
     });
   });
 }
-async function fsOpen(path7, flags, mode) {
+async function fsOpen(path8, flags, mode) {
   return new Promise((resolve) => {
     import_fs.default.open(
-      path7,
+      path8,
       flags,
       mode,
       (err, fd) => {
@@ -1250,6 +1250,84 @@ async function fsReadFile(filename) {
       err ? resolve(new CocExtErrnoError(err)) : resolve(data);
     });
   });
+}
+var ArchiveType = /* @__PURE__ */ ((ArchiveType2) => {
+  ArchiveType2[ArchiveType2["Unknown"] = 0] = "Unknown";
+  ArchiveType2[ArchiveType2["GZ"] = 1] = "GZ";
+  ArchiveType2[ArchiveType2["BZ"] = 2] = "BZ";
+  ArchiveType2[ArchiveType2["RAR"] = 3] = "RAR";
+  ArchiveType2[ArchiveType2["SevenZ"] = 4] = "SevenZ";
+  ArchiveType2[ArchiveType2["ZIP"] = 5] = "ZIP";
+  ArchiveType2[ArchiveType2["CAB"] = 6] = "CAB";
+  ArchiveType2[ArchiveType2["LZMA"] = 7] = "LZMA";
+  ArchiveType2[ArchiveType2["ZSTD"] = 8] = "ZSTD";
+  ArchiveType2[ArchiveType2["LZ4"] = 9] = "LZ4";
+  ArchiveType2[ArchiveType2["TAR"] = 10] = "TAR";
+  ArchiveType2[ArchiveType2["ISO"] = 11] = "ISO";
+  return ArchiveType2;
+})(ArchiveType || {});
+var archiveSignatures = [
+  { sig: [31, 139], type: 1 /* GZ */ },
+  { sig: [66, 90, 104], type: 2 /* BZ */ },
+  // BZh
+  { sig: [253, 55, 122, 88, 90, 0], type: 2 /* BZ */ },
+  // xz
+  { sig: [82, 97, 114, 33], type: 3 /* RAR */ },
+  // Rar!
+  { sig: [55, 122, 188, 175, 39, 28], type: 4 /* SevenZ */ },
+  { sig: [80, 75, 3, 4], type: 5 /* ZIP */ },
+  { sig: [77, 83, 67, 70], type: 6 /* CAB */ },
+  // MSCF
+  { sig: [93, 0, 0], type: 7 /* LZMA */ },
+  { sig: [40, 181, 47, 253], type: 8 /* ZSTD */ },
+  { sig: [4, 34, 77, 24], type: 9 /* LZ4 */ }
+];
+var tarMagic = Buffer.from("ustar");
+var isoSig = Buffer.from([1, 67, 68, 48, 48, 49]);
+function quickCheckArchiveType(data) {
+  if (data.length === 0) {
+    return 0 /* Unknown */;
+  }
+  for (const { sig, type } of archiveSignatures) {
+    if (data.length > sig.length && data.compare(Buffer.from(sig), 0, sig.length, 0, sig.length) === 0) {
+      return type;
+    }
+  }
+  if (data.length > 262 && data.compare(tarMagic, 0, tarMagic.length, 257, 257 + tarMagic.length) === 0) {
+    return 10 /* TAR */;
+  }
+  if (data.indexOf(isoSig) !== -1) {
+    return 11 /* ISO */;
+  }
+  return 0 /* Unknown */;
+}
+function quickCheckImageType(data) {
+  if (data.length < 4) {
+    return 0 /* Unknown */;
+  }
+  if (data.length > 6 && (data.compare(Buffer.from("GIF87a"), 0, 6, 0, 6) === 0 || data.compare(Buffer.from("GIF89a"), 0, 6, 0, 6) === 0)) {
+    return 3 /* GIF */;
+  }
+  if (data[0] === 255 && data[1] === 216) {
+    return 1 /* JPG */;
+  }
+  const pngSig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (data.length > 8 && data.compare(pngSig, 0, 8, 0, 8) === 0) {
+    return 2 /* PNG */;
+  }
+  if (data[0] === 66 && data[1] === 77) {
+    return 4 /* BMP */;
+  }
+  if (data[0] === 73 && data[1] === 73 && data[2] === 42 && data[3] === 0 || data[0] === 77 && data[1] === 77 && data[2] === 0 && data[3] === 42) {
+    return 5 /* TIF */;
+  }
+  if (data.length > 12 && data.compare(Buffer.from("RIFF"), 0, 4, 0, 4) === 0 && data.compare(Buffer.from("WEBP"), 0, 4, 8, 12) === 0) {
+    return 6 /* WEBP */;
+  }
+  if (data.indexOf("<svg ") !== -1 && data.indexOf("</svg") !== -1) {
+    return 7 /* SVG */;
+  }
+  return 0 /* Unknown */;
 }
 
 // src/formatter/clfformatter.ts
@@ -1578,16 +1656,16 @@ async function genHttpRequestArgs(req) {
   } else {
     const opts = Object.assign({}, req.args);
     opts.headers = Object.assign({}, req.args.headers);
-    var path7 = `http://${req.args.host}`;
+    var path8 = `http://${req.args.host}`;
     if (opts.port) {
-      path7 += `:${opts.port}`;
+      path8 += `:${opts.port}`;
     }
     if (opts.path) {
-      path7 += opts.path;
+      path8 += opts.path;
     }
     opts.host = req.proxy.host;
     opts.port = req.proxy.port;
-    opts.path = path7;
+    opts.path = path8;
     opts.headers.Host = req.args.host;
     return opts;
   }
@@ -2129,6 +2207,121 @@ async function googleTranslate(text, sl, tl, proxy_url) {
   return ret;
 }
 
+// src/utils/preview.ts
+var import_crypto = require("crypto");
+var import_child_process2 = require("child_process");
+var import_util2 = require("util");
+var import_os2 = __toESM(require("os"));
+var import_path7 = __toESM(require("path"));
+var base64ScratchWindow = new ScratchWindow("BASE64 DECODE", "text");
+function getArchiveListCmd(type, file) {
+  switch (type) {
+    case 1 /* GZ */:
+    case 2 /* BZ */:
+    case 10 /* TAR */:
+    case 7 /* LZMA */:
+    case 8 /* ZSTD */:
+    case 9 /* LZ4 */:
+      return { cmd: "tar", args: ["tf", file] };
+    case 5 /* ZIP */:
+      return { cmd: "unzip", args: ["-l", file] };
+    case 3 /* RAR */:
+      return { cmd: "unrar", args: ["l", file] };
+    case 4 /* SevenZ */:
+      return { cmd: "7z", args: ["l", file] };
+    case 6 /* CAB */:
+      return { cmd: "cabextract", args: ["-l", file] };
+    case 11 /* ISO */:
+      return { cmd: "iso-info", args: ["-l", "-i", file] };
+    default:
+      return null;
+  }
+}
+function isPrintableBuffer(buf) {
+  for (let i = 0; i < buf.length; i++) {
+    const b = buf[i];
+    if (b < 32 && b !== 9 && b !== 10 && b !== 13) {
+      return false;
+    }
+    if (b === 127) {
+      return false;
+    }
+  }
+  return true;
+}
+function decodeBufferToString(buf) {
+  try {
+    return new import_util2.TextDecoder("utf-8", { fatal: true }).decode(buf);
+  } catch {
+    return new import_util2.TextDecoder("gbk").decode(buf);
+  }
+}
+async function saveTempFile(buf, md5) {
+  const file = import_path7.default.join(import_os2.default.tmpdir(), `coc-ext-preview-${md5}`);
+  const err = await fsWriteFile(file, buf);
+  if (err) {
+    logger.error(`write temp file failed: ${err}`);
+    return null;
+  }
+  return file;
+}
+function decodeBase64Fn() {
+  return async () => {
+    var _a;
+    const text = await getText("v");
+    try {
+      const buf = Buffer.from(text, "base64");
+      const md5 = (0, import_crypto.createHash)("md5").update(buf).digest("hex");
+      const imageType = quickCheckImageType(buf);
+      if (imageType !== 0 /* Unknown */) {
+        const file = await saveTempFile(buf, md5);
+        if (!file) return;
+        const child = (0, import_child_process2.spawn)("display", [file], {
+          detached: true,
+          stdio: "ignore"
+        });
+        child.unref();
+        return;
+      }
+      const archiveType = quickCheckArchiveType(buf);
+      if (archiveType !== 0 /* Unknown */) {
+        const file = await saveTempFile(buf, md5);
+        if (!file) return;
+        const listCmd = getArchiveListCmd(archiveType, file);
+        if (!listCmd) return;
+        const res = await callShell(listCmd.cmd, listCmd.args);
+        const header = [
+          `Size: ${buf.length} bytes | Format: ${ArchiveType[archiveType]} | MD5: ${md5}`,
+          "---"
+        ];
+        if (res.exitCode === 0 && res.data) {
+          const lines = res.data.toString("utf8").split("\n");
+          await base64ScratchWindow.open([...header, ...lines]);
+        } else {
+          await base64ScratchWindow.open([...header, `error: ${(_a = res.error) == null ? void 0 : _a.toString("utf8")}`]);
+        }
+        return;
+      }
+      if (isPrintableBuffer(buf)) {
+        const decoded = decodeBufferToString(buf);
+        await base64ScratchWindow.open(decoded.split("\n"));
+      } else {
+        const file = await saveTempFile(buf, md5);
+        if (!file) return;
+        const res = await callShell("file", ["--mime", "--brief", file]);
+        const mimeInfo = res.exitCode === 0 && res.data ? res.data.toString("utf8").trim() : "unknown";
+        const info = `File: ${file}
+Size: ${buf.length} bytes
+MD5: ${md5}
+MIME: ${mimeInfo}`;
+        popup(info, "[BASE64 DECODE]");
+      }
+    } catch (e) {
+      logger.error(`base64 decode failed: ${e}`);
+    }
+  };
+}
+
 // src/leaderf/highlight.ts
 var import_coc20 = require("coc.nvim");
 async function highlightSource() {
@@ -2204,12 +2397,12 @@ var LlmCaller = class {
       };
     }
   }
-  async httpQuery(method, path7, data) {
+  async httpQuery(method, path8, data) {
     var _a;
     let req = {
       args: {
         host: this.endpoint.hostname,
-        path: `${this.endpoint.pathname}${path7}`,
+        path: `${this.endpoint.pathname}${path8}`,
         method,
         protocol: this.endpoint.protocol,
         headers: this.headers,
@@ -2596,11 +2789,11 @@ var DeepseekChat = class extends BaseChatChannel {
       "Content-Type": "application/json"
     };
   }
-  async httpQuery(method, path7, d) {
+  async httpQuery(method, path8, d) {
     let req = {
       args: {
         host: globalDeepseek.host,
-        path: path7,
+        path: path8,
         method,
         protocol: "https:",
         headers: this.getHeader()
@@ -2989,13 +3182,13 @@ var KimiChatV2 = class extends BaseChatChannel {
       logger.error(cache);
       return 0;
     }
-    let block = JSON.parse(cache.toString());
-    if (!block.webPages) {
+    let webPages = JSON.parse(cache.toString());
+    if (webPages.length == 0) {
       return 0;
     }
     let lines = [];
     let idx = 0;
-    for (let web of block.webPages) {
+    for (let web of webPages) {
       idx += 1;
       lines.push(`# ${idx} - ${web.title}`);
       lines.push("");
@@ -3077,12 +3270,12 @@ var KimiChatV2 = class extends BaseChatChannel {
     }
     return resp.statusCode ? resp.statusCode : -1;
   }
-  async postJsonRequest(path7, data) {
+  async postJsonRequest(path8, data) {
     var _a;
     let req = {
       args: {
         host: globalKimi.host,
-        path: path7,
+        path: path8,
         method: "POST",
         protocol: "https:",
         headers: this.getHeaders(),
@@ -3103,7 +3296,7 @@ var KimiChatV2 = class extends BaseChatChannel {
     if (resp.statusCode != 200 || !resp.body) {
       return new CocExtError(
         CocExtError.ERR_KIMI,
-        `[Kimi] statusCode: ${resp.statusCode}, path: ${path7}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
+        `[Kimi] statusCode: ${resp.statusCode}, path: ${path8}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
       );
     }
     return resp.body;
@@ -3185,14 +3378,30 @@ var KimiChatV2 = class extends BaseChatChannel {
 `);
         for (let block of msg.blocks) {
           if (block.search) {
+            logger.debug("1");
             let cacheKey = `${this.chatId}-${msg.id}-search.json`;
-            await this.cache.set(cacheKey, JSON.stringify(block.search));
+            await this.cache.set(
+              cacheKey,
+              JSON.stringify(block.search.webPages)
+            );
             if (block.search && block.search.webPages) {
               this.chan.append(
                 `\uE68F [search result (${block.search.webPages.length})]
 `
               );
             }
+          } else if (block.tool && block.tool.name === "web_search") {
+            logger.debug("2");
+            let cacheKey = `${this.chatId}-${msg.id}-search.json`;
+            let webPages = [];
+            for (let content of block.tool.contents) {
+              webPages.push(content.searchResult.base);
+            }
+            await this.cache.set(cacheKey, JSON.stringify(webPages));
+            this.chan.append(
+              `\uE68F [search result (${block.tool.contents.length})]
+`
+            );
           } else if (block.text) {
             this.chan.append(block.text.content);
           } else if (block.exception) {
@@ -3224,7 +3433,6 @@ var KimiChatV2 = class extends BaseChatChannel {
       return;
     }
     this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
-    let keywords = [];
     let webPages = [];
     let refs = [];
     let decoder = new StreamDecoder();
@@ -3257,10 +3465,14 @@ var KimiChatV2 = class extends BaseChatChannel {
                   }
                 }
                 this.chan.append(msg.block.text.content, false);
-              } else if (msg.block.search && msg.block.search.keywords && msg.mask === "block.search.keywords") {
-                keywords.push(...msg.block.search.keywords);
               } else if (msg.block.search && msg.block.search.webPages && msg.mask === "block.search.webPages") {
                 webPages.push(...msg.block.search.webPages);
+              } else if (msg.message && msg.message.ref && msg.message.ref.searchChunks && msg.mask === "message.refs.searchChunks") {
+                for (let ch of msg.message.ref.searchChunks) {
+                  webPages.push(ch.base);
+                }
+              } else {
+                logger.debug(msg);
               }
             } else if (msg.ref) {
               refs.push(msg.ref.search);
@@ -3308,9 +3520,9 @@ var KimiChatV2 = class extends BaseChatChannel {
       data: this.encodeBuffer(chatReq)
     };
     await sendHttpRequestWithCallback(req, cb);
-    if (keywords.length > 0 || webPages.length > 0) {
+    if (webPages.length > 0) {
       let cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
-      await this.cache.set(cacheKey, JSON.stringify({ keywords, webPages }));
+      await this.cache.set(cacheKey, JSON.stringify(webPages));
     }
     if (refs.length > 0) {
       let cacheKey = `${this.chatId}-${this.currentMsgid}-refs.json`;
@@ -3331,7 +3543,7 @@ var kimiChatV2 = new KimiChatV2(
 
 // src/ai/zai.ts
 var import_url3 = require("url");
-var import_crypto = require("crypto");
+var import_crypto2 = require("crypto");
 var globalZAi = {
   host: "chat.z.ai",
   timeout: 5e3,
@@ -3346,7 +3558,7 @@ var globalZAi = {
   hmac_key: "key-@@@@)))()((9))-xxxx&&&%%%%%"
 };
 function hmacSha256Hex(key, data) {
-  const hmac = (0, import_crypto.createHmac)("sha256", key);
+  const hmac = (0, import_crypto2.createHmac)("sha256", key);
   hmac.update(data);
   return hmac.digest("hex");
 }
@@ -3380,12 +3592,12 @@ var ZAiChat = class extends BaseChatChannel {
   getChatName() {
     return "ZAi";
   }
-  async sendRequest(method, path7, data = null) {
+  async sendRequest(method, path8, data = null) {
     var _a;
     let req = {
       args: {
         host: globalZAi.host,
-        path: path7,
+        path: path8,
         method,
         protocol: "https:",
         headers: this.headers,
@@ -3397,7 +3609,7 @@ var ZAiChat = class extends BaseChatChannel {
     if (resp.statusCode != 200 || !resp.body) {
       return new CocExtError(
         CocExtError.ERR_ZAI,
-        `[Z.ai] statusCode: ${resp.statusCode}, path: ${path7}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
+        `[Z.ai] statusCode: ${resp.statusCode}, path: ${path8}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
       );
     }
     return resp.body;
@@ -4040,14 +4252,9 @@ async function activate(context) {
     import_coc23.workspace.registerKeymap(["v"], "ext-decode-gbk", decodeStrFn("gbk"), {
       sync: false
     }),
-    import_coc23.workspace.registerKeymap(
-      ["v"],
-      "ext-decode-base64",
-      decodeStrFn("base64"),
-      {
-        sync: false
-      }
-    ),
+    import_coc23.workspace.registerKeymap(["v"], "ext-decode-base64", decodeBase64Fn(), {
+      sync: false
+    }),
     import_coc23.workspace.registerKeymap(["v"], "ext-hl-preview", hlPreview(), {
       sync: false
     }),

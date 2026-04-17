@@ -228,7 +228,10 @@ tmux_set_title() {
 }
 
 if ! type "pbcopy" >/dev/null; then
-    if _loc="$(type -p "xclip")" && [[ -n $_loc ]]; then
+    if [[ -n "$WAYLAND_DISPLAY" ]] && _loc="$(type -p "wl-copy")" && [[ -n $_loc ]]; then
+        alias pbcopy='wl-copy'
+        alias pbpaste='wl-paste'
+    elif _loc="$(type -p "xclip")" && [[ -n $_loc ]]; then
         alias pbcopy='xclip -selection clipboard'
         alias pbpaste='xclip -selection clipboard -o'
     elif _loc="$(type -p "xsel")" && [[ -n $_loc ]]; then
@@ -354,3 +357,12 @@ fi
 if [[ "${LIBVIRT_DEFAULT_URI}" == "" ]]; then
     export LIBVIRT_DEFAULT_URI="qemu:///system"
 fi
+
+# bun completions
+[ -s "/home/solomon/.bun/_bun" ] && source "/home/solomon/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+alias claude-mem='/home/solomon/.bun/bin/bun "/home/solomon/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
