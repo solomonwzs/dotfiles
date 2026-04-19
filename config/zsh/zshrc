@@ -357,12 +357,3 @@ fi
 if [[ "${LIBVIRT_DEFAULT_URI}" == "" ]]; then
     export LIBVIRT_DEFAULT_URI="qemu:///system"
 fi
-
-# bun completions
-[ -s "/home/solomon/.bun/_bun" ] && source "/home/solomon/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
-alias claude-mem='/home/solomon/.bun/bin/bun "/home/solomon/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
