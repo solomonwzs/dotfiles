@@ -70,7 +70,6 @@ let g:lightline.component_expand = {
     \   'cocstatus'   : 'coc#status',
     \   'filepath'    : 'LightLineFilePath',
     \   'vsstatus'    : 'LightlineVerCtrlStatus',
-    \   'method'      : 'LightlineCocCurrentFunction',
     \   '_modified'   : 'LightlineModified',
     \   '_readonly'   : 'LightlineReadonly',
     \ }
@@ -217,32 +216,3 @@ endfunction
 function! LightlineCocHints() abort
   return s:lightline_coc_diagnostic('hints', '')
 endfunction
-
-let s:show_function = 0
-
-function s:show_function_toggle()
-  let s:show_function = xor(s:show_function, 1)
-endfunction
-
-function! LightlineCocCurrentFunction()
-  if s:show_function == 0
-    return ''
-  else
-    return get(b:, 'coc_current_function', '')
-  endif
-endfunction
-
-augroup my_conf_lightline_vim
-  autocmd!
-
-  autocmd CursorHold *  call lightline#update()
-  autocmd CursorHoldI * call lightline#update()
-
-  autocmd User CocDiagnosticChange call lightline#update()
-  autocmd User ALEJobStarted       call lightline#update()
-  autocmd User ALELintPost         call lightline#update()
-  autocmd User ALEFixPost          call lightline#update()
-augroup END
-
-command! -nargs=0 ShowFunctionToggle
-    \ call s:show_function_toggle()

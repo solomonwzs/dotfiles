@@ -215,6 +215,11 @@ augroup my_coc_nvim
   " autocmd User CocDiagnosticChange call s:diagnostic_notify()
 augroup END
 
+augroup my_coc_nvim_for_lightline_vim
+  autocmd!
+  autocmd User CocDiagnosticChange call lightline#update()
+augroup END
+
 command! -nargs=* -complete=custom,coc#list#options CocListX
     \ :call coc#rpc#notify('openList', lib#py#call('shlex', 'split', <q-args>).data)
 
