@@ -240,7 +240,7 @@ Plug 'https://github.com/kristijanhusak/defx-icons.git'
 " Plug 'https://github.com/Yilin-Yang/vim-markbar.git'
 
 " Nvim Treesitter configurations and abstraction layer.
-Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'branch': 'master', 'do': ':TSUpdate'}
+Plug 'https://github.com/nvim-treesitter/nvim-treesitter.git', {'branch': 'main', 'do': ':TSUpdate'}
 
 " plenary: full; complete; entire; absolute; unqualified. All the lua functions
 " I don't want to write twice.
@@ -261,6 +261,9 @@ Plug 'https://github.com/sindrets/diffview.nvim.git'
 
 " Plugin to improve viewing Markdown files in Neovim
 Plug 'https://github.com/MeanderingProgrammer/render-markdown.nvim.git'
+
+" A hackable markdown, Typst, latex, html(inline) & Asciidoc previewer for Neovim
+" Plug 'https://github.com/OXY2DEV/markview.nvim.git'
 
 " Provides Nerd Font icons (glyphs) for use by neovim plugins
 Plug 'https://github.com/nvim-tree/nvim-web-devicons.git'
