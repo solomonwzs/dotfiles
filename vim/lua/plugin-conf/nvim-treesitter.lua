@@ -1,4 +1,9 @@
-require("nvim-treesitter").setup {
+local has, treesitter = pcall(require, "nvim-treesitter.configs")
+if not has then
+  has, treesitter = pcall(require, "nvim-treesitter")
+end
+
+treesitter.setup {
   -- One of "all", "maintained" (parsers with maintainers), or a list of languages
   ensure_installed = {},
 
