@@ -24,4 +24,5 @@ vmap <silent> <leader>ch <Plug>(coc-ext-ai-chat-v)
 augroup my_coc_nvim
   autocmd!
   autocmd FileType aichat nnoremap <buffer> K <Plug>(coc-ext-ai-show)
+  autocmd FileType aichat setlocal syntax=markdown
 augroup END

@@ -32,6 +32,7 @@ call lib#color#theme_hl('CocListTotal', ['bg0_s', 'light_green', ''])
 
 " hi clear CocFloating
 " hi CocFloating guibg=None
+call lib#color#theme_hl('CocFloating', ['', 'bg0', ''])
 call lib#color#theme_hl('CocFloatingBorder', ['bg4', '', ''])
 
 call lib#color#theme_hl('CocPumSearch', ['blue', '', ''])
