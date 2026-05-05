@@ -92,7 +92,7 @@ augroup my_vimrc
   " When opening a file, return to the last edited location.
   " Call `:TSInstall lua` by nvim-treesitter install the parser.
   " Use BufWinEnter (once) so treesitter attach in nvim 0.12+ doesn't reset the cursor.
-  autocmd BufWinEnter * ++once
+  autocmd BufWinEnter,BufReadPost * ++once
       \ if &ft !~# 'commit\|rebase' && line("'\"") > 1 && line("'\"") <= line("$") |
       \   exe "normal! g`\"" |
       \   silent! exe "normal! zv" |
