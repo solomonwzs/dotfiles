@@ -1,0 +1,18 @@
+// Environment variables for processes spawned by niri.
+// These apply to child processes started via spawn/spawn-sh/spawn-at-startup.
+// Use `null` to unset a variable inherited from the parent environment.
+//
+// Note: this does NOT affect systemd user services (xdg-desktop-autostart,
+// DBus-activated apps, etc.). For those, use a systemd drop-in instead.
+environment {
+    // Input method module settings for GTK, Qt and X11/XWayland apps.
+    GTK_IM_MODULE "fcitx"
+    QT_IM_MODULE "fcitx"
+    XMODIFIERS "@im=fcitx"
+
+    // Drop stale GDK_DPI_SCALE inherited from legacy X/XFCE env (~/.xinitrc).
+    // niri handles HiDPI via output `scale`, so GDK_DPI_SCALE only makes
+    // GTK fonts unexpectedly small.
+    GDK_DPI_SCALE null
+    GDK_SCALE null
+}
