@@ -1,0 +1,216 @@
+!# my-gruvbox-theme
+!# Arc-Dark style flat theme with Gruvbox Dark palette.
+!# Flat surfaces (no gradients / 3D bevels), subtle borders,
+!# single accent color for focus/hover.
+
+# Fonts — no halos, crisp edges
+*.font: shadow=n
+
+!# general stuff
+
+border.width: 1
+padding.width: 10
+padding.height: 10
+window.handle.width: 0
+window.client.padding.width: 0
+menu.overlap: 0
+*.justify: left
+window.label.text.justify: center
+
+!# Remove all gradient highlights/shadows (flat look)
+
+*.bg.highlight: 0
+*.bg.shadow:    0
+
+window.active.title.bg.highlight: 0
+window.active.title.bg.shadow:    0
+
+window.inactive.title.bg.highlight: 0
+window.inactive.title.bg.shadow:    0
+
+!# -------- Window frame --------
+
+window.*.border.color: #1d2021
+
+window.active.title.bg: flat solid
+window.active.title.bg.color: #3c3836
+
+window.inactive.title.bg: flat solid
+window.inactive.title.bg.color: #32302f
+
+window.active.title.separator.color: #3c3836
+window.inactive.title.separator.color: #32302f
+
+window.active.label.bg: parentrelative
+window.active.label.text.color: #ebdbb2
+
+window.inactive.label.bg: parentrelative
+window.inactive.label.text.color: #7c6f64
+
+!# handle (bottom bar) — hidden by window.handle.width: 0
+window.*.handle.bg: flat solid
+window.*.handle.bg.color: #3c3836
+window.*.grip.bg: flat solid
+window.*.grip.bg.color: #3c3836
+
+!# -------- Titlebar buttons (flat) --------
+
+!# Normal state: match titlebar, icon in muted fg
+window.active.button.*.bg: flat solid
+window.active.button.*.bg.color: #3c3836
+window.active.button.*.image.color: #d5c4a1
+
+window.inactive.button.*.bg: flat solid
+window.inactive.button.*.bg.color: #32302f
+window.inactive.button.*.image.color: #665c54
+
+!# Hover (active window): subtle light-gray accent for iconify/max/shade/desk,
+!# red for close. openbox's wildcard matcher is flaky for state rules
+!# when a specific per-button rule coexists — list every button.
+
+window.active.button.iconify.hover.bg: flat solid
+window.active.button.iconify.hover.bg.color: #665c54
+window.active.button.iconify.hover.image.color: #fbf1c7
+
+window.active.button.max.hover.bg: flat solid
+window.active.button.max.hover.bg.color: #665c54
+window.active.button.max.hover.image.color: #fbf1c7
+
+window.active.button.shade.hover.bg: flat solid
+window.active.button.shade.hover.bg.color: #665c54
+window.active.button.shade.hover.image.color: #fbf1c7
+
+window.active.button.desk.hover.bg: flat solid
+window.active.button.desk.hover.bg.color: #665c54
+window.active.button.desk.hover.image.color: #fbf1c7
+
+window.active.button.close.hover.bg: flat solid
+window.active.button.close.hover.bg.color: #cc241d
+window.active.button.close.hover.image.color: #fbf1c7
+
+!# Toggled + hover (the "restore" button when window is maximized,
+!# and the "on all desktops" button when already sticky).
+window.active.button.max.toggled.hover.bg: flat solid
+window.active.button.max.toggled.hover.bg.color: #665c54
+window.active.button.max.toggled.hover.image.color: #fbf1c7
+
+window.active.button.desk.toggled.hover.bg: flat solid
+window.active.button.desk.toggled.hover.bg.color: #665c54
+window.active.button.desk.toggled.hover.image.color: #fbf1c7
+
+window.active.button.shade.toggled.hover.bg: flat solid
+window.active.button.shade.toggled.hover.bg.color: #665c54
+window.active.button.shade.toggled.hover.image.color: #fbf1c7
+
+!# Hover (inactive window): subtle highlight so mouseover on an unfocused
+!# window still gives visual feedback. Colors are muted so it doesn't
+!# visually "steal" focus from the active window.
+
+window.inactive.button.iconify.hover.bg: flat solid
+window.inactive.button.iconify.hover.bg.color: #504945
+window.inactive.button.iconify.hover.image.color: #ebdbb2
+
+window.inactive.button.max.hover.bg: flat solid
+window.inactive.button.max.hover.bg.color: #504945
+window.inactive.button.max.hover.image.color: #ebdbb2
+
+window.inactive.button.shade.hover.bg: flat solid
+window.inactive.button.shade.hover.bg.color: #504945
+window.inactive.button.shade.hover.image.color: #ebdbb2
+
+window.inactive.button.desk.hover.bg: flat solid
+window.inactive.button.desk.hover.bg.color: #504945
+window.inactive.button.desk.hover.image.color: #ebdbb2
+
+window.inactive.button.close.hover.bg: flat solid
+window.inactive.button.close.hover.bg.color: #cc241d
+window.inactive.button.close.hover.image.color: #fbf1c7
+
+window.inactive.button.max.toggled.hover.bg: flat solid
+window.inactive.button.max.toggled.hover.bg.color: #504945
+window.inactive.button.max.toggled.hover.image.color: #ebdbb2
+
+window.inactive.button.desk.toggled.hover.bg: flat solid
+window.inactive.button.desk.toggled.hover.bg.color: #504945
+window.inactive.button.desk.toggled.hover.image.color: #ebdbb2
+
+window.inactive.button.shade.toggled.hover.bg: flat solid
+window.inactive.button.shade.toggled.hover.bg.color: #504945
+window.inactive.button.shade.toggled.hover.image.color: #ebdbb2
+
+!# Pressed: brighter gray for iconify/max/shade/desk; bright red for close
+window.active.button.iconify.pressed.bg: flat solid
+window.active.button.iconify.pressed.bg.color: #7c6f64
+window.active.button.iconify.pressed.image.color: #fbf1c7
+
+window.active.button.max.pressed.bg: flat solid
+window.active.button.max.pressed.bg.color: #7c6f64
+window.active.button.max.pressed.image.color: #fbf1c7
+
+window.active.button.shade.pressed.bg: flat solid
+window.active.button.shade.pressed.bg.color: #7c6f64
+window.active.button.shade.pressed.image.color: #fbf1c7
+
+window.active.button.desk.pressed.bg: flat solid
+window.active.button.desk.pressed.bg.color: #7c6f64
+window.active.button.desk.pressed.image.color: #fbf1c7
+
+window.active.button.close.pressed.bg: flat solid
+window.active.button.close.pressed.bg.color: #fb4934
+window.active.button.close.pressed.image.color: #fbf1c7
+
+!# Toggled (e.g. already-maximized / sticky): blend into titlebar,
+!# icon slightly muted so you can tell it's in the toggled state.
+window.active.button.toggled.bg: flat solid
+window.active.button.toggled.bg.color: #3c3836
+window.active.button.toggled.image.color: #7c6f64
+
+window.inactive.button.toggled.bg: flat solid
+window.inactive.button.toggled.bg.color: #32302f
+window.inactive.button.toggled.image.color: #504945
+
+!# -------- Menus --------
+
+menu.border.color: #1d2021
+menu.border.width: 1
+
+menu.title.bg: flat solid
+menu.title.bg.color: #3c3836
+menu.title.text.color: #ebdbb2
+
+menu.items.bg: flat solid
+menu.items.bg.color: #282828
+menu.items.text.color: #ebdbb2
+menu.items.disabled.text.color: #665c54
+
+menu.items.active.bg: flat solid
+menu.items.active.bg.color: #d79921
+menu.items.active.text.color: #282828
+
+menu.separator.width: 1
+menu.separator.padding.width: 0
+menu.separator.padding.height: 6
+menu.separator.color: #3c3836
+
+!# -------- OSD (desktop switcher / workspace popup) --------
+
+osd.border.width: 1
+osd.border.color: #1d2021
+
+osd.bg: flat solid
+osd.bg.color: #282828
+
+osd.label.bg: flat solid
+osd.label.bg.color: #282828
+osd.label.text.color: #ebdbb2
+
+osd.active.label.bg: parentrelative
+osd.active.label.text.color: #ebdbb2
+
+osd.inactive.label.bg: parentrelative
+osd.inactive.label.text.color: #7c6f64
+
+osd.hilight.bg: flat solid
+osd.hilight.bg.color: #d79921
+osd.unhilight.bg: flat solid
+osd.unhilight.bg.color: #3c3836

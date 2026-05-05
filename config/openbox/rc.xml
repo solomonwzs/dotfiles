@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config xmlns="http://openbox.org/3.4/rc">
+
+<focus>
+  <focusNew>yes</focusNew>
+  <followMouse>no</followMouse>
+  <focusLast>yes</focusLast>
+  <underMouse>no</underMouse>
+  <focusDelay>200</focusDelay>
+  <raiseOnFocus>no</raiseOnFocus>
+</focus>
+
+<placement>
+  <policy>Smart</policy>
+  <center>yes</center>
+  <monitor>Primary</monitor>
+  <primaryMonitor>1</primaryMonitor>
+</placement>
+
+<!-- 4K HiDPI: use 12pt so labels stay readable at 192 DPI -->
+<theme>
+  <name>my-gruvbox-theme</name>
+  <titleLayout>NLIMC</titleLayout>
+  <keepBorder>yes</keepBorder>
+  <animateIconify>yes</animateIconify>
+  <font place="ActiveWindow">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="InactiveWindow">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="MenuHeader">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="MenuItem">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>normal</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="ActiveOnScreenDisplay">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="InactiveOnScreenDisplay">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+</theme>
+
+<desktops>
+  <number>4</number>
+  <firstdesk>1</firstdesk>
+  <names>
+    <name>1</name>
+    <name>2</name>
+    <name>3</name>
+    <name>4</name>
+  </names>
+  <popupTime>875</popupTime>
+</desktops>
+
+<resize>
+  <drawContents>yes</drawContents>
+  <popupShow>Nonpixel</popupShow>
+  <popupPosition>Center</popupPosition>
+</resize>
+
+<margins>
+  <top>0</top>
+  <bottom>0</bottom>
+  <left>0</left>
+  <right>0</right>
+</margins>
+
+<dock>
+  <position>TopLeft</position>
+  <stacking>Above</stacking>
+  <direction>Vertical</direction>
+  <autoHide>no</autoHide>
+  <moveButton>Middle</moveButton>
+</dock>
+
+<keyboard>
+  <chainQuitKey>C-g</chainQuitKey>
+
+  <!-- Desktop switching: Super+1..4 -->
+  <keybind key="W-1"><action name="GoToDesktop"><to>1</to></action></keybind>
+  <keybind key="W-2"><action name="GoToDesktop"><to>2</to></action></keybind>
+  <keybind key="W-3"><action name="GoToDesktop"><to>3</to></action></keybind>
+  <keybind key="W-4"><action name="GoToDesktop"><to>4</to></action></keybind>
+
+  <!-- Move window to desktop: Super+Shift+1..4 -->
+  <keybind key="W-S-1"><action name="SendToDesktop"><to>1</to></action></keybind>
+  <keybind key="W-S-2"><action name="SendToDesktop"><to>2</to></action></keybind>
+  <keybind key="W-S-3"><action name="SendToDesktop"><to>3</to></action></keybind>
+  <keybind key="W-S-4"><action name="SendToDesktop"><to>4</to></action></keybind>
+
+  <keybind key="C-A-Left"><action name="GoToDesktop"><to>left</to><wrap>no</wrap></action></keybind>
+  <keybind key="C-A-Right"><action name="GoToDesktop"><to>right</to><wrap>no</wrap></action></keybind>
+
+  <!-- Window operations -->
+  <keybind key="A-F4"><action name="Close"/></keybind>
+  <keybind key="W-S-q"><action name="Close"/></keybind>
+  <keybind key="W-f"><action name="ToggleFullscreen"/></keybind>
+  <keybind key="W-space"><action name="ShowMenu"><menu>client-menu</menu></action></keybind>
+
+  <!-- Window switching: Alt+Tab -->
+  <keybind key="A-Tab">
+    <action name="NextWindow"><finalactions><action name="Focus"/><action name="Raise"/></finalactions></action>
+  </keybind>
+  <keybind key="A-S-Tab">
+    <action name="PreviousWindow"><finalactions><action name="Focus"/><action name="Raise"/></finalactions></action>
+  </keybind>
+
+  <!-- App launchers (mirroring i3 bindings) -->
+  <keybind key="W-Return"><action name="Execute"><command>kitty</command></action></keybind>
+  <keybind key="W-d"><action name="Execute"><command>rofi -show drun</command></action></keybind>
+  <keybind key="W-Tab"><action name="Execute"><command>rofi -show window</command></action></keybind>
+
+  <!-- Volume control -->
+  <keybind key="XF86AudioRaiseVolume">
+    <action name="Execute"><command>pactl set-sink-volume @DEFAULT_SINK@ +5%</command></action>
+  </keybind>
+  <keybind key="XF86AudioLowerVolume">
+    <action name="Execute"><command>pactl set-sink-volume @DEFAULT_SINK@ -5%</command></action>
+  </keybind>
+  <keybind key="XF86AudioMute">
+    <action name="Execute"><command>pactl set-sink-mute @DEFAULT_SINK@ toggle</command></action>
+  </keybind>
+  <keybind key="XF86AudioMicMute">
+    <action name="Execute"><command>pactl set-source-mute @DEFAULT_SOURCE@ toggle</command></action>
+  </keybind>
+
+  <!-- Brightness control -->
+  <keybind key="XF86MonBrightnessUp">
+    <action name="Execute"><command>brightnessctl set +5%</command></action>
+  </keybind>
+  <keybind key="XF86MonBrightnessDown">
+    <action name="Execute"><command>brightnessctl set 5%-</command></action>
+  </keybind>
+
+  <!-- Screenshot -->
+  <keybind key="Print">
+    <action name="Execute"><command>scrot -s ~/Pictures/screenshot-%Y%m%d-%H%M%S.png</command></action>
+  </keybind>
+</keyboard>
+
+<mouse>
+  <dragThreshold>1</dragThreshold>
+  <doubleClickTime>200</doubleClickTime>
+  <screenEdgeWarpTime>400</screenEdgeWarpTime>
+
+  <context name="Frame">
+    <mousebind button="A-Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="A-Left" action="Click"><action name="Unshade"/></mousebind>
+    <mousebind button="A-Left" action="Drag"><action name="Move"/></mousebind>
+    <mousebind button="A-Right" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="A-Right" action="Drag"><action name="Resize"/></mousebind>
+    <mousebind button="A-Middle" action="Press"><action name="Lower"/><action name="FocusToBottom"/><action name="Unfocus"/></mousebind>
+  </context>
+
+  <context name="Titlebar">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="Left" action="Drag"><action name="Move"/></mousebind>
+    <mousebind button="Left" action="DoubleClick"><action name="ToggleMaximize"/></mousebind>
+    <mousebind button="Middle" action="Press"><action name="Lower"/><action name="FocusToBottom"/><action name="Unfocus"/></mousebind>
+    <mousebind button="Right" action="Press"><action name="Focus"/><action name="Raise"/><action name="ShowMenu"><menu>client-menu</menu></action></mousebind>
+  </context>
+
+  <context name="Client">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="Middle" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="Right" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+  </context>
+
+  <!-- Edge and corner contexts: needed to drag-resize windows from
+       the frame borders. Without these, border drag does nothing. -->
+  <context name="Top">
+    <mousebind button="Left" action="Drag"><action name="Resize"><edge>top</edge></action></mousebind>
+  </context>
+  <context name="Left">
+    <mousebind button="Left" action="Drag"><action name="Resize"><edge>left</edge></action></mousebind>
+  </context>
+  <context name="Right">
+    <mousebind button="Left" action="Drag"><action name="Resize"><edge>right</edge></action></mousebind>
+  </context>
+  <context name="Bottom">
+    <mousebind button="Left" action="Drag"><action name="Resize"><edge>bottom</edge></action></mousebind>
+    <mousebind button="Right" action="Press"><action name="Focus"/><action name="Raise"/><action name="ShowMenu"><menu>client-menu</menu></action></mousebind>
+  </context>
+  <context name="TRCorner BRCorner TLCorner BLCorner">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+  </context>
+
+  <!-- Titlebar button contexts: without these, Iconify/Maximize/Close
+       buttons render but do nothing when clicked. -->
+  <context name="Iconify">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="Left" action="Click"><action name="Iconify"/></mousebind>
+  </context>
+
+  <context name="Maximize">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Middle" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Right" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Left" action="Click"><action name="ToggleMaximize"/></mousebind>
+    <mousebind button="Middle" action="Click"><action name="ToggleMaximize"><direction>vertical</direction></action></mousebind>
+    <mousebind button="Right" action="Click"><action name="ToggleMaximize"><direction>horizontal</direction></action></mousebind>
+  </context>
+
+  <context name="Close">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Left" action="Click"><action name="Close"/></mousebind>
+  </context>
+
+  <context name="AllDesktops">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/><action name="Unshade"/></mousebind>
+    <mousebind button="Left" action="Click"><action name="ToggleOmnipresent"/></mousebind>
+  </context>
+
+  <context name="Shade">
+    <mousebind button="Left" action="Press"><action name="Focus"/><action name="Raise"/></mousebind>
+    <mousebind button="Left" action="Click"><action name="ToggleShade"/></mousebind>
+  </context>
+
+  <context name="Desktop">
+    <mousebind button="Right" action="Press"><action name="ShowMenu"><menu>root-menu</menu></action></mousebind>
+    <mousebind button="Middle" action="Press"><action name="ShowMenu"><menu>client-list-combined-menu</menu></action></mousebind>
+  </context>
+
+  <context name="Root">
+    <mousebind button="Right" action="Press"><action name="ShowMenu"><menu>root-menu</menu></action></mousebind>
+  </context>
+</mouse>
+
+<menu>
+  <file>menu.xml</file>
+  <hideDelay>200</hideDelay>
+  <middle>no</middle>
+  <submenuShowDelay>100</submenuShowDelay>
+  <submenuHideDelay>400</submenuHideDelay>
+  <showIcons>yes</showIcons>
+  <manageDesktops>yes</manageDesktops>
+</menu>
+
+<applications>
+  <!-- wine/XWayland windows: keep decorations, normal stacking -->
+  <application class="*.exe">
+    <decor>yes</decor>
+    <focus>yes</focus>
+    <layer>normal</layer>
+  </application>
+</applications>
+
+</openbox_config>

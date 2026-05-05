@@ -1,0 +1,2 @@
+# GTK2 settings — keep in sync with config/gtk-3.0/settings.ini
+gtk-icon-theme-name="Gruvbox-Plus-Dark"

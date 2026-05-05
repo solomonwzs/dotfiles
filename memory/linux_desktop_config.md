@@ -77,3 +77,38 @@ env GLFW_IM_MODULE=ibus kitty
 ```sh
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia steam
 ```
+
+## Wine/Chromium 应用的阴影幻影窗口
+
+**现象：** 在 wine 下运行 Chromium 架构的 Windows 应用（典型：企业微信 wxwork.exe），主窗口上会"蒙"一层半透明灰色、比主窗口略大的幻影窗口。`wmctrl -lGx` 能看到同一应用有两个窗口：一个有标题（真窗口），一个空标题且尺寸比真窗口大约 72×72px（阴影窗）。
+
+**根因：** Chromium 为原生 Windows drop-shadow 创建带 `WS_EX_LAYERED` 的辅助窗口。Windows 上由 DWM 合成不可见；没有 X compositor 的 X11 会话下，layered 窗口的 alpha 通道不被合成，半透明区渲染成不透明灰块。
+
+**失败过的方案：** 注册表改 `UserPreferencesMask`/禁用 DWM 复合/关闭主题（Chromium 自己画阴影，不看这些）；openbox `<applications class="wxwork.exe" title="">` 规则（幻影窗口的行为不受 WM 规则控制）；winecfg virtual desktop（会破坏 fcitx 输入法切换）。
+
+**有效方案：** 启动 X compositor（如 picom），让 alpha 正确合成。
+```sh
+picom --backend glx --vsync &
+```
+已写入 `config/openbox/autostart`。i3 session 有同样问题时也可加入 `exec --no-startup-id picom ...`。
+
+**Why:** 经过 2026-05-05 在 niri/i3/openbox 多次尝试，只有这一条路有效。
+**How to apply:** 未来遇到 wine 运行的 Chromium 类 Windows 应用的幻影窗，直接上 compositor，不用再绕注册表/WM 规则。
+
+### 幻影窗仍出现在 Alt+Tab 列表里
+
+picom 解决了视觉问题，但幻影窗仍是一个独立 X11 窗口，会出现在 openbox 的 `Alt+Tab` (`NextWindow`) 切换列表里（label 显示为"企业微信"或空，图标是 wine 默认图标）。
+
+**重要：openbox 的 `NextWindow` 不尊重 `_NET_WM_STATE_SKIP_TASKBAR` / `SKIP_PAGER`** —— 这是 openbox 的设计选择，不是 bug。所以 `wmctrl -b add,skip_taskbar,skip_pager`、`<applications skip_taskbar>` 都无法把幻影窗从 Alt+Tab 列表剔除。
+
+**有效方案：监听 `_NET_CLIENT_LIST` 变化，主动 `xdotool windowunmap` 幻影窗。**
+
+实现见 `shell/wine_shadow_hide.sh`，关键点：
+- 用 `wmctrl -lx` 列受 WM 管理的窗口（不能用 `wmctrl -l`，那个不显示 WM_CLASS 字段）
+- 通过 `WM_CLASS=wxwork.exe` + `WM_NAME=空` 识别幻影窗
+- **不能缓存"已 unmap 的 wid"**：X server 会复用 wid，缓存会让重生的幻影窗漏掉。每次扫描都重新尝试 unmap，对已 unmapped 窗口无害。
+- 用 `xprop -root -spy _NET_CLIENT_LIST` 监听，比定时轮询更省资源
+
+**Why:** 2026-05-05 试过 `<applications title="">` 规则、`wmctrl -b add,skip_*`、改 `_NET_WM_WINDOW_TYPE` 都无效；只有 unmap 物理移除了切换列表里的项。
+**How to apply:** 同类问题（其他 wine Chromium 应用、QQ 等）出现 Alt+Tab 多余项时，复用同一脚本，按 WM_CLASS 加分支即可。
+

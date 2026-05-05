@@ -1,0 +1,29 @@
+export XMODIFIERS="@im=fcitx"
+export QT_IM_MODULE="fcitx"
+
+session=${1:-xfce}
+case $session in
+xfce | xfce4)
+    export GDK_DPI_SCALE=0.5
+    exec startxfce4
+    ;;
+i3 | i3wm)
+    export GLFW_IM_MODULE="ibus"
+    export GDK_SCALE=1
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    exec i3
+    ;;
+openbox)
+    export GLFW_IM_MODULE="ibus"
+    export GDK_SCALE=1
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    # Openbox reads Xft.dpi ONCE on startup (before autostart runs), so
+    # DPI must be set here, not in ~/.config/openbox/autostart. Without
+    # this the titlebar font renders at 96 DPI and looks half-size on
+    # 4K screens.
+    echo "Xft.dpi: 192" | xrdb -merge
+    xrandr --dpi 192
+    exec openbox-session
+    ;;
+*) exec $1 ;;
+esac

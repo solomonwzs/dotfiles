@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Openbox autostart — X session services and environment
+# Invoked by: ~/.xinitrc -> openbox-session -> ~/.config/openbox/autostart
+
+# --- HiDPI ---
+# Xft.dpi is set in ~/.xinitrc BEFORE openbox starts, because openbox
+# reads DPI once on startup and autostart runs too late. This only
+# re-applies xrandr --dpi in case the display changed post-login.
+xrandr --dpi 192 &
+
+# --- XSETTINGS daemon ---
+# Broadcasts theme/icon/DPI settings to GTK/Qt apps live, so changes
+# to ~/.config/gtk-3.0/settings.ini reach the system tray (nm-applet,
+# fcitx5) immediately without restarting them. XFCE has xfsettingsd
+# built in; under openbox we need this manually.
+if hash xsettingsd 2>/dev/null; then
+    xsettingsd &
+fi
+
+# --- Input method ---
+fcitx5 &
+
+# --- Touchpad (Synaptics TM3625-010) ---
+# Match by device name so it survives xinput id changes across sessions.
+xinput set-prop "Synaptics TM3625-010" "libinput Accel Speed" 0.5 2>/dev/null
+xinput set-prop "Synaptics TM3625-010" "libinput Tapping Enabled" 1 2>/dev/null
+xinput set-prop "Synaptics TM3625-010" "libinput Natural Scrolling Enabled" 1 2>/dev/null
+
+# --- Lock screen / suspend integration ---
+xss-lock --transfer-sleep-lock -- i3lock --nofork &
+
+# --- Network tray ---
+nm-applet &
+
+# --- Compositor ---
+# Without a compositor, layered (ARGB) windows created by wine apps
+# (e.g. Chromium-based wxwork.exe drop-shadow windows) render as opaque
+# gray blocks instead of proper transparency. picom composites them
+# correctly so the shadow either disappears or becomes a soft halo.
+if hash picom 2>/dev/null; then
+    picom --backend glx --vsync &
+fi
+
+# --- Hide wine drop-shadow phantom windows from Alt+Tab ---
+# wxwork.exe (Chromium) creates an empty-title companion window for its
+# drop shadow. openbox NextWindow ignores _NET_WM_STATE_SKIP_TASKBAR,
+# so we unmap such phantoms instead. See shell/wine_shadow_hide.sh.
+WINE_SHADOW_HIDE="$HOME/dotfiles/shell/wine_shadow_hide.sh"
+if [ -x "$WINE_SHADOW_HIDE" ]; then
+    "$WINE_SHADOW_HIDE" &
+fi
+
+# --- XDG autostart (*.desktop) ---
+if hash dex 2>/dev/null; then
+    dex --autostart --environment openbox &
+fi
+
+# --- Panel (optional: tint2 / polybar — pick one) ---
+if hash tint2 2>/dev/null; then
+    tint2 &
+fi
+
+# --- Wallpaper ---
+if hash feh 2>/dev/null && [ -f "$HOME/.fehbg" ]; then
+    "$HOME/.fehbg" &
+fi

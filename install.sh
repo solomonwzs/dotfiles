@@ -108,15 +108,62 @@ make_dir "$HOME/.config"
 make_dir "$HOME/.local/share"
 copy_file "$EXECUTE_DIRNAME/shell/my_conf.sh" "$HOME/.my_conf.sh"
 make_link "$EXECUTE_DIRNAME/shell/toolbox.txt" "$HOME/.toolbox.txt"
+make_link "$EXECUTE_DIRNAME/shell/xinitrc" "$HOME/.xinitrc"
+make_link "$EXECUTE_DIRNAME/shell/gtkrc-2.0" "$HOME/.gtkrc-2.0"
 make_link "$EXECUTE_DIRNAME/shell/preview_file.sh" "$HOME/bin/preview_file"
 make_link "$EXECUTE_DIRNAME/shell/gmail_oauth2_token.sh" "$HOME/bin/gmail_oauth2_token"
 make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
 make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
 make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
+make_dir "$HOME/.config/gtk-3.0"
+make_link "$EXECUTE_DIRNAME/config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/settings.ini"
 
 info "Niri settings"
 make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
 make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
+
+info "XFCE settings"
+make_link "$EXECUTE_DIRNAME/config/xfce4" "$HOME/.config/xfce4"
+
+if hash i3 2>/dev/null; then
+    info "Config for i3"
+    make_dir "$HOME/.config/i3"
+    make_link "$EXECUTE_DIRNAME/config/i3/config" "$HOME/.config/i3/config"
+else
+    info "Skip config for i3"
+fi
+
+if hash openbox 2>/dev/null; then
+    info "Config for openbox"
+    make_link "$EXECUTE_DIRNAME/config/openbox" "$HOME/.config/openbox"
+else
+    info "Skip config for openbox"
+fi
+
+if hash xsettingsd 2>/dev/null; then
+    info "Config for xsettingsd"
+    make_dir "$HOME/.config/xsettingsd"
+    make_link "$EXECUTE_DIRNAME/config/xsettingsd/xsettingsd.conf" \
+        "$HOME/.config/xsettingsd/xsettingsd.conf"
+else
+    info "Skip config for xsettingsd"
+fi
+
+if hash tint2 2>/dev/null; then
+    info "Config for tint2"
+    make_dir "$HOME/.config/tint2"
+    make_link "$EXECUTE_DIRNAME/config/tint2/tint2rc" "$HOME/.config/tint2/tint2rc"
+else
+    info "Skip config for tint2"
+fi
+
+if hash picom 2>/dev/null; then
+    info "Config for picom"
+    make_dir "$HOME/.config/picom"
+    make_link "$EXECUTE_DIRNAME/config/picom/picom.conf" "$HOME/.config/picom/picom.conf"
+else
+    info "Skip config for picom"
+fi
 
 if (hash vim 2>/dev/null || hash nvim 2>/dev/null); then
     info "Config for vim/neovim"
