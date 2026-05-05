@@ -1,0 +1,31 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<channel name="xfce4-notifyd" version="1.0">
+  <property name="log-max-size-enabled" type="bool" value="true"/>
+  <property name="applications" type="empty">
+    <property name="known_applications" type="array">
+      <value type="string" value="baidunetdisk"/>
+      <value type="string" value="blueman"/>
+      <value type="string" value="firefox"/>
+      <value type="string" value="Firefox"/>
+      <value type="string" value="Input Method"/>
+      <value type="string" value="kitten-notify"/>
+      <value type="string" value="kitty"/>
+      <value type="string" value="notify-send"/>
+      <value type="string" value="org.freedesktop.network-manager-applet"/>
+      <value type="string" value="org.xfce.Thunar"/>
+      <value type="string" value="Xfce volume control"/>
+      <value type="string" value="Xfce4-notifyd settings"/>
+      <value type="string" value="xfce4-power-manager"/>
+    </property>
+  </property>
+  <property name="date-time-custom-format" type="string" value="%a %H:%M:%S"/>
+  <property name="plugin" type="empty">
+    <property name="log-icon-size" type="int" value="10"/>
+  </property>
+  <property name="expire-timeout" type="int" value="5"/>
+  <property name="theme" type="string" value="gruvbox-dark-notify"/>
+  <property name="do-not-disturb" type="bool" value="false"/>
+  <property name="notify-location" type="string" value="top-right"/>
+  <property name="show-text-with-gauge" type="bool" value="false"/>
+</channel>

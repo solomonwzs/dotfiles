@@ -25,4 +25,5 @@
   <property name="tab-activity-color" type="string" value="#aa0000"/>
   <property name="cell-height-scale" type="double" value="1"/>
   <property name="misc-borders-default" type="bool" value="true"/>
+  <property name="misc-slim-tabs" type="bool" value="false"/>
 </channel>

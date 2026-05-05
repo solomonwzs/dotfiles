@@ -1,0 +1,167 @@
+<?xml version="1.1" encoding="UTF-8"?>
+
+<channel name="xfce4-panel" version="1.0">
+  <property name="configver" type="int" value="2"/>
+  <property name="panels" type="array">
+    <value type="int" value="1"/>
+    <property name="dark-mode" type="bool" value="false"/>
+    <property name="panel-1" type="empty">
+      <property name="position" type="string" value="p=6;x=0;y=0"/>
+      <property name="length" type="uint" value="100"/>
+      <property name="position-locked" type="bool" value="true"/>
+      <property name="icon-size" type="uint" value="16"/>
+      <property name="size" type="uint" value="26"/>
+      <property name="plugin-ids" type="array">
+        <value type="int" value="18"/>
+        <value type="int" value="4"/>
+        <value type="int" value="2"/>
+        <value type="int" value="3"/>
+        <value type="int" value="5"/>
+        <value type="int" value="6"/>
+        <value type="int" value="8"/>
+        <value type="int" value="9"/>
+        <value type="int" value="10"/>
+        <value type="int" value="11"/>
+        <value type="int" value="12"/>
+        <value type="int" value="13"/>
+        <value type="int" value="14"/>
+      </property>
+    </property>
+  </property>
+  <property name="plugins" type="empty">
+    <property name="plugin-2" type="string" value="tasklist">
+      <property name="grouping" type="uint" value="1"/>
+    </property>
+    <property name="plugin-3" type="string" value="separator">
+      <property name="expand" type="bool" value="true"/>
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-4" type="string" value="pager">
+      <property name="rows" type="uint" value="1"/>
+      <property name="miniature-view" type="bool" value="true"/>
+      <property name="numbering" type="bool" value="false"/>
+      <property name="wrap-workspaces" type="bool" value="false"/>
+    </property>
+    <property name="plugin-5" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-6" type="string" value="systray">
+      <property name="square-icons" type="bool" value="true"/>
+      <property name="known-legacy-items" type="array">
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (90%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (80%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (91%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (86%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (94%)"/>
+        <value type="string" value="shutter"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (100%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (92%)"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (93%)"/>
+        <value type="string" value="fcitx5 tray window"/>
+        <value type="string" value="wi-fi network connection “redmi k70” active: redmi k70 (95%)"/>
+        <value type="string" value="no network connection"/>
+        <value type="string" value="networkmanager applet"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (78%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (70%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (69%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (87%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (71%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (73%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (66%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (68%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (63%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (81%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (77%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (80%)"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (92%)"/>
+        <value type="string" value="notes"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (67%)"/>
+        <value type="string" value="configuring wi-fi network connection “redmi_a497”…"/>
+        <value type="string" value="wi-fi network connection “redmi_a497” active: redmi_a497 (79%)"/>
+      </property>
+      <property name="known-items" type="array">
+        <value type="string" value="TelegramDesktop"/>
+        <value type="string" value="baidunetdisk1"/>
+        <value type="string" value="firewall-applet"/>
+        <value type="string" value="FeelUOwn"/>
+        <value type="string" value="chrome_status_icon_1"/>
+        <value type="string" value="blueman"/>
+        <value type="string" value="steam"/>
+        <value type="string" value="vlc"/>
+        <value type="string" value="Fcitx"/>
+      </property>
+    </property>
+    <property name="plugin-8" type="string" value="pulseaudio">
+      <property name="enable-keyboard-shortcuts" type="bool" value="true"/>
+      <property name="show-notifications" type="bool" value="true"/>
+      <property name="known-players" type="string" value="Chromium;FeelUOwn;firefox;smplayer;vlc"/>
+    </property>
+    <property name="plugin-9" type="string" value="power-manager-plugin"/>
+    <property name="plugin-10" type="string" value="notification-plugin"/>
+    <property name="plugin-11" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-12" type="string" value="clock">
+      <property name="mode" type="uint" value="2"/>
+      <property name="tooltip-format" type="string" value="%A %d %B %Y"/>
+      <property name="digital-layout" type="uint" value="1"/>
+      <property name="digital-date-format" type="string" value="%Y-%m-%d"/>
+      <property name="show-week-numbers" type="bool" value="true"/>
+      <property name="digital-time-font" type="string" value="Sans 9"/>
+      <property name="digital-date-font" type="string" value="Sans 7"/>
+      <property name="digital-time-format" type="string" value="%T"/>
+    </property>
+    <property name="plugin-13" type="string" value="separator">
+      <property name="style" type="uint" value="0"/>
+    </property>
+    <property name="plugin-14" type="string" value="actions">
+      <property name="appearance" type="uint" value="1"/>
+      <property name="items" type="array">
+        <value type="string" value="+lock-screen"/>
+        <value type="string" value="+switch-user"/>
+        <value type="string" value="+separator"/>
+        <value type="string" value="+suspend"/>
+        <value type="string" value="+hibernate"/>
+        <value type="string" value="-hybrid-sleep"/>
+        <value type="string" value="-separator"/>
+        <value type="string" value="+shutdown"/>
+        <value type="string" value="-restart"/>
+        <value type="string" value="+separator"/>
+        <value type="string" value="+logout"/>
+        <value type="string" value="-logout-dialog"/>
+      </property>
+      <property name="button-title" type="uint" value="1"/>
+    </property>
+    <property name="notes" type="empty">
+      <property name="global" type="empty">
+        <property name="version" type="string" value="1.12.0"/>
+        <property name="font-description" type="string" value="Mononoki Nerd Font 12"/>
+        <property name="background-color" type="string" value="#ebebdbdbb2b2"/>
+        <property name="tabs-position" type="int" value="0"/>
+        <property name="skip-taskbar-hint" type="bool" value="false"/>
+      </property>
+    </property>
+    <property name="plugin-18" type="string" value="whiskermenu">
+      <property name="button-icon" type="string" value="distributor-logo-archlinux"/>
+      <property name="default-category" type="int" value="0"/>
+      <property name="favorites" type="array">
+        <value type="string" value="xfce4-file-manager.desktop"/>
+        <value type="string" value="kitty.desktop"/>
+        <value type="string" value="firefox.desktop"/>
+        <value type="string" value="steam.desktop"/>
+      </property>
+      <property name="recent" type="array">
+        <value type="string" value="thunar.desktop"/>
+        <value type="string" value="kitty.desktop"/>
+        <value type="string" value="wine-Programs-WeCom-WeCom.desktop"/>
+        <value type="string" value="firefox.desktop"/>
+        <value type="string" value="qqmusic.desktop"/>
+        <value type="string" value="chromium.desktop"/>
+        <value type="string" value="virt-manager.desktop"/>
+        <value type="string" value="libreoffice-writer.desktop"/>
+        <value type="string" value="steam.desktop"/>
+        <value type="string" value="xfce-settings-manager.desktop"/>
+      </property>
+    </property>
+  </property>
+</channel>
