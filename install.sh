@@ -123,7 +123,10 @@ make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
 make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
 
 info "XFCE settings"
-make_link "$EXECUTE_DIRNAME/config/xfce4" "$HOME/.config/xfce4"
+copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml" \
+    "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml"
+copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
+    "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
 
 if hash i3 2>/dev/null; then
     info "Config for i3"
