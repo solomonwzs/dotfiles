@@ -1,3 +1,5 @@
+# vim:ft=bash
+
 export XMODIFIERS="@im=fcitx"
 export QT_IM_MODULE="fcitx"
 
@@ -5,6 +7,15 @@ session=${1:-xfce}
 case $session in
 xfce | xfce4)
     export GDK_DPI_SCALE=0.5
+    # systemd --user starts before xinitrc and inherits an empty env,
+    # so dbus-activated services like xdg-desktop-portal-gtk won't
+    # see GDK_DPI_SCALE. Import it (and related) into the user bus
+    # manager so new activations pick it up.
+    if hash systemctl 2>/dev/null; then
+        systemctl --user import-environment \
+            GDK_DPI_SCALE DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP \
+            2>/dev/null
+    fi
     exec startxfce4
     ;;
 i3 | i3wm)
