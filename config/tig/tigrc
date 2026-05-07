@@ -19,3 +19,6 @@ color diff-stat 109 default
 color help-group 66 default
 
 set mouse = true
+
+set refresh-mode = manual
+set main-options = -n 5000
