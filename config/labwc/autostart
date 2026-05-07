@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# labwc autostart — Wayland session services
+# Invoked by: labwc -> ~/.config/labwc/autostart
+#
+# Differences vs ../openbox/autostart:
+#   * No xrandr (use wlr-randr / kanshi for output config)
+#   * No xsettingsd (Wayland uses xdg-desktop-portal + gsettings)
+#   * No picom (Wayland compositor handles compositing natively)
+#   * No xinput (touchpad config moved to rc.xml <libinput>)
+#   * xss-lock -> swayidle + swaylock
+#   * tint2 -> waybar
+#   * feh -> swaybg
+#
+# Note: wine drop-shadow phantom windows (wxwork.exe etc.) are handled
+# by shell/wine_shadow_hide.sh, launched manually from an in-session
+# terminal when needed:
+#
+#   DISPLAY=:0 ~/dotfiles/shell/wine_shadow_hide.sh &
+#   disown
+#
+# Not autostarted because Chromium menu hover animations cause visible
+# flicker under aggressive unmap; manual control lets it run only when
+# wxwork is actually open.
+
+# --- Input method ---
+# fcitx5 needs WAYLAND_DISPLAY set; ensure environment file (loaded
+# before labwc) exports GTK_IM_MODULE=fcitx etc.
+fcitx5 &
+
+# --- Network tray (still works under XWayland) ---
+nm-applet --indicator &
+
+# --- Idle / lock screen ---
+# Replaces xss-lock + i3lock. Lock after 10min, screen off after 12min,
+# also lock on suspend.
+if hash swayidle 2>/dev/null && hash swaylock 2>/dev/null; then
+    swayidle -w \
+        timeout 600  'swaylock -f -c 000000' \
+        timeout 720  'wlopm --off \*' \
+        resume       'wlopm --on \*' \
+        before-sleep 'swaylock -f -c 000000' &
+fi
+
+# --- XDG autostart (*.desktop) ---
+if hash dex 2>/dev/null; then
+    dex --autostart --environment labwc &
+fi
+
+# --- Panel ---
+if hash waybar 2>/dev/null; then
+    waybar &
+fi
+
+# --- Wallpaper ---
+if hash swaybg 2>/dev/null && [ -n "${LABWC_WALLPAPER:-}" ]; then
+    swaybg -i "$LABWC_WALLPAPER" -m fill &
+fi
+
+# --- HiDPI / output scale ---
+# eDP-1 is a 4K (3840x2160) ~15.6" panel; scale 2 gives logical
+# 1920x1080 (equivalent to Xft.dpi=192 under X11). labwc has no
+# native <outputs> config block, so we set scale via wlr-randr at
+# session start. Re-applied here on every labwc start.
+if hash wlr-randr 2>/dev/null; then
+    wlr-randr --output eDP-1 --scale 2
+fi
+
+# --- Output management (multi-monitor / DPI) ---
+# For dynamic multi-monitor profiles (dock plug/unplug), use kanshi
+# instead of the static wlr-randr line above:
+#
+# if hash kanshi 2>/dev/null; then
+#     kanshi &
+# fi

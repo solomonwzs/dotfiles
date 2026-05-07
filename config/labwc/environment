@@ -1,0 +1,38 @@
+# labwc environment — exported before WM start
+# Read by labwc on session startup (key=value, no quoting, no expansion).
+# Use this for system-wide Wayland environment that should affect all
+# child processes launched by labwc.
+
+# --- HiDPI ---
+# Wayland scales per-output via wlr-output-management; this is for X11
+# clients running under XWayland (kitty, firefox, etc. when run native
+# Wayland ignore these).
+GDK_SCALE=1
+GDK_DPI_SCALE=1
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+XCURSOR_SIZE=24
+
+# --- Backend selection ---
+# Prefer Wayland backend in toolkits that support it.
+GDK_BACKEND=wayland,x11
+QT_QPA_PLATFORM=wayland;xcb
+SDL_VIDEODRIVER=wayland
+CLUTTER_BACKEND=wayland
+MOZ_ENABLE_WAYLAND=1
+_JAVA_AWT_WM_NONREPARENTING=1
+
+# --- Input method ---
+# fcitx5 over Wayland uses Wayland IM protocol when available, falls
+# back to ibus/xim for legacy clients. Keep these for XWayland apps.
+GTK_IM_MODULE=fcitx
+QT_IM_MODULE=fcitx
+XMODIFIERS=@im=fcitx
+SDL_IM_MODULE=fcitx
+GLFW_IM_MODULE=ibus
+
+# --- XDG ---
+XDG_CURRENT_DESKTOP=labwc:wlroots
+XDG_SESSION_TYPE=wayland
+
+# --- Cursor theme ---
+XCURSOR_THEME=Adwaita

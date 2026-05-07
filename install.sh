@@ -140,6 +140,13 @@ else
     info "Skip config for openbox"
 fi
 
+if hash labwc 2>/dev/null; then
+    info "Config for labwc"
+    make_link "$EXECUTE_DIRNAME/config/labwc" "$HOME/.config/labwc"
+else
+    info "Skip config for labwc"
+fi
+
 if hash xsettingsd 2>/dev/null; then
     info "Config for xsettingsd"
     make_dir "$HOME/.config/xsettingsd"

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+
+<menu id="apps-term-menu" label="Terminals">
+  <item label="Kitty"><action name="Execute" command="kitty"/></item>
+  <item label="Foot"><action name="Execute" command="foot"/></item>
+</menu>
+
+<menu id="apps-browser-menu" label="Browsers">
+  <item label="Firefox"><action name="Execute" command="firefox"/></item>
+  <item label="Chromium"><action name="Execute" command="chromium"/></item>
+</menu>
+
+<menu id="apps-editor-menu" label="Editors">
+  <item label="Neovim"><action name="Execute" command="kitty -e nvim"/></item>
+  <item label="Vim"><action name="Execute" command="kitty -e vim"/></item>
+</menu>
+
+<menu id="apps-filemanager-menu" label="File Managers">
+  <item label="Thunar"><action name="Execute" command="thunar"/></item>
+  <item label="PCManFM"><action name="Execute" command="pcmanfm"/></item>
+</menu>
+
+<menu id="root-menu" label="labwc">
+  <item label="Run (fuzzel)"><action name="Execute" command="fuzzel"/></item>
+  <separator/>
+  <menu id="apps-term-menu"/>
+  <menu id="apps-browser-menu"/>
+  <menu id="apps-editor-menu"/>
+  <menu id="apps-filemanager-menu"/>
+  <separator/>
+  <item label="Lock Screen"><action name="Execute" command="swaylock -f -c 000000"/></item>
+  <separator/>
+  <item label="Reconfigure"><action name="Reconfigure"/></item>
+  <item label="Exit"><action name="Exit"/></item>
+</menu>
+
+</openbox_menu>

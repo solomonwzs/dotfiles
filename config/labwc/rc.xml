@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  labwc configuration — Wayland counterpart to ../openbox/rc.xml
+
+  Differences vs openbox:
+    * No edge/corner mouse contexts (Top/Left/...): labwc handles
+      border drag-resize natively.
+    * No <dock> block: labwc has no built-in dock.
+    * <libinput> block configures touchpad here instead of xinput in
+      autostart.
+    * Adds <core><gap> and <snapping> for Wayland-only window edge
+      behavior.
+    * <theme> reuses the same my-gruvbox-theme installed under
+      ~/.themes/my-gruvbox-theme/openbox-3/themerc (labwc reads it
+      from the same path as openbox).
+-->
+<labwc_config>
+
+<core>
+  <decoration>server</decoration>
+  <gap>0</gap>
+  <adaptiveSync>no</adaptiveSync>
+  <reuseOutputMode>yes</reuseOutputMode>
+</core>
+
+<!-- HiDPI output scaling is configured in autostart via wlr-randr.
+     labwc has no <outputs> XML block; per-output scale must be set
+     by an external Wayland client (wlr-randr / kanshi). -->
+
+<focus>
+  <followMouse>no</followMouse>
+  <followMouseRequiresMovement>yes</followMouseRequiresMovement>
+  <raiseOnFocus>no</raiseOnFocus>
+</focus>
+
+<placement>
+  <policy>cascade</policy>
+</placement>
+
+<theme>
+  <name>my-gruvbox-theme</name>
+  <cornerRadius>0</cornerRadius>
+  <titleLayout>NLIMC</titleLayout>
+  <keepBorder>yes</keepBorder>
+  <font place="ActiveWindow">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="InactiveWindow">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="MenuHeader">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="MenuItem">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>normal</weight>
+    <slant>normal</slant>
+  </font>
+  <font place="OnScreenDisplay">
+    <name>Noto Sans CJK SC</name>
+    <size>10</size>
+    <weight>bold</weight>
+    <slant>normal</slant>
+  </font>
+</theme>
+
+<desktops>
+  <number>4</number>
+  <names>
+    <name>1</name>
+    <name>2</name>
+    <name>3</name>
+    <name>4</name>
+  </names>
+  <popupTime>875</popupTime>
+</desktops>
+
+<resize>
+  <popupShow>Never</popupShow>
+</resize>
+
+<snapping>
+  <range>1</range>
+  <topMaximize>yes</topMaximize>
+</snapping>
+
+<windowSwitcher show="yes" preview="yes" outlines="yes">
+  <fields>
+    <field content="type" width="25%"/>
+    <field content="trimmed_identifier" width="25%"/>
+    <field content="title" width="50%"/>
+  </fields>
+</windowSwitcher>
+
+<!-- Touchpad (Synaptics TM3625-010 etc.) — replaces xinput calls.
+     Categories accepted by labwc: default | touch | touchpad | non-touch.
+     Touchpads must use "touchpad", NOT "touch" (which matches touch
+     screens, capability touch). -->
+<libinput>
+  <device category="touchpad">
+    <!-- Tap to click (1F=left, 2F=right, 3F=middle) -->
+    <tap>yes</tap>
+    <tapButtonMap>lrm</tapButtonMap>
+    <!-- Drag with tap-and-hold -->
+    <tapAndDrag>yes</tapAndDrag>
+    <dragLock>no</dragLock>
+    <!-- Natural (macOS-style) scrolling: content follows finger -->
+    <naturalScroll>yes</naturalScroll>
+    <!-- Two-finger scroll (edge / two-finger / on-button-down / no) -->
+    <scrollMethod>twofinger</scrollMethod>
+    <!-- Click via finger count instead of button areas -->
+    <clickMethod>clickfinger</clickMethod>
+    <!-- Disable touchpad while typing -->
+    <disableWhileTyping>yes</disableWhileTyping>
+    <!-- Pointer accel: -1.0 (slowest) .. 1.0 (fastest) -->
+    <pointerSpeed>0.3</pointerSpeed>
+    <accelProfile>adaptive</accelProfile>
+    <!-- Send middle-click on left+right simultaneous press -->
+    <middleEmulation>yes</middleEmulation>
+  </device>
+</libinput>
+
+<keyboard>
+  <repeatRate>30</repeatRate>
+  <repeatDelay>250</repeatDelay>
+
+  <!-- Desktop switching: Super+1..4 -->
+  <keybind key="W-1"><action name="GoToDesktop" to="1"/></keybind>
+  <keybind key="W-2"><action name="GoToDesktop" to="2"/></keybind>
+  <keybind key="W-3"><action name="GoToDesktop" to="3"/></keybind>
+  <keybind key="W-4"><action name="GoToDesktop" to="4"/></keybind>
+
+  <!-- Move window to desktop: Super+Shift+1..4 -->
+  <keybind key="W-S-1"><action name="SendToDesktop" to="1"/></keybind>
+  <keybind key="W-S-2"><action name="SendToDesktop" to="2"/></keybind>
+  <keybind key="W-S-3"><action name="SendToDesktop" to="3"/></keybind>
+  <keybind key="W-S-4"><action name="SendToDesktop" to="4"/></keybind>
+
+  <keybind key="C-A-Left"><action name="GoToDesktop" to="left" wrap="no"/></keybind>
+  <keybind key="C-A-Right"><action name="GoToDesktop" to="right" wrap="no"/></keybind>
+
+  <!-- Window operations -->
+  <keybind key="A-F4"><action name="Close"/></keybind>
+  <keybind key="W-S-q"><action name="Close"/></keybind>
+  <keybind key="W-f"><action name="ToggleFullscreen"/></keybind>
+  <keybind key="W-space"><action name="ShowMenu" menu="client-menu"/></keybind>
+
+  <!-- Window switching: Alt+Tab -->
+  <keybind key="A-Tab"><action name="NextWindow"/></keybind>
+  <keybind key="A-S-Tab"><action name="PreviousWindow"/></keybind>
+
+  <!-- App launchers -->
+  <keybind key="W-Return"><action name="Execute" command="kitty"/></keybind>
+  <keybind key="W-d"><action name="Execute" command="fuzzel"/></keybind>
+  <keybind key="W-Tab"><action name="Execute" command="fuzzel"/></keybind>
+
+  <!-- Volume control -->
+  <keybind key="XF86AudioRaiseVolume">
+    <action name="Execute" command="pactl set-sink-volume @DEFAULT_SINK@ +5%"/>
+  </keybind>
+  <keybind key="XF86AudioLowerVolume">
+    <action name="Execute" command="pactl set-sink-volume @DEFAULT_SINK@ -5%"/>
+  </keybind>
+  <keybind key="XF86AudioMute">
+    <action name="Execute" command="pactl set-sink-mute @DEFAULT_SINK@ toggle"/>
+  </keybind>
+  <keybind key="XF86AudioMicMute">
+    <action name="Execute" command="pactl set-source-mute @DEFAULT_SOURCE@ toggle"/>
+  </keybind>
+
+  <!-- Brightness control -->
+  <keybind key="XF86MonBrightnessUp">
+    <action name="Execute" command="brightnessctl set +5%"/>
+  </keybind>
+  <keybind key="XF86MonBrightnessDown">
+    <action name="Execute" command="brightnessctl set 5%-"/>
+  </keybind>
+
+  <!-- Screenshot: grim + slurp for region capture -->
+  <keybind key="Print">
+    <action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; ~/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png'"/>
+  </keybind>
+</keyboard>
+
+<mouse>
+  <!-- labwc handles edge resize automatically; Frame/Titlebar/Client
+       button contexts are still needed. -->
+  <context name="Frame">
+    <mousebind button="A-Left" action="Press" mode="WindowsAction">
+      <action name="Focus"/>
+      <action name="Raise"/>
+    </mousebind>
+    <mousebind button="A-Left" action="Drag" mode="WindowsAction">
+      <action name="Move"/>
+    </mousebind>
+    <mousebind button="A-Right" action="Drag" mode="WindowsAction">
+      <action name="Resize"/>
+    </mousebind>
+  </context>
+
+  <context name="Titlebar">
+    <mousebind button="Left" action="Press">
+      <action name="Focus"/>
+      <action name="Raise"/>
+    </mousebind>
+    <mousebind button="Left" action="Drag">
+      <action name="Move"/>
+    </mousebind>
+    <mousebind button="Left" action="DoubleClick">
+      <action name="ToggleMaximize"/>
+    </mousebind>
+    <mousebind button="Right" action="Press">
+      <action name="Focus"/>
+      <action name="Raise"/>
+      <action name="ShowMenu" menu="client-menu"/>
+    </mousebind>
+  </context>
+
+  <context name="Client">
+    <mousebind button="Left" action="Press">
+      <action name="Focus"/>
+      <action name="Raise"/>
+    </mousebind>
+  </context>
+
+  <context name="Iconify">
+    <mousebind button="Left" action="Click"><action name="Iconify"/></mousebind>
+  </context>
+
+  <context name="Maximize">
+    <mousebind button="Left" action="Click"><action name="ToggleMaximize"/></mousebind>
+  </context>
+
+  <context name="Close">
+    <mousebind button="Left" action="Click"><action name="Close"/></mousebind>
+  </context>
+
+  <context name="Root">
+    <mousebind button="Right" action="Press">
+      <action name="ShowMenu" menu="root-menu"/>
+    </mousebind>
+  </context>
+</mouse>
+
+<menu>
+  <file>menu.xml</file>
+</menu>
+
+</labwc_config>
