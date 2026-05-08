@@ -150,6 +150,13 @@ else
     info "Skip config for labwc"
 fi
 
+if hash rofi 2>/dev/null; then
+    info "Config for rofi"
+    make_link "$EXECUTE_DIRNAME/config/rofi" "$HOME/.config/rofi"
+else
+    info "Skip config for rofi"
+fi
+
 if hash xsettingsd 2>/dev/null; then
     info "Config for xsettingsd"
     make_dir "$HOME/.config/xsettingsd"

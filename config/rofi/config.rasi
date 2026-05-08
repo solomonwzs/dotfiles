@@ -1,0 +1,31 @@
+/*
+ * @author   solomon
+ * @date     2026-05-07
+ * @license  GPL-2.0+
+ *
+ * rofi main config — see main.rasi for theme.
+ */
+
+configuration {
+    modes:                       "drun,run,filebrowser,window";
+    show-icons:                  true;
+    icon-theme:                  "Gruvbox-Plus-Dark";
+    display-drun:                " ";
+    display-run:                 " ";
+    display-filebrowser:         " ";
+    display-window:              " ";
+    drun-display-format:         "<span weight='bold'>{name}</span>\n<span weight='light' size='small'><i>{comment}</i></span>";
+    window-format:               "{w}  {c}  {t}";
+    sorting-method:              "fzf";
+    matching:                    "fuzzy";
+    tokenize:                    true;
+    drun-match-fields:           "name";
+    disable-history:             true;
+    terminal:                    "kitty";
+    hover-select:                false;
+    me-select-entry:             "";
+    me-accept-entry:             "MousePrimary";
+    // kb-cancel:                   "Escape,Control+c,Control+bracketleft";
+}
+
+@theme "themes/rounded-gruvbox-dark.rasi"
