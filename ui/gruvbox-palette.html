@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gruvbox Palette</title>
+<!--
+  @author   solomon
+  @date     2026-05-08
+  @license  GPL-2.0+
+
+  Gruvbox + Gruvbox-Material colour reference. Layout follows the
+  morhetz/gruvbox terminal grid for the classic 16-colour palette,
+  then adds extra sections for the dark/light background ramps,
+  foreground ramps, the neutral / faded / bright / dark accent
+  variants, and the Material-variant neutral accents used by the
+  gruvbox-material-* themes.
+
+  Source of truth:
+    - morhetz/gruvbox  (autoload/gruvbox.vim, README palette table)
+    - sainnhe/gruvbox-material  (autoload/gruvbox_material.vim)
+-->
+<style>
+  :root {
+    color-scheme: dark;
+    --gap: 2px;
+    --pad: 18px 20px;
+    --section-gap: 28px;
+    --font: "JetBrains Mono", "Source Code Pro", "Cascadia Code",
+            "DejaVu Sans Mono", "Noto Sans Mono", monospace;
+  }
+
+  html, body {
+    margin: 0;
+    background: #1d2021;
+    color: #ebdbb2;
+    font-family: var(--font);
+    font-size: 14px;
+  }
+
+  body { padding: 28px 28px 64px; }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0 0 6px;
+    color: #fabd2f;
+  }
+  .lede {
+    margin: 0 0 24px;
+    color: #a89984;
+    font-size: 13px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin: var(--section-gap) 0 8px;
+    color: #d3869b;
+    border-bottom: 1px solid #3c3836;
+    padding-bottom: 4px;
+  }
+  h2 .hint {
+    color: #a89984;
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 8px;
+  }
+
+  .grid {
+    display: grid;
+    gap: var(--gap);
+  }
+  .grid.c8 { grid-template-columns: repeat(8, 1fr); }
+  .grid.c9 { grid-template-columns: repeat(9, 1fr); }
+
+  .cell {
+    position: relative;
+    padding: var(--pad);
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.1;
+  }
+
+  .cell.empty {
+    background: transparent;
+  }
+
+  .corner {
+    position: absolute;
+    font-size: 12px;
+    opacity: .65;
+  }
+  .tl { top:  6px; left:  10px; }
+  .tr { top:  6px; right: 10px; }
+  .name {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: .3px;
+    text-align: center;
+  }
+  .hex {
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: .85;
+  }
+  .footnote { color: #fe8019; opacity: .9; }
+
+  /* Make hex easy to grab. */
+  .hex { user-select: all; cursor: copy; }
+</style>
+</head>
+<body>
+  <h1>Gruvbox palette reference</h1>
+  <p class="lede">
+    Click any hex value to select it. Sections follow the original
+    gruvbox author's grouping: 16-colour terminal palette first,
+    then the background / foreground ramps, then the accent
+    variants used in <code>g:gruvbox_contrast_*</code> and the
+    <code>gruvbox-material</code> fork.
+  </p>
+
+  <div id="root"></div>
+
+  <script>
+    /* -----------------------------------------------------------
+     * Colour data
+     * --------------------------------------------------------- */
+
+    /* Section: classic 16-colour terminal layout (mirrors the
+     * screenshot in dotfiles/Public/pic/Screenshot...).  Each cell
+     * has its 256-colour index in the upper-left and its 0..15
+     * terminal slot in the upper-right.  Use "-" for entries that
+     * have no fixed terminal slot. */
+    const terminal16 = [
+      // Row 1 — base palette (slots 0..7)
+      { tl: 235, tr: 0,  name: "bg",     hex: "#282828" },
+      { tl: 124, tr: 1,  name: "red",    hex: "#cc241d" },
+      { tl: 106, tr: 2,  name: "green",  hex: "#98971a" },
+      { tl: 172, tr: 3,  name: "yellow", hex: "#d79921" },
+      { tl:  66, tr: 4,  name: "blue",   hex: "#458588" },
+      { tl: 132, tr: 5,  name: "purple", hex: "#b16286" },
+      { tl:  72, tr: 6,  name: "aqua",   hex: "#689d6a" },
+      { tl: 246, tr: 7,  name: "gray",   hex: "#a89984" },
+      // Row 2 — bright palette (slots 8..15)
+      { tl: 245, tr: 8,  name: "gray",   hex: "#928374" },
+      { tl: 167, tr: 9,  name: "red",    hex: "#fb4934" },
+      { tl: 142, tr: 10, name: "green",  hex: "#b8bb26" },
+      { tl: 214, tr: 11, name: "yellow", hex: "#fabd2f" },
+      { tl: 109, tr: 12, name: "blue",   hex: "#83a598" },
+      { tl: 175, tr: 13, name: "purple", hex: "#d3869b" },
+      { tl: 108, tr: 14, name: "aqua",   hex: "#8ec07c" },
+      { tl: 223, tr: 15, name: "fg",     hex: "#ebdbb2" },
+    ];
+
+    /* Background ramps — dark side (default) and light side
+     * (g:gruvbox_background = "light"). */
+    const darkBackgrounds = [
+      { tl: 234, tr: "0", trFootnote: true, name: "bg0_h", hex: "#1d2021" },
+      { tl: 235, tr: 0,  name: "bg0",    hex: "#282828" },
+      { tl: 236, tr: "0", trFootnote: true, name: "bg0_s", hex: "#32302f" },
+      { tl: 237, tr: "-", name: "bg1",   hex: "#3c3836" },
+      { tl: 239, tr: "-", name: "bg2",   hex: "#504945" },
+      { tl: 241, tr: "-", name: "bg3",   hex: "#665c54" },
+      { tl: 243, tr: "-", name: "bg4",   hex: "#7c6f64" },
+      { empty: true },
+    ];
+
+    const lightBackgrounds = [
+      { tl: 230, tr: "0", trFootnote: true, name: "bg0_h", hex: "#f9f5d7" },
+      { tl: 229, tr: 0,  name: "bg0",    hex: "#fbf1c7" },
+      { tl: 228, tr: "0", trFootnote: true, name: "bg0_s", hex: "#f2e5bc" },
+      { tl: 223, tr: "-", name: "bg1",   hex: "#ebdbb2" },
+      { tl: 250, tr: "-", name: "bg2",   hex: "#d5c4a1" },
+      { tl: 248, tr: "-", name: "bg3",   hex: "#bdae93" },
+      { tl: 246, tr: "-", name: "bg4",   hex: "#a89984" },
+      { empty: true },
+    ];
+
+    /* Foreground ramps — used as text colours.  fg / fg1 are the
+     * default text on dark / light respectively; fg2-fg4 give
+     * progressively dimmer secondary text. */
+    const darkForegrounds = [
+      { tl: 229, tr: "-", name: "fg0",   hex: "#fbf1c7" },
+      { tl: 223, tr: 15, name: "fg1",    hex: "#ebdbb2" },
+      { tl: 250, tr: "-", name: "fg2",   hex: "#d5c4a1" },
+      { tl: 248, tr: "-", name: "fg3",   hex: "#bdae93" },
+      { tl: 246, tr: "-", name: "fg4",   hex: "#a89984" },
+    ];
+
+    const lightForegrounds = [
+      { tl: 235, tr: "-", name: "fg0",   hex: "#282828" },
+      { tl: 237, tr: "-", name: "fg1",   hex: "#3c3836" },
+      { tl: 239, tr: "-", name: "fg2",   hex: "#504945" },
+      { tl: 241, tr: "-", name: "fg3",   hex: "#665c54" },
+      { tl: 243, tr: "-", name: "fg4",   hex: "#7c6f64" },
+    ];
+
+    /* Accent variants from morhetz/gruvbox.
+     * neutral_* — the canonical accents (== terminal slots 1..6).
+     * bright_*  — used on the dark background by default; brighter
+     *             than neutral so they pop on bg0.
+     * faded_*   — used on the light background; darker than neutral
+     *             for legibility on light bg.
+     * (gruvbox uses bright on dark + faded on light; toggling
+     *  g:gruvbox_contrast_* swaps these in.) */
+    const neutralAccents = [
+      { tl: 124, tr: 1,  name: "red",    hex: "#cc241d" },
+      { tl: 106, tr: 2,  name: "green",  hex: "#98971a" },
+      { tl: 172, tr: 3,  name: "yellow", hex: "#d79921" },
+      { tl:  66, tr: 4,  name: "blue",   hex: "#458588" },
+      { tl: 132, tr: 5,  name: "purple", hex: "#b16286" },
+      { tl:  72, tr: 6,  name: "aqua",   hex: "#689d6a" },
+      { tl: 166, tr: "-", name: "orange", hex: "#d65d0e" },
+    ];
+
+    const brightAccents = [
+      { tl: 167, tr: 9,  name: "red",    hex: "#fb4934" },
+      { tl: 142, tr: 10, name: "green",  hex: "#b8bb26" },
+      { tl: 214, tr: 11, name: "yellow", hex: "#fabd2f" },
+      { tl: 109, tr: 12, name: "blue",   hex: "#83a598" },
+      { tl: 175, tr: 13, name: "purple", hex: "#d3869b" },
+      { tl: 108, tr: 14, name: "aqua",   hex: "#8ec07c" },
+      { tl: 208, tr: "-", name: "orange", hex: "#fe8019" },
+    ];
+
+    const fadedAccents = [
+      { tl:  88, tr: "-", name: "red",    hex: "#9d0006" },
+      { tl: 100, tr: "-", name: "green",  hex: "#79740e" },
+      { tl: 136, tr: "-", name: "yellow", hex: "#b57614" },
+      { tl:  24, tr: "-", name: "blue",   hex: "#076678" },
+      { tl:  96, tr: "-", name: "purple", hex: "#8f3f71" },
+      { tl:  66, tr: "-", name: "aqua",   hex: "#427b58" },
+      { tl: 130, tr: "-", name: "orange", hex: "#af3a03" },
+    ];
+
+    /* Gruvbox-Material variant accents.
+     * Material softens the neutral set a touch (slightly desaturated
+     * and shifted) so it sits more comfortably against the
+     * gruvbox-material backgrounds.  Pulled from
+     * sainnhe/gruvbox-material's autoload palette table. */
+    const materialAccents = [
+      { tl: "-", tr: "-", name: "red",      hex: "#ea6962" },
+      { tl: "-", tr: "-", name: "green",    hex: "#a9b665" },
+      { tl: "-", tr: "-", name: "yellow",   hex: "#d8a657" },
+      { tl: "-", tr: "-", name: "blue",     hex: "#7daea3" },
+      { tl: "-", tr: "-", name: "purple",   hex: "#d3869b" },
+      { tl: "-", tr: "-", name: "aqua",     hex: "#89b482" },
+      { tl: "-", tr: "-", name: "orange",   hex: "#e78a4f" },
+      { tl: "-", tr: "-", name: "gray",     hex: "#928374" },
+    ];
+
+    /* Material backgrounds (dark/medium/soft and light/medium/soft).
+     * These are the bg0..bg5 ramps for gruvbox-material, which
+     * differ a bit from morhetz's. */
+    const materialDarkBg = [
+      { tl: "-", tr: "hard",   name: "bg0",  hex: "#1d2021" },
+      { tl: "-", tr: "medium", name: "bg0",  hex: "#282828" },
+      { tl: "-", tr: "soft",   name: "bg0",  hex: "#32302f" },
+      { tl: "-", tr: "-",      name: "bg1",  hex: "#3c3836" },
+      { tl: "-", tr: "-",      name: "bg2",  hex: "#504945" },
+      { tl: "-", tr: "-",      name: "bg3",  hex: "#665c54" },
+      { tl: "-", tr: "-",      name: "bg4",  hex: "#7c6f64" },
+      { tl: "-", tr: "-",      name: "bg5",  hex: "#928374" },
+    ];
+
+    const materialLightBg = [
+      { tl: "-", tr: "hard",   name: "bg0",  hex: "#f9f5d7" },
+      { tl: "-", tr: "medium", name: "bg0",  hex: "#fbf1c7" },
+      { tl: "-", tr: "soft",   name: "bg0",  hex: "#f2e5bc" },
+      { tl: "-", tr: "-",      name: "bg1",  hex: "#ebdbb2" },
+      { tl: "-", tr: "-",      name: "bg2",  hex: "#d5c4a1" },
+      { tl: "-", tr: "-",      name: "bg3",  hex: "#bdae93" },
+      { tl: "-", tr: "-",      name: "bg4",  hex: "#a89984" },
+      { tl: "-", tr: "-",      name: "bg5",  hex: "#928374" },
+    ];
+
+    /* -----------------------------------------------------------
+     * Render helpers
+     * --------------------------------------------------------- */
+
+    /* Pick black or white text for the given background using the
+     * sRGB relative luminance formula (WCAG 2.x).  The 0.55
+     * threshold is tuned so neutral aqua/green still get white text,
+     * matching morhetz's published palette images. */
+    function fgFor(hex) {
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+      const lin = c => c <= 0.03928 ? c / 12.92
+                                    : Math.pow((c + 0.055) / 1.055, 2.4);
+      const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+      return L > 0.55 ? "#1d2021" : "#ebdbb2";
+    }
+
+    function makeCell(c) {
+      const div = document.createElement("div");
+      div.className = "cell" + (c.empty ? " empty" : "");
+      if (c.empty) return div;
+      div.style.background = c.hex;
+      div.style.color = fgFor(c.hex);
+
+      const tl = document.createElement("span");
+      tl.className = "corner tl";
+      tl.textContent = c.tl;
+      const tr = document.createElement("span");
+      tr.className = "corner tr" + (c.trFootnote ? " footnote" : "");
+      tr.textContent = c.trFootnote ? c.tr + "*" : c.tr;
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = c.name;
+      const hex = document.createElement("div");
+      hex.className = "hex";
+      hex.textContent = c.hex;
+
+      div.append(tl, tr, name, hex);
+      return div;
+    }
+
+    function makeSection(title, hint, cells, cols) {
+      const root = document.getElementById("root");
+
+      const h2 = document.createElement("h2");
+      h2.textContent = title;
+      if (hint) {
+        const span = document.createElement("span");
+        span.className = "hint";
+        span.textContent = hint;
+        h2.appendChild(span);
+      }
+      root.appendChild(h2);
+
+      const grid = document.createElement("div");
+      grid.className = "grid c" + (cols || 8);
+      for (const c of cells) grid.appendChild(makeCell(c));
+      root.appendChild(grid);
+    }
+
+    /* -----------------------------------------------------------
+     * Layout
+     * --------------------------------------------------------- */
+    makeSection(
+      "Terminal palette (16 colours)",
+      "morhetz/gruvbox base + bright — slot index in the top-right corner",
+      terminal16, 8);
+
+    makeSection(
+      "Dark backgrounds",
+      "bg0_h / bg0_s mark the hard / soft contrast variants",
+      darkBackgrounds, 8);
+
+    makeSection(
+      "Light backgrounds",
+      "for g:gruvbox_background = 'light'",
+      lightBackgrounds, 8);
+
+    makeSection(
+      "Dark foregrounds",
+      "fg1 (== slot 15) is the default text colour on dark bg",
+      darkForegrounds, 8);
+
+    makeSection(
+      "Light foregrounds",
+      "fg1 is the default text colour on light bg",
+      lightForegrounds, 8);
+
+    makeSection(
+      "Neutral accents",
+      "the canonical 8 accents (terminal slots 1..6 plus orange)",
+      neutralAccents, 8);
+
+    makeSection(
+      "Bright accents",
+      "default accents on dark bg — used by g:gruvbox_contrast_dark='hard|medium'",
+      brightAccents, 8);
+
+    makeSection(
+      "Faded accents",
+      "darker variants used on light bg — also g:gruvbox_improved_strings",
+      fadedAccents, 8);
+
+    makeSection(
+      "Gruvbox-Material accents",
+      "sainnhe/gruvbox-material — softer, slightly desaturated variants",
+      materialAccents, 8);
+
+    makeSection(
+      "Gruvbox-Material backgrounds (dark)",
+      "hard / medium / soft via g:gruvbox_material_background",
+      materialDarkBg, 8);
+
+    makeSection(
+      "Gruvbox-Material backgrounds (light)",
+      "hard / medium / soft via g:gruvbox_material_background",
+      materialLightBg, 8);
+  </script>
+</body>
+</html>
