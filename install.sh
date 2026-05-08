@@ -128,11 +128,15 @@ copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xm
 copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
     "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
 
-info "ICONs settings"
+info "UI settings"
+make_dir "$HOME/.local/share/icons"
+make_dir "$HOME/.local/share/themes"
 make_link "$EXECUTE_DIRNAME/ui/gruvbox-plus-icon-pack/Gruvbox-Plus-Dark" \
     "${HOME}/.local/share/icons/Gruvbox-Plus-Dark"
 make_link "$EXECUTE_DIRNAME/ui/gruvbox-plus-icon-pack/Gruvbox-Plus-Light" \
     "${HOME}/.local/share/icons/Gruvbox-Plus-Light"
+make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
+    "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
 
 if hash i3 2>/dev/null; then
     info "Config for i3"
