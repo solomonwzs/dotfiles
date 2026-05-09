@@ -112,3 +112,29 @@ picom 解决了视觉问题，但幻影窗仍是一个独立 X11 窗口，会出
 **Why:** 2026-05-05 试过 `<applications title="">` 规则、`wmctrl -b add,skip_*`、改 `_NET_WM_WINDOW_TYPE` 都无效；只有 unmap 物理移除了切换列表里的项。
 **How to apply:** 同类问题（其他 wine Chromium 应用、QQ 等）出现 Alt+Tab 多余项时，复用同一脚本，按 WM_CLASS 加分支即可。
 
+## xfce4-panel 任务栏 urgent 闪烁
+
+xfce4-panel 4.20 的 tasklist 在窗口请求关注（`_NET_WM_STATE_DEMANDS_ATTENTION` / urgent hint）时，**给按钮加上 GTK 通用 style class `.suggested-action`**（不是 `.needs-attention`、不是 `.urgent`），靠周期性切这个 class 实现持续 strobing。
+
+**坑：** 主题在 panel 段写了通配 `button` 透明背景规则，会用更高特异性把 `.suggested-action` 的高亮背景压掉，闪烁就看不见。例：
+
+```css
+/* 特异性 (0,2,1) — 会覆盖 button.suggested-action 的 (0,2,0) */
+.xfce4-panel.background button {
+  background-color: transparent;
+}
+```
+
+**修复**（见 `ui/gruvbox-material-gtk-dark-hidpi/gtk-3.0/xfce4.css`）：
+
+```css
+.xfce4-panel.background button.suggested-action {
+  background-color: #504945;
+}
+```
+
+特异性 (0,3,1) 压过 panel 通配规则，class 切换才有视觉效果。
+
+**Why:** 2026-05-09 排查 gruvbox-material 主题任务栏不闪、其他主题闪 ≈ 半天，错过 `.needs-attention`、`#tasklist-button`、`.flat` 等多条线索；最终通过最小化测试 CSS（剩 `.background` + `button.suggested-action` 两条规则即可闪）才定位到真正 class 名。
+**How to apply:** 移植/魔改 GTK3 主题遇到 xfce 任务栏 urgent 不闪，先看主题里有没有 panel 段通配 `button { background: transparent }` 类规则压过 `button.suggested-action`；不要再去找 `needs-attention`。
+

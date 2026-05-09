@@ -1,0 +1,158 @@
+/**
+ * xfce4-panel
+ */
+.xfce4-panel.background {
+  border: none;
+  background-color: #1e1c1b;
+  color: rgba(221, 199, 161, 0.7);
+  font-weight: 500;
+}
+.xfce4-panel.background button {
+  min-height: 16px;
+  min-width: 16px;
+  padding: 0;
+  border-radius: 0;
+  color: rgba(221, 199, 161, 0.7);
+  box-shadow: none;
+  background-color: transparent;
+}
+.xfce4-panel.background button.suggested-action {
+  background-color: #504945;
+}
+.xfce4-panel.background button:drop(active),
+.xfce4-panel.background button:hover {
+  box-shadow: none;
+  background-color: rgba(221, 199, 161, 0.08);
+}
+.xfce4-panel.background button:focus {
+  box-shadow: none;
+  background-color: rgba(221, 199, 161, 0.08);
+}
+.xfce4-panel.background button:active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(221, 199, 161, 0.12) 10%,
+    transparent 0%
+  );
+}
+.xfce4-panel.background button:disabled {
+  background-color: transparent;
+  color: rgba(221, 199, 161, 0.3);
+}
+.xfce4-panel.background button:checked {
+  color: #ddc7a1;
+  box-shadow: none;
+  background-color: rgba(221, 199, 161, 0.12);
+}
+.xfce4-panel.background button:checked:drop(active),
+.xfce4-panel.background button:checked:hover {
+  box-shadow: none;
+  background-color: rgba(221, 199, 161, 0.1904);
+}
+.xfce4-panel.background button:checked:focus {
+  box-shadow: none;
+  background-color: rgba(221, 199, 161, 0.1904);
+}
+.xfce4-panel.background button:checked:active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(221, 199, 161, 0.12) 10%,
+    transparent 0%
+  );
+}
+.xfce4-panel.background button:checked:disabled {
+  background-color: rgba(221, 199, 161, 0.12);
+  color: rgba(221, 199, 161, 0.5);
+}
+.xfce4-panel.background .tasklist button {
+  border-image: image(transparent) 0 0 2/0 0 2px;
+}
+.xfce4-panel.background .tasklist button:checked {
+  border-image: image(currentcolor) 0 0 2/0 0 2px;
+}
+.xfce4-panel.background .tasklist button image {
+  padding: 4px;
+}
+.xfce4-panel.background frame > border {
+  border-style: none;
+  background-color: transparent;
+}
+.xfce4-panel.background progressbar progress {
+  background-color: #7c6f64;
+}
+.xfce4-panel.background progressbar trough {
+  background-color: rgba(221, 199, 161, 0.2);
+}
+
+wnck-pager:hover {
+  background-color: rgba(221, 199, 161, 0.08);
+}
+wnck-pager:active {
+  background-color: rgba(221, 199, 161, 0.12);
+}
+wnck-pager:selected {
+  background-color: #7c6f64;
+}
+
+XfdesktopIconView.view {
+  border-radius: 6px;
+  color: #fff;
+  text-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.14),
+    0 1px 3px rgba(0, 0, 0, 0.12);
+}
+XfdesktopIconView.view:active {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.6);
+}
+XfdesktopIconView.view .rubberband {
+  border-radius: 0;
+}
+
+#XfceNotifyWindow {
+  border-radius: 6px;
+  box-shadow:
+    0 2px 2.4px -1px rgba(0, 0, 0, 0.2),
+    0 4px 3px 0 rgba(0, 0, 0, 0.14),
+    0 1px 6px 0 rgba(0, 0, 0, 0.12),
+    inset 0 1px rgba(255, 255, 255, 0.05);
+  background-color: #3c3836;
+  color: #d4be98;
+}
+#XfceNotifyWindow buttonbox button:not(:disabled) {
+  color: #7c6f64;
+  box-shadow: none;
+  background-color: transparent;
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):drop(active),
+#XfceNotifyWindow buttonbox button:not(:disabled):hover {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.08);
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):focus {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.08);
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(124, 111, 100, 0.12) 10%,
+    transparent 0%
+  );
+}
+#XfceNotifyWindow label#summary {
+  font-weight: bold;
+}
+#XfceNotifyWindow label#summary + label {
+  color: rgba(212, 190, 152, 0.7);
+}
+#xfwm-tabwin {
+  padding: 12px;
+  border-radius: 6px;
+  -xfwmtabwinwidget-icon-size: 128px;
+  -xfwmtabwinwidget-preview-size: 320px;
+}
