@@ -96,7 +96,7 @@
       <property
         name="&lt;Super&gt;p"
         type="string"
-        value="xfce4-display-settings --minimal"
+        value="/home/solomon/dotfiles/shell/rofi_player.sh"
       />
       <property
         name="&lt;Primary&gt;&lt;Shift&gt;Escape"
