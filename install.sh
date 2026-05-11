@@ -97,6 +97,18 @@ function git_clone() {
         git clone "$addr" "$dir")
 }
 
+function git_clone_or_pull() {
+    addr="$1"
+    dir="$2"
+    if [ -d "$dir/.git" ]; then
+        info "Update '$dir'"
+        git -C "$dir" pull --ff-only
+    else
+        info "Download '$addr' -> '$dir'"
+        git clone "$addr" "$dir"
+    fi
+}
+
 # deps=("fzf" "tmux" "rg")
 # for i in "${deps[@]}"; do
 #     (! hash "$i" && warn "Not install '$i'") || true
@@ -131,10 +143,34 @@ copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboa
 info "UI settings"
 make_dir "$HOME/.local/share/icons"
 make_dir "$HOME/.local/share/themes"
-make_link "$EXECUTE_DIRNAME/ui/gruvbox-plus-icon-pack/Gruvbox-Plus-Dark" \
+
+# Fetch / refresh gruvbox-plus-icon-pack into ~/.local/share/icons,
+# then symlink the two themes one level up so GTK finds them at
+# the canonical Gruvbox-Plus-{Dark,Light} names.
+GRUVBOX_PLUS_DIR="$HOME/.local/share/icons/gruvbox-plus-icon-pack"
+git_clone_or_pull \
+    "https://github.com/SylEleuth/gruvbox-plus-icon-pack.git" \
+    "$GRUVBOX_PLUS_DIR"
+make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" \
     "${HOME}/.local/share/icons/Gruvbox-Plus-Dark"
-make_link "$EXECUTE_DIRNAME/ui/gruvbox-plus-icon-pack/Gruvbox-Plus-Light" \
+make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" \
     "${HOME}/.local/share/icons/Gruvbox-Plus-Light"
+
+# Patch inherit chain: upstream Dark inherits from breeze-dark, Light from
+# breeze; neither is shipped here, so symbolic icons (system-search,
+# edit-find, tab-new, ...) fall back to "image-missing". Adwaita ships
+# with gtk3 itself and has a complete symbolic set.
+sed -i 's/^Inherits=breeze-dark,hicolor$/Inherits=Adwaita,hicolor/' \
+    "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark/index.theme"
+sed -i 's/^Inherits=Gruvbox-Plus-Dark,breeze,hicolor$/Inherits=Gruvbox-Plus-Dark,Adwaita,hicolor/' \
+    "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light/index.theme"
+
+if hash gtk-update-icon-cache 2>/dev/null; then
+    info "Refresh gruvbox-plus-icon-pack icon cache"
+    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" || true
+    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" || true
+fi
+
 make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
     "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
 
