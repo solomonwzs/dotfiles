@@ -25,7 +25,7 @@
 
 set -euo pipefail
 
-ROFI_PROMPT="player"
+ROFI_PROMPT=" "
 FALLBACK_ICON="multimedia-player"
 
 function need() {
