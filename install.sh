@@ -306,6 +306,13 @@ else
     info "Skip config for kitty"
 fi
 
+if (hash alacritty 2>/dev/null); then
+    info "Config for alacritty"
+    make_link "$EXECUTE_DIRNAME/config/alacritty" "$HOME/.config/alacritty"
+else
+    info "Skip config for alacritty"
+fi
+
 if (hash bat 2>/dev/null); then
     info "Config for bat"
     make_link "$EXECUTE_DIRNAME/config/bat" "$HOME/.config/bat"
