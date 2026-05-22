@@ -127,8 +127,7 @@ make_link "$EXECUTE_DIRNAME/shell/gmail_oauth2_token.sh" "$HOME/bin/gmail_oauth2
 make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
 make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
 make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
-make_dir "$HOME/.config/gtk-3.0"
-make_link "$EXECUTE_DIRNAME/config/gtk-3.0/settings.ini" "$HOME/.config/gtk-3.0/settings.ini"
+make_link "$EXECUTE_DIRNAME/config/gtk-3.0" "$HOME/.config/gtk-3.0"
 
 info "Niri settings"
 make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"

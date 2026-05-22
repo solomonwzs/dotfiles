@@ -23,19 +23,19 @@ multiplier = 3
 size = 12.0
 
 [font.normal]
-family = "Mononoki Nerd Font"
+family = "Mononoki Nerd Font Mono"
 style  = "Regular"
 
 [font.bold]
-family = "Mononoki Nerd Font"
+family = "Mononoki Nerd Font Mono"
 style  = "Bold"
 
 [font.italic]
-family = "Mononoki Nerd Font"
+family = "Mononoki Nerd Font Mono"
 style  = "Italic"
 
 [font.bold_italic]
-family = "Mononoki Nerd Font"
+family = "Mononoki Nerd Font Mono"
 style  = "Bold Italic"
 
 [cursor]

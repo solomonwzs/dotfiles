@@ -2341,14 +2341,10 @@ searchbar > revealer > box {
   ):first-child:dir(rtl),
 .path-bar-box
   .nautilus-path-bar
-  button:hover:not(.suggested-action):not(.destructive-action):last-child:dir(
-    ltr
-  ),
+  button:hover:not(.suggested-action):not(.destructive-action):last-child:dir(ltr),
 .path-bar-box
   .nautilus-path-bar
-  button:hover:not(.suggested-action):not(.destructive-action):first-child:dir(
-    rtl
-  ),
+  button:hover:not(.suggested-action):not(.destructive-action):first-child:dir(rtl),
 .titlebar
   button:not(.suggested-action):not(.destructive-action):checked:drop(active),
 .titlebar button:not(.suggested-action):not(.destructive-action):checked:hover {
@@ -2357,28 +2353,20 @@ searchbar > revealer > box {
 }
 .path-bar-box
   .nautilus-path-bar
-  button:focus:not(.suggested-action):not(.destructive-action):last-child:dir(
-    ltr
-  ),
+  button:focus:not(.suggested-action):not(.destructive-action):last-child:dir(ltr),
 .path-bar-box
   .nautilus-path-bar
-  button:focus:not(.suggested-action):not(.destructive-action):first-child:dir(
-    rtl
-  ),
+  button:focus:not(.suggested-action):not(.destructive-action):first-child:dir(rtl),
 .titlebar button:not(.suggested-action):not(.destructive-action):checked:focus {
   box-shadow: none;
   background-color: rgba(221, 199, 161, 0.08);
 }
 .path-bar-box
   .nautilus-path-bar
-  button:active:not(.suggested-action):not(.destructive-action):last-child:dir(
-    ltr
-  ),
+  button:active:not(.suggested-action):not(.destructive-action):last-child:dir(ltr),
 .path-bar-box
   .nautilus-path-bar
-  button:active:not(.suggested-action):not(.destructive-action):first-child:dir(
-    rtl
-  ),
+  button:active:not(.suggested-action):not(.destructive-action):first-child:dir(rtl),
 .titlebar
   button:not(.suggested-action):not(.destructive-action):checked:active {
   box-shadow: none;

@@ -1,0 +1,35 @@
+/* User-level GTK CSS overrides — kept here so theme files in
+ * ~/.local/share/themes/ stay clean and survive re-runs of install.sh.
+ *
+ * NOTE: GTK loads this AFTER the active theme, so any rule here wins on
+ * a tie. Specificity still matters between rules within this file.
+ */
+
+/* ---------- compact notebook tabs ----------------------------------
+ * Shrink notebook tab padding/min-height globally. Affects every GTK3
+ * notebook (xfce4-terminal, gedit, xfce4-settings, ...). Tried scoping
+ * by `window#TerminalWindow` first but the selector never matched on
+ * this xfce4-terminal version, so we accept the wider blast radius.
+ */
+/* notebook tab { */
+/*     min-height: 22px; */
+/*     padding: 0 8px; */
+/*     margin: 0; */
+/* } */
+
+/* notebook tab label { */
+/*     font-size: 10pt; */
+/*     padding: 0; */
+/* } */
+
+/* notebook tab button { */
+/*     min-width: 18px; */
+/*     min-height: 18px; */
+/*     padding: 0; */
+/*     margin: 0; */
+/* } */
+
+/* notebook header { */
+/*     padding: 0; */
+/*     min-height: 0; */
+/* } */
