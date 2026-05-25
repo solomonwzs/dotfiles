@@ -14,20 +14,58 @@ else
 fi
 EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 
+# --- logging ---------------------------------------------------------
+# Use the dotfiles repo path as a tilde substitute so log lines stay
+# narrow even when paths get long.
+function _short() {
+    local p="$1"
+    p="${p/#$HOME/\~}"
+    p="${p/#$EXECUTE_DIRNAME/.}"
+    printf '%s' "$p"
+}
+
+function section() {
+    # Bold cyan banner with a leading blank line, used for major
+    # phases: Common / XFCE / UI / etc.
+    printf '\n\033[1;36m== %s ==\033[0m\n' "$1"
+}
+
+function group() {
+    # Lightweight subsection (per-tool blocks). Shorter than `section`
+    # so the script doesn't drown in banners when iterating over a
+    # dozen single-link tools.
+    printf '\033[1;34m──\033[0m \033[1m%s\033[0m\n' "$1"
+}
+
 function info() {
-    echo -e "\033[01;32m[INFO]\033[01;37m $1\033[0m"
+    # Green check mark for successful actions (created, linked, ...).
+    printf '  \033[1;32m✔\033[0m %s\n' "$1"
+}
+
+function skip() {
+    # Dim grey dot for idempotent no-ops (already linked / exists).
+    printf '  \033[2m·\033[0m \033[2m%s\033[0m\n' "$1"
 }
 
 function warn() {
-    echo -e "\033[01;31m[WARN]\033[01;37m $1\033[0m"
+    # Yellow exclamation for things the user should notice but that
+    # don't stop the script — kept on stderr so a `2>/dev/null` filter
+    # can hide them.
+    printf '  \033[1;33m!\033[0m %s\n' "$1" >&2
+}
+
+function err() {
+    # Red cross + exit. Reserved for unrecoverable misconfiguration.
+    printf '  \033[1;31m✘\033[0m %s\n' "$1" >&2
+    exit 1
 }
 
 function check_pkg() {
     if _loc="$(type -p "$1")" && [[ -n $_loc ]]; then
-        return
-    else
-        warn "Missing $1"
+        return 0
     fi
+    warn "missing binary: $1"
+    return 1
 }
 
 pkg_list=(
@@ -45,67 +83,83 @@ pkg_list=(
     "vim"
     "yarn"
 )
+section "Dependencies"
+missing=0
 for p in "${pkg_list[@]}"; do
-    check_pkg "$p"
+    if ! check_pkg "$p"; then
+        missing=$((missing + 1))
+    fi
 done
+if [ "$missing" -eq 0 ]; then
+    info "all $(printf '%d' "${#pkg_list[@]}") binaries present"
+fi
 
 function make_link() {
-    target="$1"
-    link_name="$2"
+    local target="$1"
+    local link_name="$2"
 
-    if [ -e "$target" ]; then
-        (
-            [[ -f "$link_name" || -L "$link_name" ]] &&
-                warn "overwrite old conf, '$link_name'" &&
-                rm "$link_name" &&
-                ln -s "$target" "$link_name"
-        ) || (
-            [ -d "$link_name" ] &&
-                warn "overwrite old conf dir, '$link_name'" &&
-                rm -r "$link_name" &&
-                ln -s "$target" "$link_name"
-        ) || (
-            info "Create '$link_name'" &&
-                ln -s "$target" "$link_name"
-        )
-    else
-        warn "no '$target'"
-        exit 1
+    if [ ! -e "$target" ]; then
+        err "missing source: $(_short "$target")"
     fi
 
-    # ([ -e "$link_name" ] && warn "'$link_name' has exists") || (
-    #     info "Create '$link_name'" && ln -s "$target" "$link_name"
-    # )
+    # Already a symlink that points to the right place — nothing to do.
+    if [ -L "$link_name" ] && [ "$(readlink -f "$link_name")" = "$(readlink -f "$target")" ]; then
+        skip "$(_short "$link_name") → $(_short "$target")"
+        return
+    fi
+
+    # Some other file/dir/link exists at the destination; replace it.
+    if [ -e "$link_name" ] || [ -L "$link_name" ]; then
+        warn "replace $(_short "$link_name")"
+        rm -rf "$link_name"
+    fi
+
+    ln -s "$target" "$link_name"
+    info "link $(_short "$link_name") → $(_short "$target")"
 }
 
 function make_dir() {
-    target="$1"
-    ([ -e "$target" ] && warn "'$target' has exists") || (
-        info "Create '$target'" && mkdir -p "$target"
-    )
+    local target="$1"
+    if [ -d "$target" ]; then
+        skip "dir $(_short "$target")"
+        return
+    fi
+    mkdir -p "$target"
+    info "mkdir $(_short "$target")"
 }
 
 function copy_file() {
-    ([ -e "$2" ] && warn "'$2' has exists") || (info "Create '$2'" &&
-        cp "$1" "$2")
+    local src="$1"
+    local dst="$2"
+    if [ -e "$dst" ]; then
+        skip "keep $(_short "$dst")"
+        return
+    fi
+    mkdir -p "$(dirname "$dst")"
+    cp "$src" "$dst"
+    info "copy $(_short "$src") → $(_short "$dst")"
 }
 
 function git_clone() {
-    addr="$1"
-    dir="$2"
-    ([ -e "$dir" ] && warn "'$dir' has exists") || (info "Download '$1'" &&
-        git clone "$addr" "$dir")
+    local addr="$1"
+    local dir="$2"
+    if [ -e "$dir" ]; then
+        skip "git $(_short "$dir")"
+        return
+    fi
+    info "clone $addr → $(_short "$dir")"
+    git clone --quiet "$addr" "$dir"
 }
 
 function git_clone_or_pull() {
-    addr="$1"
-    dir="$2"
+    local addr="$1"
+    local dir="$2"
     if [ -d "$dir/.git" ]; then
-        info "Update '$dir'"
-        git -C "$dir" pull --ff-only
+        info "pull $(_short "$dir")"
+        git -C "$dir" pull --ff-only --quiet
     else
-        info "Download '$addr' -> '$dir'"
-        git clone "$addr" "$dir"
+        info "clone $addr → $(_short "$dir")"
+        git clone --quiet "$addr" "$dir"
     fi
 }
 
@@ -114,7 +168,7 @@ function git_clone_or_pull() {
 #     (! hash "$i" && warn "Not install '$i'") || true
 # done
 
-info "Common settings"
+section "Common"
 make_dir "$HOME/bin"
 make_dir "$HOME/.config"
 make_dir "$HOME/.local/share"
@@ -129,17 +183,17 @@ make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
 make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
 make_link "$EXECUTE_DIRNAME/config/gtk-3.0" "$HOME/.config/gtk-3.0"
 
-info "Niri settings"
+section "Niri"
 make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
 make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
 
-info "XFCE settings"
+section "XFCE"
 copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml" \
     "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml"
 copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
     "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
 
-info "UI settings"
+section "UI"
 make_dir "$HOME/.local/share/icons"
 make_dir "$HOME/.local/share/themes"
 
@@ -165,75 +219,77 @@ sed -i 's/^Inherits=Gruvbox-Plus-Dark,breeze,hicolor$/Inherits=Gruvbox-Plus-Dark
     "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light/index.theme"
 
 if hash gtk-update-icon-cache 2>/dev/null; then
-    info "Refresh gruvbox-plus-icon-pack icon cache"
-    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" || true
-    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" || true
+    info "refresh gruvbox-plus-icon-pack icon cache"
+    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" >/dev/null 2>&1 || true
+    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" >/dev/null 2>&1 || true
 fi
 
 make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
     "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
 
+section "Apps"
+
 if hash i3 2>/dev/null; then
-    info "Config for i3"
+    group "i3"
     make_dir "$HOME/.config/i3"
     make_link "$EXECUTE_DIRNAME/config/i3/config" "$HOME/.config/i3/config"
 else
-    info "Skip config for i3"
+    skip "i3 (binary not found)"
 fi
 
 if hash openbox 2>/dev/null; then
-    info "Config for openbox"
+    group "openbox"
     make_link "$EXECUTE_DIRNAME/config/openbox" "$HOME/.config/openbox"
 else
-    info "Skip config for openbox"
+    skip "openbox (binary not found)"
 fi
 
 if hash labwc 2>/dev/null; then
-    info "Config for labwc"
+    group "labwc"
     make_link "$EXECUTE_DIRNAME/config/labwc" "$HOME/.config/labwc"
 else
-    info "Skip config for labwc"
+    skip "labwc (binary not found)"
 fi
 
 if hash rofi 2>/dev/null; then
-    info "Config for rofi"
+    group "rofi"
     make_link "$EXECUTE_DIRNAME/config/rofi" "$HOME/.config/rofi"
 else
-    info "Skip config for rofi"
+    skip "rofi (binary not found)"
 fi
 
 if hash xsettingsd 2>/dev/null; then
-    info "Config for xsettingsd"
+    group "xsettingsd"
     make_dir "$HOME/.config/xsettingsd"
     make_link "$EXECUTE_DIRNAME/config/xsettingsd/xsettingsd.conf" \
         "$HOME/.config/xsettingsd/xsettingsd.conf"
 else
-    info "Skip config for xsettingsd"
+    skip "xsettingsd (binary not found)"
 fi
 
 if hash tint2 2>/dev/null; then
-    info "Config for tint2"
+    group "tint2"
     make_dir "$HOME/.config/tint2"
     make_link "$EXECUTE_DIRNAME/config/tint2/tint2rc" "$HOME/.config/tint2/tint2rc"
 else
-    info "Skip config for tint2"
+    skip "tint2 (binary not found)"
 fi
 
 if hash picom 2>/dev/null; then
-    info "Config for picom"
+    group "picom"
     make_dir "$HOME/.config/picom"
     make_link "$EXECUTE_DIRNAME/config/picom/picom.conf" "$HOME/.config/picom/picom.conf"
 else
-    info "Skip config for picom"
+    skip "picom (binary not found)"
 fi
 
 if (hash vim 2>/dev/null || hash nvim 2>/dev/null); then
-    info "Config for vim/neovim"
+    group "vim/neovim"
     make_link "$EXECUTE_DIRNAME/vim" "$HOME/.vim"
     make_link "$EXECUTE_DIRNAME/vim" "$HOME/.config/nvim"
     make_link "$EXECUTE_DIRNAME/vim/vimrc" "$HOME/.config/nvim/init.vim"
 else
-    info "Skip config for vim/neovim"
+    skip "vim/neovim (binary not found)"
 fi
 
 # info "Create terminfo"
@@ -243,7 +299,7 @@ fi
 #     tic -x "$EXECUTE_DIRNAME/tmux/xterm-256color-italic.terminfo"
 
 if (hash zsh 2>/dev/null); then
-    info "Config for zsh"
+    group "zsh"
     make_link "$EXECUTE_DIRNAME/config/zsh/zshrc" "$HOME/.zshrc"
 
     OH_MY_ZSH_PATH="$HOME/.oh-my-zsh"
@@ -253,14 +309,14 @@ if (hash zsh 2>/dev/null); then
     git_clone "https://github.com/zsh-users/zsh-syntax-highlighting.git" \
         "$OH_MY_ZSH_PATH/custom/plugins/zsh-syntax-highlighting"
 else
-    info "Skip config for zsh"
+    skip "zsh (binary not found)"
 fi
 
 if (hash tmux 2>/dev/null); then
-    info "Config for tmux"
+    group "tmux"
     make_link "$EXECUTE_DIRNAME/tmux/tmux.conf" "$HOME/.tmux.conf"
 else
-    info "Skip config for tmux"
+    skip "tmux (binary not found)"
 fi
 
 # coc_ext_dir="$EXECUTE_DIRNAME/vim/coc-extensions"
@@ -275,55 +331,56 @@ fi
 # fi
 
 if _loc="$(uname)" && [[ "$_loc" == "Darwin" ]]; then
+    group "osx tools"
     cd "$EXECUTE_DIRNAME/osx"
-    info "Build osx tools"
+    info "build"
     make
 else
-    info "Skip build osx tools"
+    skip "osx tools (not macOS)"
 fi
 
 if (hash tig 2>/dev/null); then
-    info "Config for tig"
+    group "tig"
     make_link "$EXECUTE_DIRNAME/config/tig/tigrc" "$HOME/.tigrc"
 else
-    info "Skip config for tig"
+    skip "tig (binary not found)"
 fi
 
 if (hash btop 2>/dev/null); then
-    info "Config for btop"
+    group "btop"
     make_dir "$EXECUTE_DIRNAME/config/btop"
     copy_file "$EXECUTE_DIRNAME/config/btop/btop.conf" \
         "$HOME/.config/btop/btop.conf"
 else
-    info "Skip config for btop"
+    skip "btop (binary not found)"
 fi
 
 if (hash kitty 2>/dev/null); then
-    info "Config for kitty"
+    group "kitty"
     make_link "$EXECUTE_DIRNAME/config/kitty" "$HOME/.config/kitty"
 else
-    info "Skip config for kitty"
+    skip "kitty (binary not found)"
 fi
 
 if (hash alacritty 2>/dev/null); then
-    info "Config for alacritty"
+    group "alacritty"
     make_link "$EXECUTE_DIRNAME/config/alacritty" "$HOME/.config/alacritty"
 else
-    info "Skip config for alacritty"
+    skip "alacritty (binary not found)"
 fi
 
 if (hash bat 2>/dev/null); then
-    info "Config for bat"
+    group "bat"
     make_link "$EXECUTE_DIRNAME/config/bat" "$HOME/.config/bat"
 else
-    info "Skip config for bat"
+    skip "bat (binary not found)"
 fi
 
 if (hash fcitx5 2>/dev/null); then
-    info "Config for fcitx5"
+    group "fcitx5"
     make_dir "$HOME/.local/share/fcitx5"
     make_link "$EXECUTE_DIRNAME/config/fcitx5/themes" \
         "$HOME/.local/share/fcitx5/themes"
 else
-    info "Skip config for bat"
+    skip "bat (binary not found)"
 fi
