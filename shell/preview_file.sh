@@ -56,6 +56,17 @@ if [[ "$mime" =~ application/pdf ||
     _loc="$(type -p "document2text")" &&
     [[ -n $_loc ]]; then
     document2text "$filename" 2>/dev/null
+elif [[ "$filename" =~ \.md$ || "$filename" =~ \.markdown$ || "$mime" =~ text/markdown ]]; then
+    # glow drops ANSI styles when piped; fall back to bat in that case
+    if [[ -t 1 ]] && _loc="$(type -p "glow")" && [[ -n $_loc ]]; then
+        glow "$filename"
+    else
+        (bat --style=numbers --color=always --theme=gruvbox-dark "$filename" ||
+            highlight -O ansi -l "$filename" ||
+            coderay "$filename" ||
+            rougify "$filename" ||
+            cat "$filename") 2>/dev/null | head -"$line"
+    fi
 elif [[ "$mime" =~ image ]]; then
     height=$((height * 2 - 1))
     image_view --width "$width" --height "$height" --ratio "$ratio" "$filename"
