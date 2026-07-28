@@ -1,4 +1,5 @@
 color cursor 223 237
+color cursor-blur 223 237
 color status default default
 color title-focus 223 66
 color title-blur 243 239
