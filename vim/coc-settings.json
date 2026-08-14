@@ -1,18 +1,27 @@
 {
   "coc.preferences.jumpCommand": "split",
   "coc.preferences.currentFunctionSymbolAutoUpdate": true,
-
-  "suggest.formatItems": ["abbr", "menu", "kind", "shortcut"],
-  "suggest.invalidInsertCharacters": [" ", "(", "<", "{", "[", "\r", "\n"],
-
+  "suggest.formatItems": [
+    "abbr",
+    "menu",
+    "kind",
+    "shortcut"
+  ],
+  "suggest.invalidInsertCharacters": [
+    " ",
+    "(",
+    "<",
+    "{",
+    "[",
+    "\r",
+    "\n"
+  ],
   "git.addedSign.hlGroup": "GitSignsAdd",
   "git.changedSign.hlGroup": "GitSignsChange",
   "git.changeRemovedSign.hlGroup": "GitSignsChange",
   "git.removedSign.hlGroup": "GitSignsDelete",
   "git.topRemovedSign.hlGroup": "GitSignsDelete",
-
   "rust-analyzer.server.path": "/home/solomon/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rust-analyzer",
-
   "suggest.floatConfig": {
     "border": true,
     "borderhighlight": "CocFloatingBorder"
@@ -37,12 +46,10 @@
     "border": true,
     "borderhighlight": "CocFloatingBorder"
   },
-
   "diagnostic.infoSign": "",
   "diagnostic.hintSign": "󰌵",
   "diagnostic.errorSign": "",
   "diagnostic.warningSign": "",
-
   "list.statusLineSegments": [
     "%#CocListHeader# CocList",
     "%#CocListSep0# %#CocListArgs#%{coc#list#status(\"args\")}",
@@ -55,23 +62,21 @@
   "list.insertMappings": {
     "<C-x>": "action:ctrl-x",
     "<C-s>": "action:ctrl-s",
-
     "<C-p>": "action:preview"
   },
   "list.normalMappings": {
     // "<C-x>": "do:exit"
   },
   "list.previewSplitRight": true,
-
   "coc-ext.erlang.erlangLsPath": "/home/solomon/workspace/erlang/erlang_ls/_build/default/bin/erlang_ls",
   "coc-ext.erlang.traceServer": "off",
-
   "coc-ext.log.detail": true,
   "coc-ext.log.level": 0,
-
   "coc-ext.formatting": [
     {
-      "languages": ["proto"],
+      "languages": [
+        "proto"
+      ],
       "setting": {
         "provider": "clang-format",
         "args": {
@@ -82,7 +87,10 @@
       }
     },
     {
-      "languages": ["c", "cpp"],
+      "languages": [
+        "c",
+        "cpp"
+      ],
       "setting": {
         "provider": "clang-format",
         "args": {
@@ -93,7 +101,9 @@
       }
     },
     {
-      "languages": ["lua"],
+      "languages": [
+        "lua"
+      ],
       "setting": {
         "provider": "lua-format",
         "args": [
@@ -103,43 +113,50 @@
       }
     },
     {
-      "languages": ["css"],
+      "languages": [
+        "css"
+      ],
       "setting": {
         "provider": "prettier",
         "args": []
       }
     }
   ],
-
   // coc-pyright
   "python.pythonPath": "/home/solomon/.local/lib/python/bin/python",
   "python.formatting.provider": "black",
-  "python.formatting.blackArgs": ["-l", "80"],
+  "python.formatting.blackArgs": [
+    "-l",
+    "80"
+  ],
   "inlayHint.enable": false,
-
   // coc-sumneko-lua
   "sumneko-lua.enableNvimLuaDev": true,
   "Lua.hint.enable": false,
   "Lua.diagnostics.enable": false,
-
   "languageserver": {
     // pacman -S bash-language-server
     "bash": {
       "command": "bash-language-server",
-      "args": ["start"],
-      "filetypes": ["sh"],
-      "ignoredRootPaths": ["~"]
+      "args": [
+        "start"
+      ],
+      "filetypes": [
+        "sh"
+      ],
+      "ignoredRootPaths": [
+        "~"
+      ]
     },
-
     // :CocInstall coc-rls
     // "rust": {},
-
     "golang": {
       "command": "gopls",
-      "filetypes": ["go"],
+      "filetypes": [
+        "go"
+      ],
       "initializationOptions": {}
     },
-
     "clangd": {
       "command": "clangd",
       "args": [],
@@ -150,9 +167,13 @@
         ".git/",
         ".hg/"
       ],
-      "filetypes": ["c", "cpp", "objc", "objcpp"]
+      "filetypes": [
+        "c",
+        "cpp",
+        "objc",
+        "objcpp"
+      ]
     },
-
     // "ccls": {
     //   "command": "ccls",
     //   "filetypes": ["c", "cpp", "cuda", "objc", "objcpp"],
@@ -163,12 +184,17 @@
     //     }
     //   }
     // },
-
     "elixirLS": {
       "command": "~/.vim/language_servers/elixir-ls/release/language_server.sh",
-      "filetypes": ["elixir", "eelixir"]
+      "filetypes": [
+        "elixir",
+        "eelixir"
+      ]
     }
   },
   "git.enableGutters": true,
-  "snippets.ultisnips.pythonPrompt": false
+  "snippets.ultisnips.pythonPrompt": false,
+  "json.schemaDownload.trustedDomains": {
+    "https://raw.githubusercontent.com": true
+  }
 }

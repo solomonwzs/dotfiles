@@ -49,7 +49,10 @@ CPU_ENERGY_PERF_POLICY_ON_AC=balance_power
 # Enable PCIe runtime power management on AC (default: on = disabled)
 RUNTIME_PM_ON_AC=auto
 
-# Battery charge stop threshold (Lenovo ThinkPad conservation mode)
+# Battery charge thresholds (Lenovo ThinkPad conservation mode)
+# TLP requires start *and* stop to be specified together, otherwise the
+# single threshold is ignored and the battery is skipped.
+START_CHARGE_THRESH_BAT0=75
 STOP_CHARGE_THRESH_BAT0=80
 EOF
 }
