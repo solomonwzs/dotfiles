@@ -195,6 +195,7 @@
   "git.enableGutters": true,
   "snippets.ultisnips.pythonPrompt": false,
   "json.schemaDownload.trustedDomains": {
-    "https://raw.githubusercontent.com": true
+    "https://raw.githubusercontent.com": true,
+    "https://www.schemastore.org": true
   }
 }
