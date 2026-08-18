@@ -12,6 +12,8 @@ set -euo pipefail
 # EXECUTE_DIRNAME=$(dirname "$EXECUTE_FILENAME")
 
 declare -a CHROOT_ACTIVE_MOUNTS=()
+declare -a CHROOT_BIND_SOURCES=()
+declare -a CHROOT_BIND_TARGETS=()
 
 msg() {
     printf '\033[01;32m[MSG]\033[01;37m %s\033[0m\n' "$*"
@@ -27,8 +29,31 @@ die() {
 }
 
 usage() {
-    printf 'Usage: %s setup --root <path> --mountpoint <path> [--home <path>] [--no-data]\n' "${0##*/}" >&2
+    printf 'Usage: %s setup --root <path> --mountpoint <path> [--home <path>] [--no-data] [--bind-mount <source>:<target>]...\n' "${0##*/}" >&2
     printf '       %s down --mountpoint <path>\n' "${0##*/}" >&2
+}
+
+add_bind_mount() {
+    local mapping=$1
+    local source
+    local target
+    local component
+    local -a target_components=()
+
+    [[ "$mapping" == *:* && "$mapping" != *:*:* ]] || die "invalid --bind-mount mapping: $mapping"
+    source=${mapping%%:*}
+    target=${mapping#*:}
+
+    [[ "$source" == /* && ( -d "$source" || -f "$source" ) ]] || die "bind mount source must be an existing absolute directory or file: $source"
+    [[ "$target" == /* && "$target" != / && "$target" != */ && "$target" != *//* ]] || die "bind mount target must be an absolute directory below the chroot root: $target"
+
+    IFS=/ read -r -a target_components <<< "${target#/}"
+    for component in "${target_components[@]}"; do
+        [[ -n "$component" && "$component" != . && "$component" != .. ]] || die "invalid bind mount target: $target"
+    done
+
+    CHROOT_BIND_SOURCES+=("$source")
+    CHROOT_BIND_TARGETS+=("$target")
 }
 
 parse_setup_args() {
@@ -36,6 +61,8 @@ parse_setup_args() {
     CHROOT_MOUNTPOINT=''
     CHROOT_HOME='/home'
     CHROOT_MOUNT_DATA=true
+    CHROOT_BIND_SOURCES=()
+    CHROOT_BIND_TARGETS=()
 
     while (($#)); do
         case "$1" in
@@ -57,6 +84,11 @@ parse_setup_args() {
             --no-data)
                 CHROOT_MOUNT_DATA=false
                 shift
+                ;;
+            --bind-mount)
+                (($# >= 2)) || die 'missing value for --bind-mount'
+                add_bind_mount "$2"
+                shift 2
                 ;;
             *)
                 die "unknown setup option: $1"
@@ -120,14 +152,57 @@ chroot_teardown() {
     return "$status"
 }
 
+chroot_prepare_bind_mount_target() {
+    local chroot_root=$1
+    local bind_source=$2
+    local bind_target=$3
+    local component
+    local current_path=$chroot_root
+    local index
+    local last_index
+    local -a target_components=()
+
+    IFS=/ read -r -a target_components <<< "${bind_target#/}"
+    last_index=$((${#target_components[@]} - 1))
+
+    for index in "${!target_components[@]}"; do
+        component=${target_components[$index]}
+        current_path="$current_path/$component"
+        [[ ! -L "$current_path" ]] || die "bind mount target contains symbolic link: $bind_target"
+
+        if [[ -d "$bind_source" || "$index" -lt "$last_index" ]]; then
+            mkdir -p "$current_path"
+        else
+            [[ ! -e "$current_path" ]] && touch "$current_path"
+            [[ -f "$current_path" ]] || die "bind mount file target is not a regular file: $bind_target"
+        fi
+    done
+}
+
 chroot_prepare_mount_points() {
     local chroot_root=$1
+    local bind_target
+    local index
 
     [[ -d "$chroot_root" ]] || die "chroot root does not exist or is not a directory: $chroot_root"
 
     msg "preparing mount points in $chroot_root"
     mkdir -p "$chroot_root"/{home,data,etc,proc,sys,dev/pts,dev/shm,run/udev,tmp}
     touch "$chroot_root"/etc/{hosts,passwd,shadow,resolv.conf}
+
+    for index in "${!CHROOT_BIND_TARGETS[@]}"; do
+        bind_target=${CHROOT_BIND_TARGETS[$index]}
+        msg "creating bind mount target $chroot_root$bind_target"
+        chroot_prepare_bind_mount_target "$chroot_root" "${CHROOT_BIND_SOURCES[$index]}" "$bind_target"
+    done
+}
+
+chroot_add_bind_mounts() {
+    local index
+
+    for index in "${!CHROOT_BIND_SOURCES[@]}"; do
+        chroot_add_mount "${CHROOT_BIND_SOURCES[$index]}" "$1${CHROOT_BIND_TARGETS[$index]}" --bind || return
+    done
 }
 
 chroot_setup() {
@@ -158,6 +233,7 @@ chroot_setup() {
         chroot_add_mount /run "$2/run" --bind &&
         chroot_add_mount /run/udev "$2/run/udev" --bind &&
         chroot_add_mount tmp "$2/tmp" -t tmpfs -o mode=1777,strictatime,nodev,nosuid &&
+        chroot_add_bind_mounts "$2" &&
         CHROOT_ACTIVE_MOUNTS=()
 }
 
