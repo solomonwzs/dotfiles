@@ -29,7 +29,7 @@ die() {
 }
 
 usage() {
-    printf 'Usage: %s setup --root <path> --mountpoint <path> [--home <path>] [--no-data] [--bind-mount <source>:<target>]...\n' "${0##*/}" >&2
+    printf 'Usage: %s setup --root <path> --mountpoint <path> [--home <path>] [--user <name>] [--no-data] [--bind-mount <source>:<target>]...\n' "${0##*/}" >&2
     printf '       %s down --mountpoint <path>\n' "${0##*/}" >&2
 }
 
@@ -60,6 +60,7 @@ parse_setup_args() {
     CHROOT_ROOT=''
     CHROOT_MOUNTPOINT=''
     CHROOT_HOME='/home'
+    CHROOT_USER=''
     CHROOT_MOUNT_DATA=true
     CHROOT_BIND_SOURCES=()
     CHROOT_BIND_TARGETS=()
@@ -81,6 +82,11 @@ parse_setup_args() {
                 CHROOT_HOME=$2
                 shift 2
                 ;;
+            --user)
+                (($# >= 2)) || die 'missing value for --user'
+                CHROOT_USER=$2
+                shift 2
+                ;;
             --no-data)
                 CHROOT_MOUNT_DATA=false
                 shift
@@ -98,6 +104,7 @@ parse_setup_args() {
 
     [[ -n "$CHROOT_ROOT" ]] || die 'missing required option: --root'
     [[ -n "$CHROOT_MOUNTPOINT" ]] || die 'missing required option: --mountpoint'
+    [[ -z "$CHROOT_USER" || "$CHROOT_USER" =~ ^[a-z_][a-z0-9_-]*$ ]] || die "invalid user name: $CHROOT_USER"
 }
 
 parse_down_args() {
@@ -215,6 +222,23 @@ chroot_add_bind_mounts() {
     done
 }
 
+chroot_add_home_mount() {
+    local home_source=$1
+    local chroot_mountpoint=$2
+    local chroot_user=$3
+    local home_target="$chroot_mountpoint/home"
+
+    if [[ -n "$chroot_user" ]]; then
+        [[ ! -L "$home_target" ]] || die 'chroot home directory is a symbolic link'
+        mkdir -p "$home_target"
+        home_target="$home_target/$chroot_user"
+        [[ ! -L "$home_target" ]] || die "chroot user home directory is a symbolic link: $chroot_user"
+        mkdir -p "$home_target"
+    fi
+
+    chroot_add_mount "$home_source" "$home_target" --bind
+}
+
 chroot_setup() {
     msg "setting up chroot from $1 at $2"
     chroot_prepare_mount_points "$1"
@@ -223,7 +247,7 @@ chroot_setup() {
     chroot_add_mount "$1" "$2" --bind &&
         msg "making $2 mount private" &&
         mount --make-private "$2" &&
-        chroot_add_mount "$3" "$2/home" --bind &&
+        chroot_add_home_mount "$3" "$2" "$5" &&
         {
             if [[ "$4" == true ]]; then
                 chroot_add_mount /data "$2/data" --bind
@@ -280,7 +304,7 @@ case "${1-}" in
         parse_setup_args "$@"
         msg "creating chroot directory at $CHROOT_MOUNTPOINT"
         mkdir -p "$CHROOT_MOUNTPOINT" || die "failed to create chroot directory at $CHROOT_MOUNTPOINT"
-        chroot_setup "$CHROOT_ROOT" "$CHROOT_MOUNTPOINT" "$CHROOT_HOME" "$CHROOT_MOUNT_DATA" || die "failed to set up chroot at $CHROOT_MOUNTPOINT"
+        chroot_setup "$CHROOT_ROOT" "$CHROOT_MOUNTPOINT" "$CHROOT_HOME" "$CHROOT_MOUNT_DATA" "$CHROOT_USER" || die "failed to set up chroot at $CHROOT_MOUNTPOINT"
         msg "setup ok"
         ;;
     down)

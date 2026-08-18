@@ -11,6 +11,7 @@ bash shell/chroot_dev.sh setup \
     --root /path/to/root \
     --mountpoint /path/to/mountpoint \
     [--home /path/to/home] \
+    [--user user] \
     [--no-data] \
     [--bind-mount /path/on/host:/path/in/chroot]...
 
@@ -20,7 +21,8 @@ bash shell/chroot_dev.sh down \
 
 - `--root`：chroot 根目录。
 - `--mountpoint`：chroot 挂载位置；`setup` 会自动创建它。
-- `--home`：可选，默认 `/home`，挂载到 `<mountpoint>/home`。
+- `--home`：可选，默认 `/home`；默认挂载到 `<mountpoint>/home`。
+- `--user`：可选。指定时，`--home` 目录改为挂载到 `<mountpoint>/home/<user>`；未指定时保持挂载到 `<mountpoint>/home`。
 - `--no-data`：可选，跳过宿主机 `/data` 到 `<mountpoint>/data` 的挂载。
 - `--bind-mount <source>:<target>`：可重复使用，将宿主机的绝对目录或常规文件 `source` 挂载到 chroot 内的绝对路径 `target`；例如 `--bind-mount /workspace/project:/workspace/project` 会挂载到 `<mountpoint>/workspace/project`。脚本会按 source 类型自动创建目标目录或文件；不接受相对路径、`/`、`.`、`..`、符号链接或路径中包含冒号的映射。
 
