@@ -181,27 +181,37 @@ chroot_prepare_bind_mount_target() {
 
 chroot_prepare_mount_points() {
     local chroot_root=$1
-    local bind_target
-    local index
 
     [[ -d "$chroot_root" ]] || die "chroot root does not exist or is not a directory: $chroot_root"
 
     msg "preparing mount points in $chroot_root"
     mkdir -p "$chroot_root"/{home,data,etc,proc,sys,dev/pts,dev/shm,run/udev,tmp}
     touch "$chroot_root"/etc/{hosts,passwd,shadow,resolv.conf}
+}
+
+chroot_prepare_bind_mount_targets() {
+    local chroot_mountpoint=$1
+    local bind_target
+    local index
 
     for index in "${!CHROOT_BIND_TARGETS[@]}"; do
         bind_target=${CHROOT_BIND_TARGETS[$index]}
-        msg "creating bind mount target $chroot_root$bind_target"
-        chroot_prepare_bind_mount_target "$chroot_root" "${CHROOT_BIND_SOURCES[$index]}" "$bind_target"
+        msg "creating bind mount target $chroot_mountpoint$bind_target"
+        chroot_prepare_bind_mount_target "$chroot_mountpoint" "${CHROOT_BIND_SOURCES[$index]}" "$bind_target"
     done
 }
 
 chroot_add_bind_mounts() {
     local index
+    local bind_source
+    local bind_target
 
     for index in "${!CHROOT_BIND_SOURCES[@]}"; do
-        chroot_add_mount "${CHROOT_BIND_SOURCES[$index]}" "$1${CHROOT_BIND_TARGETS[$index]}" --bind || return
+        bind_source=${CHROOT_BIND_SOURCES[$index]}
+        bind_target="$1${CHROOT_BIND_TARGETS[$index]}"
+        [[ -d "$bind_source" || -f "$bind_source" ]] || die "bind mount source no longer exists: $bind_source"
+        [[ ! -L "$bind_target" ]] || die "bind mount target contains symbolic link: ${CHROOT_BIND_TARGETS[$index]}"
+        chroot_add_mount "$bind_source" "$bind_target" --bind || return
     done
 }
 
@@ -233,6 +243,7 @@ chroot_setup() {
         chroot_add_mount /run "$2/run" --bind &&
         chroot_add_mount /run/udev "$2/run/udev" --bind &&
         chroot_add_mount tmp "$2/tmp" -t tmpfs -o mode=1777,strictatime,nodev,nosuid &&
+        chroot_prepare_bind_mount_targets "$2" &&
         chroot_add_bind_mounts "$2" &&
         CHROOT_ACTIVE_MOUNTS=()
 }
