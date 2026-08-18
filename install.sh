@@ -60,6 +60,19 @@ function err() {
     exit 1
 }
 
+no_gui=false
+while (($#)); do
+    case "$1" in
+        --no-gui)
+            no_gui=true
+            ;;
+        *)
+            err "unknown argument: $1"
+            ;;
+    esac
+    shift
+done
+
 function check_pkg() {
     if _loc="$(type -p "$1")" && [[ -n $_loc ]]; then
         return 0
@@ -174,113 +187,120 @@ make_dir "$HOME/.config"
 make_dir "$HOME/.local/share"
 copy_file "$EXECUTE_DIRNAME/shell/my_conf.sh" "$HOME/.my_conf.sh"
 make_link "$EXECUTE_DIRNAME/shell/toolbox.txt" "$HOME/.toolbox.txt"
-make_link "$EXECUTE_DIRNAME/shell/xinitrc" "$HOME/.xinitrc"
-make_link "$EXECUTE_DIRNAME/shell/gtkrc-2.0" "$HOME/.gtkrc-2.0"
 make_link "$EXECUTE_DIRNAME/shell/preview_file.sh" "$HOME/bin/preview_file"
 make_link "$EXECUTE_DIRNAME/shell/gmail_oauth2_token.sh" "$HOME/bin/gmail_oauth2_token"
 make_link "$EXECUTE_DIRNAME/python/image_view.py" "$HOME/bin/image_view"
-make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
-make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
-make_link "$EXECUTE_DIRNAME/config/gtk-3.0" "$HOME/.config/gtk-3.0"
 
-section "Niri"
-make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
-make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
+if [[ "$no_gui" == true ]]; then
+    skip "GUI configuration (--no-gui)"
+else
+    make_link "$EXECUTE_DIRNAME/shell/xinitrc" "$HOME/.xinitrc"
+    make_link "$EXECUTE_DIRNAME/shell/gtkrc-2.0" "$HOME/.gtkrc-2.0"
+    make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
+    make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
+    make_link "$EXECUTE_DIRNAME/config/gtk-3.0" "$HOME/.config/gtk-3.0"
 
-section "XFCE"
-copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml" \
-    "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml"
-copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
-    "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
+    section "Niri"
+    make_link "$EXECUTE_DIRNAME/config/niri" "$HOME/.config/niri"
+    make_link "$EXECUTE_DIRNAME/config/waybar" "$HOME/.config/waybar"
 
-section "UI"
-make_dir "$HOME/.local/share/icons"
-make_dir "$HOME/.local/share/themes"
+    section "XFCE"
+    copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml" \
+        "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/keyboards.xml"
+    copy_file "$EXECUTE_DIRNAME/config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
+        "$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml"
 
-# Fetch / refresh gruvbox-plus-icon-pack into ~/.local/share/icons,
-# then symlink the two themes one level up so GTK finds them at
-# the canonical Gruvbox-Plus-{Dark,Light} names.
-GRUVBOX_PLUS_DIR="$HOME/.local/share/icons/gruvbox-plus-icon-pack"
-git_clone_or_pull \
-    "https://github.com/SylEleuth/gruvbox-plus-icon-pack.git" \
-    "$GRUVBOX_PLUS_DIR"
-make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" \
-    "${HOME}/.local/share/icons/Gruvbox-Plus-Dark"
-make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" \
-    "${HOME}/.local/share/icons/Gruvbox-Plus-Light"
+    section "UI"
+    make_dir "$HOME/.local/share/icons"
+    make_dir "$HOME/.local/share/themes"
 
-# Patch inherit chain: upstream Dark inherits from breeze-dark, Light from
-# breeze; neither is shipped here, so symbolic icons (system-search,
-# edit-find, tab-new, ...) fall back to "image-missing". Adwaita ships
-# with gtk3 itself and has a complete symbolic set.
-sed -i 's/^Inherits=breeze-dark,hicolor$/Inherits=Adwaita,hicolor/' \
-    "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark/index.theme"
-sed -i 's/^Inherits=Gruvbox-Plus-Dark,breeze,hicolor$/Inherits=Gruvbox-Plus-Dark,Adwaita,hicolor/' \
-    "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light/index.theme"
+    # Fetch / refresh gruvbox-plus-icon-pack into ~/.local/share/icons,
+    # then symlink the two themes one level up so GTK finds them at
+    # the canonical Gruvbox-Plus-{Dark,Light} names.
+    GRUVBOX_PLUS_DIR="$HOME/.local/share/icons/gruvbox-plus-icon-pack"
+    git_clone_or_pull \
+        "https://github.com/SylEleuth/gruvbox-plus-icon-pack.git" \
+        "$GRUVBOX_PLUS_DIR"
+    make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" \
+        "${HOME}/.local/share/icons/Gruvbox-Plus-Dark"
+    make_link "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" \
+        "${HOME}/.local/share/icons/Gruvbox-Plus-Light"
 
-if hash gtk-update-icon-cache 2>/dev/null; then
-    info "refresh gruvbox-plus-icon-pack icon cache"
-    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" >/dev/null 2>&1 || true
-    gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" >/dev/null 2>&1 || true
+    # Patch inherit chain: upstream Dark inherits from breeze-dark, Light from
+    # breeze; neither is shipped here, so symbolic icons (system-search,
+    # edit-find, tab-new, ...) fall back to "image-missing". Adwaita ships
+    # with gtk3 itself and has a complete symbolic set.
+    sed -i 's/^Inherits=breeze-dark,hicolor$/Inherits=Adwaita,hicolor/' \
+        "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark/index.theme"
+    sed -i 's/^Inherits=Gruvbox-Plus-Dark,breeze,hicolor$/Inherits=Gruvbox-Plus-Dark,Adwaita,hicolor/' \
+        "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light/index.theme"
+
+    if hash gtk-update-icon-cache 2>/dev/null; then
+        info "refresh gruvbox-plus-icon-pack icon cache"
+        gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Dark" >/dev/null 2>&1 || true
+        gtk-update-icon-cache -f -t "$GRUVBOX_PLUS_DIR/Gruvbox-Plus-Light" >/dev/null 2>&1 || true
+    fi
+
+    make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
+        "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
 fi
-
-make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
-    "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
 
 section "Apps"
 
-if hash i3 2>/dev/null; then
-    group "i3"
-    make_dir "$HOME/.config/i3"
-    make_link "$EXECUTE_DIRNAME/config/i3/config" "$HOME/.config/i3/config"
-else
-    skip "i3 (binary not found)"
-fi
+if [[ "$no_gui" == false ]]; then
+    if hash i3 2>/dev/null; then
+        group "i3"
+        make_dir "$HOME/.config/i3"
+        make_link "$EXECUTE_DIRNAME/config/i3/config" "$HOME/.config/i3/config"
+    else
+        skip "i3 (binary not found)"
+    fi
 
-if hash openbox 2>/dev/null; then
-    group "openbox"
-    make_link "$EXECUTE_DIRNAME/config/openbox" "$HOME/.config/openbox"
-else
-    skip "openbox (binary not found)"
-fi
+    if hash openbox 2>/dev/null; then
+        group "openbox"
+        make_link "$EXECUTE_DIRNAME/config/openbox" "$HOME/.config/openbox"
+    else
+        skip "openbox (binary not found)"
+    fi
 
-if hash labwc 2>/dev/null; then
-    group "labwc"
-    make_link "$EXECUTE_DIRNAME/config/labwc" "$HOME/.config/labwc"
-else
-    skip "labwc (binary not found)"
-fi
+    if hash labwc 2>/dev/null; then
+        group "labwc"
+        make_link "$EXECUTE_DIRNAME/config/labwc" "$HOME/.config/labwc"
+    else
+        skip "labwc (binary not found)"
+    fi
 
-if hash rofi 2>/dev/null; then
-    group "rofi"
-    make_link "$EXECUTE_DIRNAME/config/rofi" "$HOME/.config/rofi"
-else
-    skip "rofi (binary not found)"
-fi
+    if hash rofi 2>/dev/null; then
+        group "rofi"
+        make_link "$EXECUTE_DIRNAME/config/rofi" "$HOME/.config/rofi"
+    else
+        skip "rofi (binary not found)"
+    fi
 
-if hash xsettingsd 2>/dev/null; then
-    group "xsettingsd"
-    make_dir "$HOME/.config/xsettingsd"
-    make_link "$EXECUTE_DIRNAME/config/xsettingsd/xsettingsd.conf" \
-        "$HOME/.config/xsettingsd/xsettingsd.conf"
-else
-    skip "xsettingsd (binary not found)"
-fi
+    if hash xsettingsd 2>/dev/null; then
+        group "xsettingsd"
+        make_dir "$HOME/.config/xsettingsd"
+        make_link "$EXECUTE_DIRNAME/config/xsettingsd/xsettingsd.conf" \
+            "$HOME/.config/xsettingsd/xsettingsd.conf"
+    else
+        skip "xsettingsd (binary not found)"
+    fi
 
-if hash tint2 2>/dev/null; then
-    group "tint2"
-    make_dir "$HOME/.config/tint2"
-    make_link "$EXECUTE_DIRNAME/config/tint2/tint2rc" "$HOME/.config/tint2/tint2rc"
-else
-    skip "tint2 (binary not found)"
-fi
+    if hash tint2 2>/dev/null; then
+        group "tint2"
+        make_dir "$HOME/.config/tint2"
+        make_link "$EXECUTE_DIRNAME/config/tint2/tint2rc" "$HOME/.config/tint2/tint2rc"
+    else
+        skip "tint2 (binary not found)"
+    fi
 
-if hash picom 2>/dev/null; then
-    group "picom"
-    make_dir "$HOME/.config/picom"
-    make_link "$EXECUTE_DIRNAME/config/picom/picom.conf" "$HOME/.config/picom/picom.conf"
-else
-    skip "picom (binary not found)"
+    if hash picom 2>/dev/null; then
+        group "picom"
+        make_dir "$HOME/.config/picom"
+        make_link "$EXECUTE_DIRNAME/config/picom/picom.conf" "$HOME/.config/picom/picom.conf"
+    else
+        skip "picom (binary not found)"
+    fi
 fi
 
 if (hash vim 2>/dev/null || hash nvim 2>/dev/null); then
@@ -376,11 +396,13 @@ else
     skip "bat (binary not found)"
 fi
 
-if (hash fcitx5 2>/dev/null); then
-    group "fcitx5"
-    make_dir "$HOME/.local/share/fcitx5"
-    make_link "$EXECUTE_DIRNAME/config/fcitx5/themes" \
-        "$HOME/.local/share/fcitx5/themes"
-else
-    skip "bat (binary not found)"
+if [[ "$no_gui" == false ]]; then
+    if hash fcitx5 2>/dev/null; then
+        group "fcitx5"
+        make_dir "$HOME/.local/share/fcitx5"
+        make_link "$EXECUTE_DIRNAME/config/fcitx5/themes" \
+            "$HOME/.local/share/fcitx5/themes"
+    else
+        skip "fcitx5 (binary not found)"
+    fi
 fi
