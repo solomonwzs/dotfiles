@@ -1,0 +1,45 @@
+# Gruvbox-GTK-Light — GTK 2
+#
+# Minimal engine-less variant of the gruvbox-material-gtk-dark-hidpi
+# gtkrc: flat solid colours instead of pixmap images, same class /
+# widget matching structure so GTK2 apps (xfwm4-settings, Thunar
+# fallbacks, vim-gtk2 ...) stay on-palette.
+#
+# Classic morhetz gruvbox light palette (ui/gruvbox-palette.html):
+#   bg0 #fbf1c7  bg1 #ebdbb2  bg2 #d5c4a1  bg3 #bdae93  bg4 #a89984
+#   fg  #282828  fg1 #3c3836  fg2 #504945  fg3 #665c54  fg4 #7c6f64
+#   selected bg #7c6f64 (neutral grey) / faded accents below.
+#
+# @author   solomon <solomon.wzs@gmail.com>
+# @date     2026-09-02
+# @license  GPL-2.0+
+
+# Text/base
+gtk-color-scheme = "base_color:#fbf1c7"
+gtk-color-scheme = "text_color:#282828"
+# Foreground/background
+gtk-color-scheme = "bg_color:#fbf1c7"
+gtk-color-scheme = "fg_color:#282828"
+# Selected foreground/background
+gtk-color-scheme = "selected_bg_color:#7c6f64"
+gtk-color-scheme = "selected_fg_color:#fbf1c7"
+# Titlebar foreground/background
+gtk-color-scheme = "titlebar_bg_color:#f2e5bc"
+gtk-color-scheme = "titlebar_fg_color:#282828"
+# Menus
+gtk-color-scheme = "menu_color:#f2e5bc"
+# Tooltips foreground/background
+gtk-color-scheme = "tooltip_bg_color:#f2e5bc"
+gtk-color-scheme = "tooltip_fg_color:#282828"
+# Links
+gtk-color-scheme = "link_color:#076678"
+gtk-color-scheme = "visited_link_color:#8f3f71"
+
+# Set GTK settings
+gtk-auto-mnemonics              = 1
+gtk-primary-button-warps-slider = 1
+
+# And hand over the control to the theme files
+include "main.rc"
+include "apps.rc"
+include "hacks.rc"

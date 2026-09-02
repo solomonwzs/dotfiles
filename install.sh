@@ -243,6 +243,8 @@ else
 
     make_link "$EXECUTE_DIRNAME/ui/gruvbox-material-gtk-dark-hidpi" \
         "${HOME}/.local/share/themes/gruvbox-material-gtk-dark-hidpi"
+    make_link "$EXECUTE_DIRNAME/ui/gruvbox-gtk-light" \
+        "${HOME}/.local/share/themes/gruvbox-gtk-light"
 fi
 
 section "Apps"

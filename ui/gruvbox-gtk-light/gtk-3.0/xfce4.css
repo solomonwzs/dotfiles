@@ -1,0 +1,186 @@
+/**
+ * Gruvbox-GTK-Light — Xfce bits (xfce4-panel, xfdesktop, xfce4-notifyd,
+ * xfwm4 tabwin), parsed by GTK3.
+ *
+ * @author   solomon <solomon.wzs@gmail.com>
+ * @date     2026-09-02
+ * @license  GPL-2.0+
+ */
+
+/* ---------------- xfce4-panel ---------------- */
+
+.xfce4-panel.background {
+  border: none;
+  background-color: #f2e5bc;
+  color: rgba(60, 56, 54, 0.7);
+  font-weight: 500;
+}
+.xfce4-panel.background button {
+  min-height: 16px;
+  min-width: 16px;
+  padding: 0;
+  border-radius: 0;
+  color: rgba(60, 56, 54, 0.7);
+  box-shadow: none;
+  background-color: transparent;
+}
+.xfce4-panel.background button.suggested-action {
+  background-color: #d5c4a1;
+}
+.xfce4-panel.background button:drop(active),
+.xfce4-panel.background button:hover {
+  box-shadow: none;
+  background-color: rgba(60, 56, 54, 0.08);
+}
+.xfce4-panel.background button:focus {
+  box-shadow: none;
+  background-color: rgba(60, 56, 54, 0.08);
+}
+.xfce4-panel.background button:active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(60, 56, 54, 0.12) 10%,
+    transparent 0%
+  );
+}
+.xfce4-panel.background button:disabled {
+  background-color: transparent;
+  color: rgba(60, 56, 54, 0.3);
+}
+.xfce4-panel.background button:checked {
+  color: #282828;
+  box-shadow: none;
+  background-color: rgba(60, 56, 54, 0.12);
+}
+.xfce4-panel.background button:checked:drop(active),
+.xfce4-panel.background button:checked:hover {
+  box-shadow: none;
+  background-color: rgba(60, 56, 54, 0.1904);
+}
+.xfce4-panel.background button:checked:focus {
+  box-shadow: none;
+  background-color: rgba(60, 56, 54, 0.1904);
+}
+.xfce4-panel.background button:checked:active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(60, 56, 54, 0.12) 10%,
+    transparent 0%
+  );
+}
+.xfce4-panel background menu,
+.xfce4-panel menu {
+  background-color: #f2e5bc;
+  border: 1px solid #d5c4a1;
+}
+
+/* tasklist */
+.xfce4-panel.background .tasklist button {
+  border-image: image(transparent) 0 0 2/0 0 2px;
+}
+.xfce4-panel.background .tasklist button:checked {
+  border-image: image(currentcolor) 0 0 2/0 0 2px;
+}
+.xfce4-panel.background .tasklist button image {
+  padding: 4px;
+}
+.xfce4-panel.background frame > border {
+  border-style: none;
+  background-color: transparent;
+}
+
+/* panel plugins */
+.xfce4-panel.background progressbar progress {
+  background-color: #7c6f64;
+}
+.xfce4-panel.background progressbar trough {
+  background-color: rgba(60, 56, 54, 0.2);
+}
+#clock-applet-button label,
+#clock-applet-button > box > label {
+  color: #282828;
+}
+wnck-pager:hover {
+  background-color: rgba(60, 56, 54, 0.08);
+}
+wnck-pager:active {
+  background-color: rgba(60, 56, 54, 0.12);
+}
+wnck-pager:selected {
+  background-color: #7c6f64;
+}
+
+/* ---------------- xfdesktop ---------------- */
+
+XfdesktopIconView.view {
+  border-radius: 6px;
+  color: #fbf1c7;
+  text-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+}
+XfdesktopIconView.view:active {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.6);
+}
+XfdesktopIconView.view .rubberband {
+  border-radius: 0;
+}
+
+/* ---------------- xfce4-notifyd ---------------- */
+
+#XfceNotifyWindow {
+  border-radius: 6px;
+  border: 1px solid #d5c4a1;
+  background-color: #f2e5bc;
+  color: #282828;
+  font-size: 14px;
+}
+#XfceNotifyWindow label#summary {
+  font-weight: bold;
+}
+#XfceNotifyWindow label#summary + label {
+  color: rgba(60, 56, 54, 0.7);
+}
+#XfceNotifyWindow buttonbox button:not(:disabled) {
+  color: #7c6f64;
+  box-shadow: none;
+  background-color: transparent;
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):drop(active),
+#XfceNotifyWindow buttonbox button:not(:disabled):hover {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.08);
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):focus {
+  box-shadow: none;
+  background-color: rgba(124, 111, 100, 0.08);
+}
+#XfceNotifyWindow buttonbox button:not(:disabled):active {
+  box-shadow: none;
+  background-image: radial-gradient(
+    circle,
+    rgba(124, 111, 100, 0.12) 10%,
+    transparent 0%
+  );
+}
+#XfceNotifyWindow progressbar trough {
+  background-color: rgba(60, 56, 54, 0.2);
+}
+#XfceNotifyWindow progressbar progress {
+  background-color: #7c6f64;
+}
+
+/* ---------------- xfwm4 tabwin (Alt-Tab) ---------------- */
+
+#xfwm-tabwin {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #f2e5bc;
+  color: #282828;
+  -xfwmtabwinwidget-icon-size: 64px;
+  -xfwmtabwinwidget-preview-size: 320px;
+}

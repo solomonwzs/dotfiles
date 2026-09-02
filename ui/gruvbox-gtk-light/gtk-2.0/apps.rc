@@ -1,0 +1,21 @@
+# vim:set ft=gtkrc ts=2 sw=2 sts=2 ai et:
+#
+# App-specific tweaks (kept minimal).
+#
+# @author   solomon <solomon.wzs@gmail.com>
+# @date     2026-09-02
+# @license  GPL-2.0+
+
+style "xfdesktop-icon-view" {
+  XfdesktopIconView::label-alpha = 0
+
+  fg[NORMAL]      = "#fbf1c7"
+  fg[ACTIVE]      = "#fbf1c7"
+  fg[SELECTED]    = "#fbf1c7"
+
+  text[NORMAL]    = "#fbf1c7"
+  text[ACTIVE]    = "#fbf1c7"
+  text[SELECTED]  = "#fbf1c7"
+}
+
+widget_class "*XfdesktopIconView*" style "xfdesktop-icon-view"

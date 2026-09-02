@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Gruvbox-GTK-Light
+Comment=Gruvbox light theme (Xfce / GTK 2+3, flat material style)
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=Gruvbox-GTK-Light
+MetacityTheme=Gruvbox-GTK-Light
+IconTheme=Adwaita
+CursorTheme=Adwaita
+CursorSize=24

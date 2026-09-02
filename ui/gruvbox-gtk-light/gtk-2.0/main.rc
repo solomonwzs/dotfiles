@@ -1,0 +1,328 @@
+# Gruvbox-GTK-Light — GTK 2 main style file.
+#
+# Same structure as gruvbox-material-gtk-dark-hidpi/gtk-2.0/main.rc but
+# drawn with flat solid colours via the murrine engine (no pixmap
+# assets): NORMAL -> hover surfaces, ACTIVE -> pressed/checked,
+# SELECTED -> selected.
+#
+# @author   solomon <solomon.wzs@gmail.com>
+# @date     2026-09-02
+# @license  GPL-2.0+
+
+style "default" {
+  xthickness = 2
+  ythickness = 2
+
+  ####################
+  # Style Properties #
+  ####################
+
+  GtkWidget::focus-padding      = 0
+  GtkWidget::focus-line-width   = 1
+  GtkWidget::focus-line-pattern = "\1\1"
+
+  GtkToolbar::space-size       = 10
+  GtkToolbar::internal-padding = 4
+  GtkToolButton::icon-spacing  = 8
+
+  GtkWidget::tooltip-radius    = 6
+  GtkWidget::tooltip-alpha     = 240
+  GtkWidget::new-tooltip-style = 1
+
+  GtkWidget::link-color              = @link_color
+  GtkWidget::visited-link-color      = @visited_link_color
+  GnomeHRef::link_color              = @link_color
+  GtkHTML::link-color                = @link_color
+  GtkHTML::vlink-color               = @visited_link_color
+  GtkIMHtml::hyperlink-color         = @link_color
+  GtkIMHtml::hyperlink-visited-color = @visited_link_color
+
+  GtkSeparatorMenuItem::horizontal-padding = 0
+  GtkSeparatorMenuItem::wide-separators    = 1
+  GtkSeparatorMenuItem::separator-height   = 1
+
+  GtkButton::child-displacement-y   = 0
+  GtkButton::default-border         = {0, 0, 0, 0}
+  GtkButton::default-outside-border = {0, 0, 0, 0}
+  GtkButton::inner-border           = {4, 4, 4, 4}
+
+  GtkEntry::state-hint   = 1
+  GtkEntry::inner-border = {4, 4, 4, 4}
+
+  GtkPaned::handle-size  = 4
+  GtkHPaned::handle-size = 4
+  GtkVPaned::handle-size = 4
+
+  GtkScrollbar::trough-border   = 0
+  GtkRange::trough-border       = 0
+  GtkRange::slider-width        = 10
+  GtkRange::stepper-size        = 0
+  GtkRange::activate-slider     = 1
+  GtkScrollbar::activate-slider = 1
+  GtkScrollbar::stepper-size          = 0
+  GtkScrollbar::has-backward-stepper  = 0
+  GtkScrollbar::has-forward-stepper   = 0
+  GtkScrollbar::min-slider-length     = 32
+  GtkScrolledWindow::scrollbar-spacing       = 0
+  GtkScrolledWindow::scrollbars-within-bevel = 1
+
+  GtkScale::slider_length       = 18
+  GtkScale::slider_width        = 18
+  GtkScale::trough-side-details = 1
+
+  GtkProgressBar::min-horizontal-bar-height = 6
+  GtkProgressBar::min-vertical-bar-width    = 6
+  GtkProgressBar::xspacing                  = 8
+  GtkProgressBar::yspacing                  = 8
+
+  GtkStatusbar::shadow_type  = GTK_SHADOW_NONE
+  GtkSpinButton::shadow_type = GTK_SHADOW_NONE
+  GtkMenuBar::shadow-type    = GTK_SHADOW_NONE
+  GtkToolbar::shadow-type    = GTK_SHADOW_NONE
+  GtkMenuBar::internal-padding = 0
+  GtkMenu::horizontal-padding  = 0
+  GtkMenu::vertical-padding    = 4
+  GtkMenu::double-arrows       = 0
+  GtkMenuItem::arrow-scaling   = 1
+  GtkMenuItem::toggle-spacing  = 8
+
+  GtkCheckButton::indicator-size    = 16
+  GtkCheckButton::indicator_spacing = 4
+  GtkOptionMenu::indicator_spacing  = {8, 8, 4, 4}
+
+  GtkTreeView::expander-size        = 12
+  GtkTreeView::vertical-separator   = 0
+  GtkTreeView::horizontal-separator = 4
+  GtkTreeView::allow-rules          = 0
+  GtkTreeView::odd-row-color        = @base_color
+  GtkTreeView::even-row-color       = @base_color
+
+  GtkExpander::expander-size = 12
+
+  GtkNotebook::tab-overlap = 0
+
+  ##########
+  # Colors #
+  ##########
+
+  bg[NORMAL]      = @bg_color
+  bg[PRELIGHT]    = shade(0.94, @bg_color)
+  bg[SELECTED]    = @selected_bg_color
+  bg[INSENSITIVE] = @bg_color
+  bg[ACTIVE]      = shade(0.90, @bg_color)
+
+  fg[NORMAL]      = @fg_color
+  fg[PRELIGHT]    = @fg_color
+  fg[SELECTED]    = @selected_fg_color
+  fg[INSENSITIVE] = mix(0.45, @fg_color, @bg_color)
+  fg[ACTIVE]      = @fg_color
+
+  text[NORMAL]      = @text_color
+  text[PRELIGHT]    = @text_color
+  text[SELECTED]    = @selected_fg_color
+  text[INSENSITIVE] = mix(0.45, @text_color, @base_color)
+  text[ACTIVE]      = @text_color
+
+  base[NORMAL]      = @base_color
+  base[PRELIGHT]    = shade(0.94, @base_color)
+  base[SELECTED]    = @selected_bg_color
+  base[INSENSITIVE] = mix(0.5, @base_color, @bg_color)
+  base[ACTIVE]      = shade(0.90, @base_color)
+
+  engine "murrine" {
+    contrast           = 0.0
+    focusstyle         = 2
+    gradient_shades    = {1.0, 1.0, 1.0, 1.0}
+    menubarstyle       = 0
+    listviewheaderstyle = 0
+    listviewstyle      = 0
+    reliefstyle        = 0
+    rgba               = FALSE
+    roundness          = 4
+    scrollbarstyle     = 0
+    stepperstyle       = 1
+    animation          = FALSE
+  }
+}
+
+style "button" {
+  xthickness = 4
+  ythickness = 4
+
+  bg[NORMAL]      = shade(0.97, @bg_color)
+  bg[PRELIGHT]    = shade(0.93, @bg_color)
+  bg[ACTIVE]      = shade(0.88, @bg_color)
+  bg[INSENSITIVE] = @bg_color
+
+  engine "murrine" {
+    contrast        = 0.0
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    reliefstyle     = 0
+    roundness       = 4
+    border_shades   = {1.0, 1.0}
+  }
+}
+
+style "linked_button" = "button" {
+  GtkButton::inner-border = {2, 2, 2, 2}
+}
+
+style "entry" {
+  xthickness = 4
+  ythickness = 4
+
+  bg[NORMAL]   = @base_color
+  bg[PRELIGHT] = @base_color
+  bg[SELECTED] = @selected_bg_color
+  bg[ACTIVE]   = shade(0.90, @base_color)
+  bg[INSENSITIVE] = mix(0.5, @base_color, @bg_color)
+
+  engine "murrine" {
+    contrast        = 0.0
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 4
+    border_shades   = {1.0, 1.0}
+  }
+}
+
+style "notebook" {
+  xthickness = 4
+  ythickness = 4
+
+  bg[NORMAL]   = @bg_color
+  bg[ACTIVE]   = shade(0.95, @bg_color)
+  bg[SELECTED] = @base_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 0
+
+  }
+}
+
+style "menubar" {
+  xthickness = 2
+  ythickness = 2
+
+  bg[NORMAL] = @titlebar_bg_color
+  fg[NORMAL] = @titlebar_fg_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 0
+
+  }
+}
+
+style "menubar_item" {
+  bg[PRELIGHT] = @selected_bg_color
+  bg[SELECTED] = @selected_bg_color
+  fg[PRELIGHT] = @selected_fg_color
+  fg[SELECTED] = @selected_fg_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 4
+
+  }
+}
+
+style "menu" {
+  xthickness = 0
+  ythickness = 4
+
+  bg[NORMAL]   = @menu_color
+  bg[PRELIGHT] = @selected_bg_color
+  bg[SELECTED] = @selected_bg_color
+  bg[INSENSITIVE] = @menu_color
+
+  fg[NORMAL]      = @fg_color
+  fg[PRELIGHT]    = @selected_fg_color
+  fg[SELECTED]    = @selected_fg_color
+  fg[INSENSITIVE] = mix(0.45, @fg_color, @menu_color)
+
+  text[NORMAL]   = @fg_color
+  text[PRELIGHT] = @selected_fg_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 4
+    menuitemstyle   = 0
+
+  }
+}
+
+style "menu_item" = "menu" {
+  xthickness = 4
+  ythickness = 4
+}
+
+style "menu_separator_item" {
+  GtkSeparatorMenuItem::horizontal-padding = 0
+  GtkWidget::wide-separators    = 1
+  GtkWidget::separator-height   = 1
+  GtkWidget::wide-separator-height = 1
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+
+  }
+}
+
+style "textview" {
+  text[NORMAL]   = @text_color
+  text[SELECTED] = @selected_fg_color
+
+  base[NORMAL]   = @base_color
+  base[SELECTED] = @selected_bg_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+
+  }
+}
+
+style "progressbar" {
+  bg[NORMAL]   = shade(0.90, @bg_color)
+  bg[ACTIVE]   = @selected_bg_color
+
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+    roundness       = 4
+  }
+}
+
+class "GtkWidget" style "default"
+class "GtkButton"      style "button"
+class "GtkEntry"       style "entry"
+class "GtkOldEditable" style "entry"
+class "GtkNotebook"    style "notebook"
+class "GtkProgressBar" style "progressbar"
+class "GtkMenuBar"     style "menubar"
+class "GtkMenu"        style "menu"
+class "GtkTextView"    style "textview"
+
+widget_class "*<GtkMenuItem>*"          style "menu_item"
+widget_class "*<GtkMenuBar>.<GtkMenuItem>*" style "menubar_item"
+widget_class "*<GtkSeparatorMenuItem>*" style "menu_separator_item"
+widget_class "*<GtkMenu>*.<GtkMenuItem>*"   style "menu_item"
+widget_class "*<GtkMenu>*.<GtkCheckMenuItem>*" style "menu_item"
+widget_class "*<GtkMenu>*.<GtkRadioMenuItem>*" style "menu_item"
+widget_class "*<GtkMenu>*.<GtkImageMenuItem>*" style "menu_item"
+widget_class "*<GtkMenu>*.<GtkSeparatorMenuItem>*" style "menu_separator_item"
+widget_class "*<GtkComboBox>*<GtkButton>*"  style "button"
+widget_class "*<GtkComboBoxEntry>*<GtkEntry>" style "entry"
+
+# Toolbars: keep the titlebar tone like the GTK3 toolbar
+style "toolbar" {
+  bg[NORMAL] = @titlebar_bg_color
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+
+  }
+}
+class "GtkToolbar" style "toolbar"
+
+# Linked buttons (toolbar groups, path bars)
+widget_class "*<GtkBox>.<GtkButton>"   style "linked_button"
+widget_class "*<GtkToolbar>*<GtkButton>" style "button"

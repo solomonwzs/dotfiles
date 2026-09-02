@@ -1,0 +1,39 @@
+# vim:set ft=gtkrc ts=2 sw=2 sts=2 ai et:
+#
+# Compatibility hacks (mirrors gruvbox-material-gtk-dark-hidpi/gtk-2.0/hacks.rc).
+#
+# @author   solomon <solomon.wzs@gmail.com>
+# @date     2026-09-02
+# @license  GPL-2.0+
+
+style "toplevel_hack" {
+  engine "murrine" {
+    gradient_shades = {1.0, 1.0, 1.0, 1.0}
+
+  }
+}
+
+style "chrome_entry" {
+  base[NORMAL]      = @base_color
+  base[INSENSITIVE] = @base_color
+}
+
+style "vim_notebook" {
+  bg[NORMAL] = @base_color
+  bg[ACTIVE] = @bg_color
+}
+
+# Vim puts an eventbox between the tab and the label and colours it,
+# we need to handle that
+widget "vim-main-window*GtkNotebook.GtkEventBox" style "vim_notebook"
+
+# (he)xchat input box
+# class "SexySpellEntry" style:highest "normal_entry"  (needs a normal_entry style)
+
+# Chromium uses base as the fill colour of its own entries
+# This would be fine but GTK uses it to fill the surrounding space, so its set to bg
+# That results in Chromium using it for the fill, so we need to handle that
+widget_class "*Chrom*<GtkEntry>" style "chrome_entry"
+
+# Hack to be able to match widgets in LibreOffice
+class "GtkWindow" style "toplevel_hack"
