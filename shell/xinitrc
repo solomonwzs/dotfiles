@@ -7,6 +7,12 @@ session=${1:-xfce}
 case $session in
 xfce | xfce4)
     export GDK_DPI_SCALE=0.5
+    # A tty login shell doesn't set these; exporting them here is
+    # required for the import-environment below to have any effect
+    # (importing an unset variable is a silent no-op).
+    export XDG_CURRENT_DESKTOP=XFCE
+    export XDG_SESSION_DESKTOP=XFCE
+    export DESKTOP_SESSION=xfce
     # systemd --user starts before xinitrc and inherits an empty env,
     # so dbus-activated services like xdg-desktop-portal-gtk won't
     # see GDK_DPI_SCALE. Import it (and related) into the user bus
@@ -14,6 +20,14 @@ xfce | xfce4)
     if hash systemctl 2>/dev/null; then
         systemctl --user import-environment \
             GDK_DPI_SCALE DISPLAY XAUTHORITY XDG_CURRENT_DESKTOP \
+            XDG_SESSION_DESKTOP DESKTOP_SESSION \
+            2>/dev/null
+        # xdg-desktop-portal freezes its backend choice at process
+        # start: kde.portal declares UseIn=KDE, gtk.portal is only the
+        # fallback. With Linger=yes the portal survives session
+        # switches holding the previous desktop env, so restart it to
+        # re-select the backend per the env imported above.
+        systemctl --user try-restart xdg-desktop-portal.service \
             2>/dev/null
     fi
     exec startxfce4

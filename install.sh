@@ -195,6 +195,7 @@ if [[ "$no_gui" == true ]]; then
     skip "GUI configuration (--no-gui)"
 else
     make_link "$EXECUTE_DIRNAME/shell/xinitrc" "$HOME/.xinitrc"
+    make_link "$EXECUTE_DIRNAME/shell/start-kde.sh" "$HOME/start-kde.sh"
     make_link "$EXECUTE_DIRNAME/shell/gtkrc-2.0" "$HOME/.gtkrc-2.0"
     make_link "$EXECUTE_DIRNAME/config/fontconfig" "$HOME/.config/fontconfig"
     make_link "$EXECUTE_DIRNAME/config/themes" "$HOME/.themes"
