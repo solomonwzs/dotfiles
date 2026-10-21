@@ -41,7 +41,7 @@ var import_coc23 = require("coc.nvim");
 // src/lists/autocmd.ts
 var import_coc = require("coc.nvim");
 
-// src/utils/common.ts
+// src/lib/comm/common.ts
 var import_url = require("url");
 function getEnvHttpProxy(is_https) {
   const proxy = process.env[is_https ? "https_proxy" : "http_proxy"];
@@ -89,28 +89,29 @@ function strFindFirstNotOf(str, ch) {
   }
   return -1;
 }
-var CocExtError = class extends Error {
+var ExtError = class extends Error {
   constructor(errorCode, message) {
     super(message);
     __publicField(this, "errorCode");
-    this.name = "CocExtError";
+    this.name = "ExtError";
     this.errorCode = errorCode;
   }
 };
-__publicField(CocExtError, "ERR_HTTP", -1);
-__publicField(CocExtError, "ERR_AUTH", -2);
-__publicField(CocExtError, "ERR_KIMI", -3);
-__publicField(CocExtError, "ERR_DEEPSEEK", -4);
-__publicField(CocExtError, "ERR_COMM_AI", -5);
-__publicField(CocExtError, "ERR_ZAI", -6);
-var CocExtErrnoError = class extends Error {
+__publicField(ExtError, "ERR_HTTP", -1);
+__publicField(ExtError, "ERR_AUTH", -2);
+__publicField(ExtError, "ERR_KIMI", -3);
+__publicField(ExtError, "ERR_DEEPSEEK", -4);
+__publicField(ExtError, "ERR_COMM_AI", -5);
+__publicField(ExtError, "ERR_ZAI", -6);
+__publicField(ExtError, "ERR_MIMO", -7);
+var ExtErrnoError = class extends Error {
   constructor(err) {
     super(err.message);
     __publicField(this, "errno");
     __publicField(this, "code");
     __publicField(this, "path");
     __publicField(this, "syscall");
-    this.name = "CocExtErrnoError";
+    this.name = "ExtErrnoError";
     this.errno = err.errno;
     this.code = err.code;
     this.path = err.path;
@@ -373,11 +374,42 @@ function getcfg(key, defaultValue) {
 // src/utils/logger.ts
 var import_coc5 = require("coc.nvim");
 var import_path = __toESM(require("path"));
-var Logger = class {
+
+// src/lib/comm/logger.ts
+var BaseLogger = class {
   constructor() {
+    __publicField(this, "level");
+    this.level = 1;
+  }
+  debug(value) {
+    if (this.level > 0) {
+      return;
+    }
+    this.logLevel("D", value);
+  }
+  info(value) {
+    if (this.level > 1) {
+      return;
+    }
+    this.logLevel("I", value);
+  }
+  warn(value) {
+    if (this.level > 2) {
+      return;
+    }
+    this.logLevel("W", value);
+  }
+  error(message) {
+    this.logLevel("E", message);
+  }
+};
+
+// src/utils/logger.ts
+var CocLogger = class extends BaseLogger {
+  constructor() {
+    super();
     __publicField(this, "channel");
     __publicField(this, "detail");
-    __publicField(this, "level");
     this.channel = import_coc5.window.createOutputChannel("coc-ext");
     this.detail = getcfg("log.detail", false) === true;
     this.level = getcfg("log.level", 1);
@@ -411,33 +443,8 @@ var Logger = class {
     const fn = import_path.default.basename(__filename);
     this.channel.appendLine(`${level} [${fn}] ${str}`);
   }
-  debug(value) {
-    if (this.level > 0) {
-      return;
-    }
-    this.logLevel("D", value);
-  }
-  info(value) {
-    if (this.level > 1) {
-      return;
-    }
-    this.logLevel("I", value);
-  }
-  warn(value) {
-    if (this.level > 2) {
-      return;
-    }
-    this.logLevel("W", value);
-  }
-  error(message) {
-    this.logLevel("E", message);
-  }
-  append(message) {
-    const str = stringify(message);
-    this.channel.append(str);
-  }
 };
-var logger = new Logger();
+var cocLogger = new CocLogger();
 
 // src/utils/helper.ts
 function defauleFloatWinConfig() {
@@ -516,7 +523,7 @@ ${content}` : content,
   try {
     await import_coc6.workspace.nvim.call("setbufvar", [bufnr, "&filetype", filetype]);
   } catch (e) {
-    logger.error(e.stack);
+    cocLogger.error(e.stack);
   }
 }
 async function openFile(filepath, opts) {
@@ -793,7 +800,7 @@ var MapkeyList = class extends import_coc8.BasicList {
 var import_coc10 = require("coc.nvim");
 var import_path4 = __toESM(require("path"));
 
-// src/utils/externalexec.ts
+// src/lib/comm/externalexec.ts
 var import_path2 = __toESM(require("path"));
 var import_child_process = require("child_process");
 async function callShell(cmd, args, input, opts) {
@@ -966,7 +973,7 @@ var RgfilesList = class extends import_coc10.BasicList {
         { shell: true }
       );
       if (resp.exitCode != 0 || !resp.data) {
-        logger.error("rg fail");
+        cocLogger.error("rg fail");
         return;
       }
       const lines = resp.data.toString().split("\n");
@@ -1002,14 +1009,14 @@ var RgfilesList = class extends import_coc10.BasicList {
     ];
     const resp = await callShell("rg", args, void 0, { shell: true });
     if (resp.exitCode != 0) {
-      logger.error("rg fail");
+      cocLogger.error("rg fail");
       if (resp.error) {
         showNotification(resp.error.toString());
       }
       return null;
     }
     if (!resp.data) {
-      logger.error("no data");
+      cocLogger.error("no data");
       return null;
     }
     let list = resp.data.toString().split("\n");
@@ -1103,14 +1110,14 @@ var RgwordsList = class extends import_coc11.BasicList {
     const args = ["--color", "never", "--json", pattern];
     const resp = await callShell("rg", args, void 0, { shell: true });
     if (resp.exitCode != 0) {
-      logger.error("rg fail");
+      cocLogger.error("rg fail");
       if (resp.error) {
         showNotification(resp.error.toString());
       }
       return null;
     }
     if (!resp.data) {
-      logger.error("no data");
+      cocLogger.error("no data");
       return null;
     }
     let list = resp.data.toString().split("\n");
@@ -1169,7 +1176,7 @@ var BaseFormatter = class {
     if (resp.exitCode != 0) {
       showNotification(`${exec} fail, ret ${resp.exitCode}`, "formatter");
       if (resp.error) {
-        logger.error(resp.error.toString());
+        cocLogger.error(resp.error.toString());
       }
     } else if (resp.data) {
       showNotification(`${exec} ok`, "formatter");
@@ -1191,19 +1198,19 @@ var BaseFormatter = class {
 var import_fs2 = __toESM(require("fs"));
 var import_path6 = __toESM(require("path"));
 
-// src/utils/file.ts
+// src/lib/comm/file.ts
 var import_fs = __toESM(require("fs"));
 async function fsAccess(path8, mode) {
   return new Promise((resolve) => {
     import_fs.default.access(path8, mode, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+      err ? resolve(new ExtErrnoError(err)) : resolve(null);
     });
   });
 }
 async function fsMkdir(path8, opts) {
   return new Promise((resolve) => {
     import_fs.default.mkdir(path8, opts, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+      err ? resolve(new ExtErrnoError(err)) : resolve(null);
     });
   });
 }
@@ -1214,7 +1221,7 @@ async function fsOpen(path8, flags, mode) {
       flags,
       mode,
       (err, fd) => {
-        err ? resolve(new CocExtErrnoError(err)) : resolve(fd);
+        err ? resolve(new ExtErrnoError(err)) : resolve(fd);
       }
     );
   });
@@ -1225,7 +1232,7 @@ async function fsWrite(fd, buf) {
       fd,
       buf,
       (err, written, _buffer) => {
-        err ? resolve(new CocExtErrnoError(err)) : resolve(written);
+        err ? resolve(new ExtErrnoError(err)) : resolve(written);
       }
     );
   });
@@ -1233,21 +1240,21 @@ async function fsWrite(fd, buf) {
 async function fsClose(fd) {
   return new Promise((resolve) => {
     import_fs.default.close(fd, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+      err ? resolve(new ExtErrnoError(err)) : resolve(null);
     });
   });
 }
 async function fsWriteFile(filename, data) {
   return new Promise((resolve) => {
     import_fs.default.writeFile(filename, data, (err) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(null);
+      err ? resolve(new ExtErrnoError(err)) : resolve(null);
     });
   });
 }
 async function fsReadFile(filename) {
   return new Promise((resolve) => {
     import_fs.default.readFile(filename, (err, data) => {
-      err ? resolve(new CocExtErrnoError(err)) : resolve(data);
+      err ? resolve(new ExtErrnoError(err)) : resolve(data);
     });
   });
 }
@@ -1554,7 +1561,7 @@ var FormattingEditProvider = class {
   }
   async _provideEdits(document, options, token, range) {
     if (!this.formatter) {
-      logger.error("formatter was null");
+      cocLogger.error("formatter was null");
       showNotification("formatter was null", "formatter");
       return [];
     }
@@ -1587,7 +1594,7 @@ function createTranslation(name, sl, tl, text) {
   };
 }
 
-// src/utils/http.ts
+// src/lib/comm/http.ts
 var import_https = __toESM(require("https"));
 var import_http = __toESM(require("http"));
 var import_url2 = require("url");
@@ -1598,7 +1605,7 @@ async function simpleHttpsProxy(host, port, target_host) {
         resolve({ agent: new import_https.default.Agent({ socket }) });
       } else {
         resolve({
-          error: new CocExtError(CocExtError.ERR_HTTP, "connect fail")
+          error: new ExtError(ExtError.ERR_HTTP, "connect fail")
         });
       }
     }).on("error", (error) => {
@@ -1626,8 +1633,8 @@ async function simpleHttpRequest(opts, is_https, data) {
       });
     }).on("timeout", () => {
       resolve({
-        error: new CocExtError(
-          CocExtError.ERR_HTTP,
+        error: new ExtError(
+          ExtError.ERR_HTTP,
           `query ${opts.hostname ? opts.hostname : opts.host} timeout`
         )
       });
@@ -1785,11 +1792,11 @@ async function bingTranslate(text, sl, tl, proxy_url) {
   };
   const resp = await sendHttpRequest(req);
   if (resp.error) {
-    logger.error(resp.error.message);
+    cocLogger.error(resp.error.message);
     return null;
   }
   if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
-    logger.error(`bing, status: ${resp.statusCode}`);
+    cocLogger.error(`bing, status: ${resp.statusCode}`);
     return null;
   }
   const ret = createTranslation("Bing", sl, tl, text);
@@ -1798,7 +1805,7 @@ async function bingTranslate(text, sl, tl, proxy_url) {
 }
 
 // src/utils/debug.ts
-var import_coc19 = require("coc.nvim");
+var import_coc18 = require("coc.nvim");
 
 // src/lightbulb/lightbulb.ts
 var import_coc16 = require("coc.nvim");
@@ -1881,219 +1888,8 @@ async function getCursorSymbolList() {
   return symList;
 }
 
-// src/ai/base.ts
-var import_coc18 = require("coc.nvim");
-var import_os = __toESM(require("os"));
-var FileCache = class {
-  constructor(dir) {
-    this.dir = dir;
-    __publicField(this, "ready", false);
-  }
-  async checkDir() {
-    if (this.ready) {
-      return null;
-    }
-    let err = await fsMkdir(this.dir, { recursive: true, mode: 493 });
-    if (err) {
-      return err;
-    }
-    this.ready = true;
-    return null;
-  }
-  async set(key, data) {
-    let err = await this.checkDir();
-    if (err) {
-      return err;
-    }
-    let cacheFile = `${this.dir}/${key}`;
-    return await fsWriteFile(cacheFile, data);
-  }
-  async get(key) {
-    let err = await this.checkDir();
-    if (err) {
-      return err;
-    }
-    let cacheFile = `${this.dir}/${key}`;
-    return await fsReadFile(cacheFile);
-  }
-};
-var ChatChannel = class {
-  constructor(chatName) {
-    this.chatName = chatName;
-    __publicField(this, "channel");
-    __publicField(this, "winid");
-    this.channel = import_coc18.window.createOutputChannel(chatName);
-    this.winid = -1;
-  }
-  async show() {
-    let { nvim } = import_coc18.workspace;
-    let winid = await nvim.call("bufwinid", this.chatName);
-    if (winid == -1) {
-      this.channel.show();
-      winid = await nvim.call("bufwinid", this.chatName);
-      await nvim.call("win_execute", [winid, "setl wrap"]);
-      await nvim.call("win_execute", [winid, "set ft=markdown"]);
-    } else {
-      await nvim.call("win_gotoid", [winid]);
-    }
-    await nvim.call("win_execute", [winid, "norm G"]);
-  }
-  async hide() {
-    this.channel.hide();
-  }
-  async openAutoScroll() {
-    let { nvim } = import_coc18.workspace;
-    this.winid = await nvim.call("bufwinid", this.chatName);
-  }
-  async closeAutoScroll() {
-    this.winid = -1;
-  }
-  append(text, newline = true) {
-    if (newline) {
-      this.channel.appendLine(text);
-    } else {
-      this.channel.append(text);
-    }
-    if (this.winid != -1) {
-      let { nvim } = import_coc18.workspace;
-      nvim.call("win_execute", [this.winid, "norm G"]);
-    }
-  }
-  appendUserInput(datetime, text) {
-    this.append(`
->> ${datetime}`);
-    let lines = text.split("\n");
-    for (const i of lines) {
-      this.append(`>> ${i}`);
-    }
-  }
-  clear() {
-    if (this.channel.content.length != 0) {
-      this.channel.dispose();
-      this.channel = import_coc18.window.createOutputChannel(this.chatName);
-      this.winid = -1;
-    }
-  }
-};
-var ChunkDecoder = class {
-  constructor() {
-    __publicField(this, "cache");
-    this.cache = Buffer.from("");
-  }
-  decode(buf) {
-    this.cache = Buffer.concat([this.cache, buf]);
-    let out = [];
-    while (this.cache.length > 0) {
-      let pos = this.cache.indexOf("\n");
-      if (pos < 0) {
-        break;
-      } else {
-        let str = this.cache.subarray(0, pos).toString();
-        this.cache = this.cache.subarray(pos + 1);
-        let pos0 = str.indexOf(":");
-        if (pos0 >= 0) {
-          out.push({
-            type: str.substring(0, pos0).trim(),
-            data: str.substring(pos0 + 1).trim()
-          });
-        } else if (str.length > 0) {
-          logger.debug(str);
-        }
-      }
-    }
-    return out;
-  }
-};
-var BaseChatChannel = class {
-  constructor() {
-    __publicField(this, "chatId");
-    __publicField(this, "cache");
-    __publicField(this, "chan");
-    this.chatId = void 0;
-    this.cache = new FileCache(
-      `${import_os.default.homedir}/.cache/chat_${this.getChatName()}`
-    );
-    this.chan = new ChatChannel(this.getChatName());
-  }
-  getCurrentChatId() {
-    return this.chatId;
-  }
-  setCurrentChatId(chatId) {
-    this.chatId = chatId;
-    this.chan.clear();
-  }
-  async sendChat(text) {
-    await this.chan.openAutoScroll();
-    await this.chat(text);
-    this.chan.closeAutoScroll();
-  }
-  async show() {
-    await this.chan.show();
-  }
-  hide() {
-    this.chan.hide();
-  }
-  clear() {
-    this.chan.clear();
-  }
-};
-async function getCurrentRef(opts) {
-  let doc = await import_coc18.workspace.document;
-  let pos = await import_coc18.window.getCursorPosition();
-  let lines = await doc.buffer.lines;
-  let line = lines[pos.line];
-  if (!line) {
-    return null;
-  }
-  let ch0 = opts ? opts.start : "[";
-  let ch1 = opts ? opts.start : "]";
-  let start = pos.character;
-  while (start >= 0) {
-    let ch = line[start];
-    if (!ch || ch == ch0) break;
-    start -= 1;
-  }
-  if (start < 0) {
-    return null;
-  }
-  let end = pos.character;
-  while (end < line.length) {
-    let ch = line[end];
-    if (!ch || ch == ch1) break;
-    end += 1;
-  }
-  if (end >= line.length) {
-    return null;
-  }
-  let refText = line.substring(start, end + 1);
-  let lineStart = pos.line - 1;
-  let segmentId = "";
-  for (; lineStart >= 0; --lineStart) {
-    const l = lines[lineStart];
-    if (l.length > 6 && l.slice(0, 6) == ">> id:") {
-      segmentId = l.slice(6).trim();
-      break;
-    }
-  }
-  if (segmentId.length == 0) {
-    return null;
-  }
-  return {
-    refText,
-    segmentId
-  };
-}
-
 // src/utils/debug.ts
-async function debugChat() {
-  let chan = new ChatChannel("---");
-  await chan.show();
-  await chan.appendUserInput("now", "hello");
-  chan.clear();
-  await chan.appendUserInput("now", "hello");
-}
 async function debug(_cmd, ..._args) {
-  await debugChat();
 }
 
 // src/utils/decoder.ts
@@ -2191,11 +1987,11 @@ async function googleTranslate(text, sl, tl, proxy_url) {
   };
   const resp = await sendHttpRequest(req);
   if (resp.error) {
-    logger.error(resp.error.message);
+    cocLogger.error(resp.error.message);
     return null;
   }
   if (resp.statusCode != 200 || !resp.body || resp.body.length == 0) {
-    logger.error(`google, status: ${resp.statusCode}`);
+    cocLogger.error(`google, status: ${resp.statusCode}`);
     return null;
   }
   const obj = JSON.parse(resp.body.toString());
@@ -2211,7 +2007,7 @@ async function googleTranslate(text, sl, tl, proxy_url) {
 var import_crypto = require("crypto");
 var import_child_process2 = require("child_process");
 var import_util2 = require("util");
-var import_os2 = __toESM(require("os"));
+var import_os = __toESM(require("os"));
 var import_path7 = __toESM(require("path"));
 var base64ScratchWindow = new ScratchWindow("BASE64 DECODE", "text");
 function getArchiveListCmd(type, file) {
@@ -2257,10 +2053,10 @@ function decodeBufferToString(buf) {
   }
 }
 async function saveTempFile(buf, md5) {
-  const file = import_path7.default.join(import_os2.default.tmpdir(), `coc-ext-preview-${md5}`);
+  const file = import_path7.default.join(import_os.default.tmpdir(), `coc-ext-preview-${md5}`);
   const err = await fsWriteFile(file, buf);
   if (err) {
-    logger.error(`write temp file failed: ${err}`);
+    cocLogger.error(`write temp file failed: ${err}`);
     return null;
   }
   return file;
@@ -2317,15 +2113,15 @@ MIME: ${mimeInfo}`;
         popup(info, "[BASE64 DECODE]");
       }
     } catch (e) {
-      logger.error(`base64 decode failed: ${e}`);
+      cocLogger.error(`base64 decode failed: ${e}`);
     }
   };
 }
 
 // src/leaderf/highlight.ts
-var import_coc20 = require("coc.nvim");
+var import_coc19 = require("coc.nvim");
 async function highlightSource() {
-  const { nvim } = import_coc20.workspace;
+  const { nvim } = import_coc19.workspace;
   let str = await nvim.exec("verbose highlight", true);
   const hiinfos = parseHighlightInfo(str);
   let max_gn_len = 0;
@@ -2355,323 +2151,260 @@ async function leader_recv(cmd, ..._args) {
 
 // src/ai/chat.ts
 var import_coc21 = require("coc.nvim");
+var import_coc22 = require("coc.nvim");
 
-// src/ai/context.ts
-var LlmContextManager = class {
-  constructor() {
-    __publicField(this, "ctx");
-    this.ctx = {
-      fullHistory: [],
-      tokens: 0
-    };
+// src/ai/base.ts
+var import_coc20 = require("coc.nvim");
+
+// src/lib/ai/base.ts
+var import_os2 = __toESM(require("os"));
+var FileCache = class {
+  constructor(dir) {
+    this.dir = dir;
+    __publicField(this, "ready", false);
   }
-  appendMessage(msg) {
-    this.ctx.fullHistory.push(msg);
-  }
-  getMessages() {
-    let msgs = [];
-    for (let i of this.ctx.fullHistory) {
-      msgs.push(i.oriMessage);
+  async checkDir() {
+    if (this.ready) {
+      return null;
     }
-    return msgs;
+    let err = await fsMkdir(this.dir, { recursive: true, mode: 493 });
+    if (err) {
+      return err;
+    }
+    this.ready = true;
+    return null;
+  }
+  async set(key, data) {
+    let err = await this.checkDir();
+    if (err) {
+      return err;
+    }
+    let cacheFile = `${this.dir}/${key}`;
+    return await fsWriteFile(cacheFile, data);
+  }
+  async get(key) {
+    let err = await this.checkDir();
+    if (err) {
+      return err;
+    }
+    let cacheFile = `${this.dir}/${key}`;
+    return await fsReadFile(cacheFile);
   }
 };
-
-// src/ai/llmcommon.ts
-var import_fs3 = __toESM(require("fs"));
-var LlmCaller = class {
-  constructor(servConf) {
-    __publicField(this, "endpoint");
-    __publicField(this, "headers");
-    __publicField(this, "proxy");
-    this.endpoint = new URL(servConf.endpoint);
-    this.headers = {};
-    for (let key in servConf.auth_headers) {
-      this.headers[key] = servConf.auth_headers[key];
+var BaseChatChannel = class {
+};
+var ChunkDecoder = class {
+  constructor(logger = null) {
+    this.logger = logger;
+    __publicField(this, "cache");
+    this.cache = Buffer.from("");
+  }
+  decode(buf) {
+    this.cache = Buffer.concat([this.cache, buf]);
+    let out = [];
+    while (this.cache.length > 0) {
+      let pos = this.cache.indexOf("\n");
+      if (pos < 0) {
+        break;
+      } else {
+        let str = this.cache.subarray(0, pos).toString();
+        this.cache = this.cache.subarray(pos + 1);
+        let pos0 = str.indexOf(":");
+        if (pos0 >= 0) {
+          out.push({
+            type: str.substring(0, pos0).trim(),
+            data: str.substring(pos0 + 1).trim()
+          });
+        } else if (str.length > 0 && this.logger != null) {
+          this.logger.debug(str);
+        }
+      }
     }
-    if (servConf.proxy) {
-      let proxyUrl = new URL(servConf.proxy);
-      this.proxy = {
-        host: proxyUrl.hostname,
-        port: parseInt(proxyUrl.port)
-      };
-    }
+    return out;
   }
-  async httpQuery(method, path8, data) {
-    var _a;
-    let req = {
-      args: {
-        host: this.endpoint.hostname,
-        path: `${this.endpoint.pathname}${path8}`,
-        method,
-        protocol: this.endpoint.protocol,
-        headers: this.headers,
-        timeout: 1e3
-      },
-      proxy: this.proxy,
-      data
-    };
-    let resp = await sendHttpRequest(req);
-    if (resp.statusCode != 200 || !resp.body) {
-      return new CocExtError(
-        CocExtError.ERR_COMM_AI,
-        `[CommAI] statusCode: ${resp.statusCode}, path: ${req.args.path}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
-      );
-    }
-    return resp.body.toString();
-  }
-  setConersationId(id) {
-    this.headers["X-Conversation-Id"] = id;
-  }
-  async models() {
-    delete this.headers["Content-Type"];
-    delete this.headers["X-Request-Id"];
-    let res = await this.httpQuery("GET", "/v1/models");
-    return res instanceof Error ? res : JSON.parse(res);
-  }
-  async completions(data) {
-    this.headers["Content-Type"] = "application/json";
-    this.headers["X-Request-Id"] = crypto.randomUUID();
-    data.stream = false;
-    let res = await this.httpQuery(
-      "POST",
-      "/v1/chat/completions",
-      JSON.stringify(data)
+};
+var BaseChat = class {
+  constructor(chan4) {
+    this.chan = chan4;
+    __publicField(this, "chatId");
+    __publicField(this, "cache");
+    this.chatId = void 0;
+    this.cache = new FileCache(
+      `${import_os2.default.homedir}/.cache/chat_${this.getChatName()}`
     );
-    return res instanceof Error ? res : JSON.parse(res);
   }
-  async completionsSSE(data, cb) {
-    this.headers["Content-Type"] = "application/json";
-    this.headers["X-Request-Id"] = crypto.randomUUID();
-    data.stream = true;
-    let req = {
-      args: {
-        host: this.endpoint.hostname,
-        path: `${this.endpoint.pathname}/v1/chat/completions?alt=sse`,
-        method: "POST",
-        protocol: this.endpoint.protocol,
-        headers: this.headers,
-        timeout: 1e3
-      },
-      proxy: this.proxy,
-      data: JSON.stringify(data)
-    };
-    await sendHttpRequestWithCallback(req, cb);
+  getCurrentChatId() {
+    return this.chatId;
   }
-};
-var LlmCommonChat = class extends BaseChatChannel {
-  constructor(servConf) {
-    super();
-    __publicField(this, "caller");
-    __publicField(this, "chatReq");
-    __publicField(this, "ctxManager");
-    this.caller = new LlmCaller(servConf);
-    this.chatReq = {
-      model: "",
-      messages: [],
-      tools: [
-        // {
-        //   type: 'function',
-        //   function: {
-        //     name: 'get_weather',
-        //     description: '查询指定城市天气',
-        //     parameters: {
-        //       type: 'object',
-        //       required: ['location'],
-        //       properties: {
-        //         location: { type: 'string', description: '城市名称' },
-        //       },
-        //     },
-        //   },
-        // },
-        // {
-        //   type: 'function',
-        //   function: {
-        //     name: 'get_traffic_info',
-        //     description: '查询指定城市交通信息',
-        //     parameters: {
-        //       type: 'object',
-        //       required: ['location'],
-        //       properties: {
-        //         location: { type: 'string', description: '城市名称' },
-        //       },
-        //     },
-        //   },
-        // },
-      ],
-      temperature: 1,
-      top_p: 0.95,
-      stream: true,
-      // stream: false,
-      thinking: {
-        type: "enabled"
-      }
-    };
-    this.ctxManager = new LlmContextManager();
+  setCurrentChatId(chatId) {
+    this.chatId = chatId;
+    this.chan.clear();
   }
-  reset() {
-    this.chatReq.messages = [];
+  async sendChat(text) {
+    await this.chan.beforeChat();
+    await this.chat(text);
+    await this.chan.afterChat();
   }
-  getChatName() {
-    return "LlmCommon";
+  async show() {
+    await this.chan.show();
   }
-  async getChatList() {
-    return [];
+  hide() {
+    this.chan.hide();
   }
-  async createChatId(_name) {
-    let llmResp = await this.caller.models();
-    if (llmResp instanceof Error) {
-      return llmResp;
-    }
-    logger.debug(llmResp);
-    if (llmResp.data && llmResp.data.length > 0) {
-      let model = llmResp.data[0];
-      logger.debug(model.id);
-      this.chatReq.model = model.id;
-      let chatId = crypto.randomUUID();
-      this.caller.setConersationId(chatId);
-      return chatId;
-    }
-    return new CocExtError(CocExtError.ERR_COMM_AI, "choose model fail");
-  }
-  async showHistoryMessages() {
-    return null;
-  }
-  async showItem() {
-  }
-  async chat(text) {
-    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
-    this.ctxManager.appendMessage({
-      oriMessage: {
-        role: "user",
-        content: text
-      }
-    });
-    const kStatusNone = 0;
-    const kStatusReasoning = 1;
-    const kStatusContent = 2;
-    const kStatusStop = 3;
-    let reqId = "";
-    let fcList = [];
-    let decoder = new ChunkDecoder();
-    let respText = "";
-    let status = kStatusNone;
-    let promptTokens = 0;
-    let completionTokens = 0;
-    let cb = {
-      onData: (chunk, rsp) => {
-        if (rsp.statusCode != 200) {
-          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
-          return;
-        }
-        let msgList = decoder.decode(chunk);
-        for (let m of msgList) {
-          if (m.data == "[DONE]") {
-            continue;
-          }
-          try {
-            let data = JSON.parse(m.data);
-            if (reqId.length == 0) {
-              reqId = data.id;
-              this.chan.append(`>> id:${reqId}
-`);
-            }
-            for (let c of data.choices) {
-              if (c.delta && c.delta.reasoning_content) {
-                if (status != kStatusReasoning) {
-                  this.chan.append("\n---");
-                }
-                status = kStatusReasoning;
-                respText += c.delta.reasoning_content;
-                this.chan.append(c.delta.reasoning_content, false);
-              }
-              if (c.delta && c.delta.content) {
-                if (status == kStatusReasoning) {
-                  this.chan.append("\n---");
-                }
-                status = kStatusContent;
-                respText += c.delta.content;
-                this.chan.append(c.delta.content, false);
-              }
-              if (c.delta && c.delta.tool_calls) {
-                for (let t of c.delta.tool_calls) {
-                  if (fcList.length == 0 || t.id) {
-                    fcList.push({
-                      id: t.id,
-                      name: t.function.name ? t.function.name : "",
-                      arguments: t.function.arguments ? t.function.arguments : ""
-                    });
-                  } else {
-                    let func = fcList[fcList.length - 1];
-                    if (t.function.name) {
-                      func.name += t.function.name;
-                    }
-                    if (t.function.arguments) {
-                      func.arguments += t.function.arguments;
-                    }
-                  }
-                }
-              }
-              if (c.finish_reason) {
-                status = kStatusStop;
-                this.ctxManager.appendMessage({
-                  oriMessage: {
-                    role: "assistant",
-                    content: respText
-                  }
-                });
-              }
-            }
-            if (data.usage) {
-              promptTokens = data.usage.prompt_tokens;
-              completionTokens = data.usage.completion_tokens;
-            }
-          } catch (e) {
-            logger.error(e);
-            logger.debug(m.data);
-          }
-        }
-      },
-      onEnd: (rsp) => {
-        logger.debug(rsp.statusCode);
-        this.chan.append(
-          `
-(\`END\`, usage: in \`${promptTokens}\`, out \`${completionTokens}\`, total \`${promptTokens + completionTokens}\`)`
-        );
-        logger.debug(fcList);
-      }
-    };
-    this.chatReq.messages = this.ctxManager.getMessages();
-    await this.caller.completionsSSE(this.chatReq, cb);
-  }
-  async delSession(_chatId) {
-    return null;
+  clear() {
+    this.chan.clear();
   }
 };
-function create_llm_common_chat() {
-  if (process.env.MY_AI_COMMON_CONF_PATH) {
-    let confPath = process.env.MY_AI_COMMON_CONF_PATH;
-    try {
-      import_fs3.default.accessSync(confPath, import_fs3.default.constants.R_OK);
-      let conf = JSON.parse(
-        import_fs3.default.readFileSync(confPath).toString()
-      );
-      return new LlmCommonChat(conf);
-    } catch (err) {
-      logger.error(err);
-    }
-  }
-  return new LlmCommonChat({
-    auth_headers: {},
-    endpoint: "http://127.0.0.1"
-  });
-}
-var llmCommonChat = create_llm_common_chat();
+__publicField(BaseChat, "browserUserAgent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36");
 
-// src/ai/deepseek.ts
-var import_fs4 = __toESM(require("fs"));
+// src/ai/base.ts
+var _CocChatChannel = class _CocChatChannel extends BaseChatChannel {
+  constructor(chatName, scratchWindow) {
+    super();
+    this.chatName = chatName;
+    this.scratchWindow = scratchWindow;
+    __publicField(this, "channel");
+    __publicField(this, "winid");
+    __publicField(this, "buf");
+    this.channel = import_coc20.window.createOutputChannel(chatName);
+    this.winid = -1;
+    this.buf = "";
+  }
+  async show() {
+    let { nvim } = import_coc20.workspace;
+    let winid = await nvim.call("bufwinid", this.chatName);
+    if (winid == -1) {
+      this.channel.show();
+      winid = await nvim.call("bufwinid", this.chatName);
+      await nvim.call("win_execute", [winid, "setl wrap"]);
+      await nvim.call("win_execute", [winid, "set ft=markdown"]);
+    } else {
+      await nvim.call("win_gotoid", [winid]);
+    }
+    await nvim.call("win_execute", [winid, "norm G"]);
+  }
+  async hide() {
+    this.channel.hide();
+  }
+  async beforeChat() {
+    let { nvim } = import_coc20.workspace;
+    this.winid = await nvim.call("bufwinid", this.chatName);
+  }
+  async afterChat() {
+    this.winid = -1;
+  }
+  scrollBottom() {
+    if (this.winid != -1) {
+      const { nvim } = import_coc20.workspace;
+      nvim.call("win_execute", [this.winid, "norm G"]);
+    }
+  }
+  // push buffered partial content to the OutputChannel
+  flushBuf() {
+    if (this.buf.length != 0) {
+      this.channel.append(this.buf);
+      this.buf = "";
+    }
+  }
+  flush() {
+    this.flushBuf();
+    this.scrollBottom();
+  }
+  append0(text, newline = true) {
+    if (newline) {
+      this.flushBuf();
+      this.channel.appendLine(text);
+    } else {
+      this.buf += text;
+      if (this.buf.length < _CocChatChannel.bufSize && !this.buf.includes("\n")) {
+        return;
+      }
+      this.channel.append(this.buf);
+      this.buf = "";
+    }
+    this.scrollBottom();
+  }
+  append(text) {
+    this.append0(text, false);
+  }
+  appendLine(text) {
+    this.append0(text, true);
+  }
+  appendUserInput(datetime, text) {
+    this.append0(`
+>> ${datetime}`);
+    let lines = text.split("\n");
+    for (const i of lines) {
+      this.append0(`>> ${i}`);
+    }
+  }
+  clear() {
+    this.buf = "";
+    if (this.channel.content.length != 0) {
+      this.channel.dispose();
+      this.channel = import_coc20.window.createOutputChannel(this.chatName);
+      this.winid = -1;
+    }
+  }
+  async popup(content, title, filetype) {
+    await popup(content, title, filetype);
+  }
+  async openSearchWindow(lines) {
+    await this.scratchWindow.open(lines);
+  }
+  async getCurrentRef(opts) {
+    let doc = await import_coc20.workspace.document;
+    let pos = await import_coc20.window.getCursorPosition();
+    let lines = await doc.buffer.lines;
+    let line = lines[pos.line];
+    if (!line) {
+      return null;
+    }
+    let ch0 = opts ? opts.start : "[";
+    let ch1 = opts ? opts.start : "]";
+    let start = pos.character;
+    while (start >= 0) {
+      let ch = line[start];
+      if (!ch || ch == ch0) break;
+      start -= 1;
+    }
+    if (start < 0) {
+      return null;
+    }
+    let end = pos.character;
+    while (end < line.length) {
+      let ch = line[end];
+      if (!ch || ch == ch1) break;
+      end += 1;
+    }
+    if (end >= line.length) {
+      return null;
+    }
+    let refText = line.substring(start, end + 1);
+    let lineStart = pos.line - 1;
+    let segmentId = "";
+    for (; lineStart >= 0; --lineStart) {
+      const l = lines[lineStart];
+      if (l.length > 6 && l.slice(0, 6) == ">> id:") {
+        segmentId = l.slice(6).trim();
+        break;
+      }
+    }
+    if (segmentId.length == 0) {
+      return null;
+    }
+    return {
+      refText,
+      segmentId
+    };
+  }
+};
+__publicField(_CocChatChannel, "bufSize", 16);
+var CocChatChannel = _CocChatChannel;
+
+// src/lib/ai/deepseek.ts
+var import_fs3 = __toESM(require("fs"));
 var globalDeepseek = {
-  searchWindow: new ScratchWindow("Deepseek Search", "markdown"),
   host: "chat.deepseek.com",
   timeout: 5e3
 };
@@ -2718,32 +2451,28 @@ var Sha3Wasm = class {
     const statusBytes = this.readBuffer(retptr, 4);
     if (statusBytes.length !== 4) {
       this.addToStack(16);
-      return new CocExtError(CocExtError.ERR_DEEPSEEK, "read status fail");
+      return new ExtError(ExtError.ERR_DEEPSEEK, "read status fail");
     }
     let status = new DataView(statusBytes.buffer).getInt32(0, true);
     let valueBytes = this.readBuffer(retptr + 8, 8);
     if (valueBytes.length !== 8) {
       this.addToStack(16);
-      return new CocExtError(CocExtError.ERR_DEEPSEEK, "read value fail");
+      return new ExtError(ExtError.ERR_DEEPSEEK, "read value fail");
     }
     let value = new DataView(valueBytes.buffer).getFloat64(0, true);
     this.addToStack(16);
     if (status !== 1) {
-      return new CocExtError(CocExtError.ERR_DEEPSEEK, "computePowAnswer fail");
+      return new ExtError(ExtError.ERR_DEEPSEEK, "computePowAnswer fail");
     }
     return Math.floor(value);
   }
 };
 async function getWasm(dir) {
-  let conf = getcfg("", {});
-  let wasmPath = conf.deepseekWasmPath && conf.deepseekWasmPath.length > 0 ? conf.deepseekWasmPath : `${dir}/deepseek_sha3.wasm`;
-  let downloadUrl = conf.deepseekWasmURL && conf.deepseekWasmURL.length > 0 ? conf.deepseekWasmURL : `https://${globalDeepseek.host}/static/sha3_wasm_bg.7b9ca65ddd.wasm`;
-  if (await fsAccess(wasmPath, import_fs4.default.constants.R_OK) != null) {
+  let wasmPath = `${dir}/deepseek_sha3.wasm`;
+  let downloadUrl = `https://${globalDeepseek.host}/static/sha3_wasm_bg.7b9ca65ddd.wasm`;
+  if (await fsAccess(wasmPath, import_fs3.default.constants.R_OK) != null) {
     if (await simpleHttpDownloadFile(downloadUrl, wasmPath) == -1) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
-        "[Deepseek] get wasm fail"
-      );
+      return new ExtError(ExtError.ERR_DEEPSEEK, "[Deepseek] get wasm fail");
     }
   }
   let wasmBuf = await fsReadFile(wasmPath);
@@ -2754,20 +2483,27 @@ async function getWasm(dir) {
   return new Sha3Wasm(await WebAssembly.instantiate(bytes, {}));
 }
 function searchReault2Lines(item, idx) {
-  let lines = [];
-  let date = new Date(item.published_at * 1e3);
-  let dstr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  const lines = [];
+  const meta = [];
+  if (item.site_name) {
+    meta.push(item.site_name);
+  }
+  if (item.published_at) {
+    const date = new Date(item.published_at * 1e3);
+    meta.push(`${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`);
+  }
   lines.push(`# ${idx} - ${item.title}`);
   lines.push("");
-  lines.push(`[${item.site_name} - ${dstr}](${item.url})`);
+  lines.push(`[${meta.join(" - ")}](${item.url})`);
   lines.push("");
   lines.push(item.snippet);
   return lines;
 }
-var DeepseekChat = class extends BaseChatChannel {
-  constructor(authKey) {
-    super();
+var DeepseekChat = class extends BaseChat {
+  constructor(authKey, chan4, logger) {
+    super(chan4);
     this.authKey = authKey;
+    this.logger = logger;
     __publicField(this, "currentMsgid");
     __publicField(this, "sha3Wasm");
     this.currentMsgid = null;
@@ -2781,7 +2517,7 @@ var DeepseekChat = class extends BaseChatChannel {
   }
   getHeader() {
     return {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+      "User-Agent": BaseChat.browserUserAgent,
       authorization: `Bearer ${this.authKey}`,
       Origin: `https://${globalDeepseek.host}`,
       "x-client-locale": "zh_CN",
@@ -2804,8 +2540,8 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     let resp = await sendHttpRequest(req);
     if (resp.statusCode != 200 || !resp.body) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
+      return new ExtError(
+        ExtError.ERR_DEEPSEEK,
         `[Deepseek] statusCode: ${resp.statusCode}, error: ${resp.error}, path: ${req.args.path}`
       );
     }
@@ -2822,8 +2558,8 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     let chatSessions = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_sessions;
     if (chatSessions == void 0) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
+      return new ExtError(
+        ExtError.ERR_DEEPSEEK,
         "[Deepseek] get sessions fail"
       );
     }
@@ -2852,15 +2588,12 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     let id = (_a = resp.data.biz_data) == null ? void 0 : _a.id;
     if (!id || id.length == 0) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
-        "[Deepseek] create chat fail"
-      );
+      return new ExtError(ExtError.ERR_DEEPSEEK, "[Deepseek] create chat fail");
     }
     return id;
   }
   async showHistoryMessages() {
-    var _a;
+    var _a, _b, _c, _d;
     let resp = await this.httpQuery(
       "GET",
       `/api/v0/chat/history_messages?chat_session_id=${this.chatId}`
@@ -2870,8 +2603,8 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     const messages = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_messages;
     if (messages == void 0) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
+      return new ExtError(
+        ExtError.ERR_DEEPSEEK,
         "[Deepseek] get messages fail"
       );
     }
@@ -2879,27 +2612,42 @@ var DeepseekChat = class extends BaseChatChannel {
     for (const msg of messages) {
       this.currentMsgid = msg.message_id;
       if (msg.role == "USER") {
-        this.chan.appendUserInput(
-          new Date(msg.inserted_at * 1e3).toISOString(),
-          msg.content
-        );
-      } else {
-        this.chan.append(`>> id:${msg.message_id}
-`);
-        if (msg.search_results) {
-          let cacheKey = `${this.chatId}-${msg.message_id}-search.json`;
-          await this.cache.set(cacheKey, JSON.stringify(msg.search_results));
-          this.chan.append(
-            `\uE68F [search result (${msg.search_results.length})]
-`
+        const contents = [];
+        for (const frag of (_b = msg.fragments) != null ? _b : []) {
+          if (frag.type == "REQUEST" && frag.content) {
+            contents.push(frag.content);
+          }
+        }
+        if (contents.length > 0) {
+          this.chan.appendUserInput(
+            new Date(msg.inserted_at * 1e3).toISOString(),
+            contents.join("\n")
           );
         }
-        if (msg.thinking_enabled && msg.thinking_content) {
-          this.chan.append("---");
-          this.chan.append(msg.thinking_content);
-          this.chan.append("\n---\n");
+      } else {
+        this.chan.appendLine(`>> id:${msg.message_id}
+`);
+        const searchResults = [];
+        for (const frag of (_c = msg.fragments) != null ? _c : []) {
+          if (frag.type == "SEARCH" && frag.results) {
+            searchResults.push(...frag.results);
+          }
         }
-        this.chan.append(msg.content);
+        if (searchResults.length > 0) {
+          let cacheKey = `${this.chatId}-${msg.message_id}-search.json`;
+          await this.cache.set(cacheKey, JSON.stringify(searchResults));
+          this.chan.appendLine(`\uE68F [search result (${searchResults.length})]
+`);
+        }
+        for (const frag of (_d = msg.fragments) != null ? _d : []) {
+          if (frag.type == "THINKING" && frag.content) {
+            this.chan.appendLine("---");
+            this.chan.appendLine(frag.content);
+            this.chan.appendLine("\n---\n");
+          } else if (frag.type == "RESPONSE" && frag.content) {
+            this.chan.appendLine(frag.content);
+          }
+        }
       }
     }
     return null;
@@ -2925,7 +2673,7 @@ var DeepseekChat = class extends BaseChatChannel {
       lines.push("---");
       lines.push("");
     }
-    await globalDeepseek.searchWindow.open(lines);
+    await this.chan.openSearchWindow(lines);
   }
   async tryGetRef(messageId, refText) {
     let regex = new RegExp(/^\[citation:([0-9]*)\]$/);
@@ -2945,12 +2693,12 @@ var DeepseekChat = class extends BaseChatChannel {
         continue;
       }
       let text = searchReault2Lines(item, item.cite_index).join("\n");
-      await popup(text, "", "markdown");
+      await this.chan.popup(text, "", "markdown");
       return;
     }
   }
   async showItem() {
-    let refItem = await getCurrentRef();
+    let refItem = await this.chan.getCurrentRef();
     if (!refItem) {
       return;
     }
@@ -2971,8 +2719,8 @@ var DeepseekChat = class extends BaseChatChannel {
     }
     let challenge = (_a = resp.data.biz_data) == null ? void 0 : _a.challenge;
     if (!challenge) {
-      return new CocExtError(
-        CocExtError.ERR_DEEPSEEK,
+      return new ExtError(
+        ExtError.ERR_DEEPSEEK,
         "[Deepseek] get challenge fail"
       );
     } else {
@@ -3006,7 +2754,7 @@ var DeepseekChat = class extends BaseChatChannel {
   async chat(prompt) {
     const challenge = await this.getPowChallenge("/api/v0/chat/completion");
     if (challenge instanceof Error) {
-      logger.error(challenge);
+      this.logger.error(challenge);
       return;
     }
     this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
@@ -3029,85 +2777,256 @@ var DeepseekChat = class extends BaseChatChannel {
         thinking_enabled: false
       })
     };
-    let decoder = new ChunkDecoder();
+    const decoder = new ChunkDecoder();
     let searchResults = [];
+    let searchMarkerPrinted = false;
     let event = "";
     let p = "";
+    let o = "";
+    let fragments = [];
+    let emittedThinking = 0;
+    let emittedContent = 0;
+    let inThinking = false;
+    const printSearchMarker = () => {
+      if (searchMarkerPrinted || searchResults.length == 0) {
+        return;
+      }
+      closeThinking();
+      this.chan.appendLine(
+        `\uE68F [search result (${searchResults.length})]
+`
+      );
+      searchMarkerPrinted = true;
+    };
+    const closeThinking = () => {
+      if (!inThinking) {
+        return;
+      }
+      this.chan.appendLine("\n\n---\n");
+      inThinking = false;
+    };
+    const mergeSearchResults = (items) => {
+      for (const item of items) {
+        if (!item || typeof item.url != "string") {
+          continue;
+        }
+        if (searchResults.some((r) => r.url == item.url)) {
+          continue;
+        }
+        searchResults.push(item);
+      }
+    };
+    const emitFragments = () => {
+      var _a, _b;
+      let contentText = "";
+      let thinkingText = "";
+      for (const frag of fragments) {
+        if (frag.type == "SEARCH") {
+          if (frag.results) {
+            mergeSearchResults(frag.results);
+          }
+          if (frag.status == "FINISHED") {
+            printSearchMarker();
+          }
+        } else if (frag.type == "REQUEST") {
+          continue;
+        } else if (frag.type == "THINK" || frag.type == "THINKING") {
+          thinkingText += (_b = (_a = frag.thinking_content) != null ? _a : frag.content) != null ? _b : "";
+        } else {
+          if (frag.thinking_content) {
+            thinkingText += frag.thinking_content;
+          }
+          if (typeof frag.content == "string") {
+            contentText += frag.content;
+          }
+        }
+      }
+      if (thinkingText.length > emittedThinking) {
+        if (!inThinking) {
+          this.chan.appendLine("---");
+          inThinking = true;
+        }
+        this.chan.append(thinkingText.slice(emittedThinking));
+        emittedThinking = thinkingText.length;
+      }
+      if (contentText.length > emittedContent) {
+        closeThinking();
+        this.chan.append(contentText.slice(emittedContent));
+        emittedContent = contentText.length;
+      }
+    };
+    const applyFragmentPatch = (index, field, value) => {
+      var _a, _b, _c;
+      let i = index < 0 ? fragments.length + index : index;
+      if (i < 0 || i >= fragments.length) {
+        let type = "RESPONSE";
+        if (field == "thinking_content") {
+          type = "THINK";
+        } else if (field == "results" || field == "status") {
+          type = "SEARCH";
+        }
+        fragments.push({ id: fragments.length + 1, type });
+        i = fragments.length - 1;
+      }
+      const frag = fragments[i];
+      if (field == "content" && typeof value == "string") {
+        frag.content = o == "SET" ? value : ((_a = frag.content) != null ? _a : "") + value;
+        emitFragments();
+      } else if (field == "thinking_content" && typeof value == "string") {
+        frag.thinking_content = o == "SET" ? value : ((_b = frag.thinking_content) != null ? _b : "") + value;
+        emitFragments();
+      } else if (field == "results" && Array.isArray(value)) {
+        frag.results = ((_c = frag.results) != null ? _c : []).concat(value);
+        mergeSearchResults(value);
+        emitFragments();
+      } else if (field == "status" && typeof value == "string") {
+        frag.status = value;
+        if (frag.type == "SEARCH" && value == "FINISHED") {
+          printSearchMarker();
+        }
+      }
+    };
+    const applyPatch = (path8, value) => {
+      if (typeof value == "string") {
+        const arr = /^response\/fragments\/(-?\d+)\/(content|thinking_content|status|results)$/.exec(
+          path8
+        );
+        if (arr) {
+          applyFragmentPatch(parseInt(arr[1]), arr[2], value);
+        } else if (path8 == "response/search_status") {
+          if (value == "FINISHED") {
+            printSearchMarker();
+          }
+        } else if (path8 == "response/thinking_elapsed_secs") {
+          closeThinking();
+        } else if (path8 == "response/content") {
+          applyFragmentPatch(-1, "content", value);
+        } else if (path8 == "response/thinking_content") {
+          applyFragmentPatch(-1, "thinking_content", value);
+        } else {
+          this.logger.debug({ p: path8, o, v: value });
+        }
+        return;
+      }
+      if (Array.isArray(value)) {
+        if (path8 == "response" && o == "BATCH") {
+          for (const sub of value) {
+            if (sub && sub.p) {
+              applyPatch(
+                sub.p.startsWith("response/") ? sub.p : `response/${sub.p}`,
+                sub.v
+              );
+            }
+          }
+        } else if (path8 == "response/fragments") {
+          for (const frag of value) {
+            if (frag && typeof frag == "object") {
+              fragments.push(frag);
+            }
+          }
+          emitFragments();
+        } else if (/^response\/fragments\/-?\d+$/.test(path8) && o == "BATCH") {
+          const index = /\/([-\d]+)$/.exec(path8)[1];
+          for (const sub of value) {
+            if (sub && sub.p) {
+              applyPatch(`response/fragments/${index}/${sub.p}`, sub.v);
+            }
+          }
+        } else if (path8.endsWith("/results") || path8 == "response/search_results") {
+          mergeSearchResults(value);
+        } else {
+          this.logger.debug({ p: path8, o, v: value });
+        }
+        return;
+      }
+      if (value && typeof value == "object") {
+        if ("response" in value) {
+          const resp = value.response;
+          if (Array.isArray(resp.search_results)) {
+            mergeSearchResults(resp.search_results);
+          }
+          if (resp.search_status == "FINISHED") {
+            printSearchMarker();
+          }
+          if (resp.fragments) {
+            fragments = resp.fragments;
+            emitFragments();
+          } else if (typeof resp.content == "string") {
+            fragments = [{ id: 1, type: "RESPONSE", content: resp.content }];
+            emitFragments();
+          }
+        } else if (path8 == "response/fragments") {
+          fragments.push(value);
+          emitFragments();
+        } else {
+          this.logger.debug({ p: path8, o, v: value });
+        }
+        return;
+      }
+      this.logger.debug({ p: path8, o, v: value });
+    };
     const cb = {
       onData: (chunk, rsp) => {
         if (rsp.statusCode != 200) {
           return;
         }
-        let msgList = decoder.decode(chunk);
-        for (let m of msgList) {
+        const msgList = decoder.decode(chunk);
+        for (const m of msgList) {
           if (m.type === "event") {
             event = m.data;
             if (event === "close") {
-              this.chan.append("\n(END)");
+              this.chan.appendLine("\n(END)");
             }
           } else if (m.type === "data") {
-            let d = JSON.parse(m.data);
+            const d = JSON.parse(m.data);
             if (event === "ready") {
               if (d.request_message_id != void 0 && d.response_message_id != void 0) {
-                this.chan.append(`>> id:${d.response_message_id}
+                this.chan.appendLine(`>> id:${d.response_message_id}
 `);
                 this.currentMsgid = d.response_message_id;
               }
             } else if (event === "update_session") {
+              if (d.v === void 0) {
+                continue;
+              }
               if (d.p) {
                 p = d.p;
               }
-              if (p === "response/search_status") {
-                if (d.v === "FINISHED" && searchResults.length > 0) {
-                  this.chan.append(
-                    `\uE68F [search result (${searchResults.length})]
-`
-                  );
-                }
-              } else if (p === "response/search_results") {
-                if (Array.isArray(d.v)) {
-                  searchResults.push(...d.v);
-                }
-              } else if (p === "response/content" && typeof d.v === "string") {
-                this.chan.append(d.v, false);
-              } else if (p === "response/thinking_content") {
-                if (d.p === "response/thinking_content") {
-                  this.chan.append("---");
-                }
-                if (typeof d.v === "string") {
-                  this.chan.append(d.v, false);
-                }
-              } else if (p === "response/thinking_elapsed_secs") {
-                this.chan.append("\n\n---\n");
-              } else if (typeof d.v === "object" && "response" in d.v) {
-                this.chan.append(d.v.response.content, false);
-              } else {
-                logger.debug(m);
+              if (d.o) {
+                o = d.o;
               }
+              applyPatch(p, d.v);
+            } else {
+              this.logger.debug(m);
             }
           } else {
-            logger.debug(m);
+            this.logger.debug(m);
           }
         }
       },
       onError: (err) => {
-        this.chan.append(" (ERROR) ");
-        this.chan.append(err.message);
+        this.chan.appendLine(" (ERROR) ");
+        this.chan.appendLine(err.message);
       },
       onEnd: (rsp) => {
-        logger.info(
+        this.logger.info(
           `[Deepseek] chat statusCode: ${rsp.statusCode}, msg: ${rsp.statusMessage}`
         );
       },
       onTimeout: () => {
-        logger.error("[Deepseek] timeout");
+        this.logger.error("[Deepseek] timeout");
       }
     };
     await sendHttpRequestWithCallback(req, cb);
+    closeThinking();
     if (searchResults.length > 0) {
-      let cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
+      if (!searchMarkerPrinted) {
+        printSearchMarker();
+      }
+      const cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
       await this.cache.set(cacheKey, JSON.stringify(searchResults));
     }
+    this.chan.flush();
   }
   async delSession(chatId) {
     let resp = await this.httpQuery("POST", "/api/v0/chat_session/delete", {
@@ -3116,16 +3035,26 @@ var DeepseekChat = class extends BaseChatChannel {
     return resp instanceof Error ? resp : null;
   }
 };
+
+// src/ai/deepseek.ts
+var searchWindow = new ScratchWindow("Deepseek Search", "markdown");
+var chan = new CocChatChannel("Deepseek", searchWindow);
 var deepseekChat = new DeepseekChat(
-  process.env.MY_AI_DEEPSEEK_CHAT_KEY ? process.env.MY_AI_DEEPSEEK_CHAT_KEY : ""
+  process.env.MY_AI_DEEPSEEK_CHAT_KEY ? process.env.MY_AI_DEEPSEEK_CHAT_KEY : "",
+  chan,
+  cocLogger
 );
 
-// src/ai/kimi_v2.ts
+// src/lib/ai/kimi.ts
 var globalKimi = {
-  searchWindow: new ScratchWindow("Kimi Search", "markdown"),
   host: "www.kimi.com",
-  scenario: "SCENARIO_K2D5",
-  timeout: 5e3
+  scenario: "SCENARIO_OK_COMPUTER",
+  timeout: 5e3,
+  reasoningEffort: "REASONING_EFFORT_HIGH",
+  contextLength: "CONTEXT_LENGTH_L",
+  model: "k3-agent",
+  kimiplusId: "ok-computer",
+  newChatIdPlaceholder: "$new"
 };
 var StreamDecoder = class {
   constructor() {
@@ -3152,14 +3081,33 @@ var StreamDecoder = class {
     return out;
   }
 };
-var KimiChatV2 = class extends BaseChatChannel {
-  constructor(rtoken) {
-    super();
+function searchResults2Lines(webPages) {
+  const lines = [];
+  let idx = 0;
+  for (let web of webPages) {
+    idx += 1;
+    lines.push(`# ${idx} - ${web.title}`);
+    lines.push("");
+    lines.push(`[${web.siteName} - ${web.publishTime}](${web.url})`);
+    lines.push("");
+    if (web.snippet) {
+      lines.push(...web.snippet.split(/\r?\n/));
+      lines.push("");
+    }
+    lines.push("---");
+    lines.push("");
+  }
+  return lines;
+}
+var KimiChat = class extends BaseChat {
+  constructor(rtoken, chan4, logger) {
+    super(chan4);
     this.rtoken = rtoken;
+    this.logger = logger;
     __publicField(this, "headers");
     __publicField(this, "currentMsgid");
     this.headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
+      "User-Agent": BaseChat.browserUserAgent,
       Origin: `https://${globalKimi.host}`,
       Referer: `https://${globalKimi.host}`,
       "x-msh-platform": "web",
@@ -3183,29 +3131,14 @@ var KimiChatV2 = class extends BaseChatChannel {
     let cacheKey = `${this.chatId}-${segmentId}-search.json`;
     let cache = await this.cache.get(cacheKey);
     if (cache instanceof Error) {
-      logger.error(cache);
+      this.logger.error(cache);
       return 0;
     }
     let webPages = JSON.parse(cache.toString());
     if (webPages.length == 0) {
       return 0;
     }
-    let lines = [];
-    let idx = 0;
-    for (let web of webPages) {
-      idx += 1;
-      lines.push(`# ${idx} - ${web.title}`);
-      lines.push("");
-      lines.push(`[${web.siteName} - ${web.publishTime}](${web.url})`);
-      lines.push("");
-      if (web.snippet) {
-        lines.push(...web.snippet.split(/\r?\n/));
-        lines.push("");
-      }
-      lines.push("---");
-      lines.push("");
-    }
-    await globalKimi.searchWindow.open(lines);
+    await this.chan.openSearchWindow(searchResults2Lines(webPages));
     return 0;
   }
   async tryGetRef(segment_id, ref_text) {
@@ -3218,7 +3151,7 @@ var KimiChatV2 = class extends BaseChatChannel {
     let cacheKey = `${this.chatId}-${segment_id}-refs.json`;
     let cache = await this.cache.get(cacheKey);
     if (cache instanceof Error) {
-      logger.error(cache);
+      this.logger.error(cache);
       return 0;
     }
     let refs = JSON.parse(cache.toString());
@@ -3231,13 +3164,13 @@ var KimiChatV2 = class extends BaseChatChannel {
 [${chunk.base.siteName} - ${chunk.base.publishTime}](${chunk.base.url})
 
 ` + chunk.base.snippet;
-      await popup(text, "", "markdown");
+      await this.chan.popup(text, "", "markdown");
       break;
     }
     return 0;
   }
   async showItem() {
-    let refItem = await getCurrentRef();
+    let refItem = await this.chan.getCurrentRef();
     if (!refItem) {
       return;
     }
@@ -3268,7 +3201,7 @@ var KimiChatV2 = class extends BaseChatChannel {
     };
     const resp = await sendHttpRequest(refreshReq);
     if (resp.statusCode == 200 && resp.body) {
-      logger.debug(resp.body.toString());
+      this.logger.info(resp.body.toString());
       const obj = JSON.parse(resp.body.toString());
       this.headers["Authorization"] = `Bearer ${obj["access_token"]}`;
     }
@@ -3288,33 +3221,25 @@ var KimiChatV2 = class extends BaseChatChannel {
       data: JSON.stringify(data)
     };
     if (!this.headers["Authorization"] && await this.getAccessToken() != 200) {
-      return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
+      return new ExtError(ExtError.ERR_AUTH, "[Kimi] Auth fail");
     }
     let resp = await sendHttpRequest(req);
     if (resp.statusCode == 401) {
       if (await this.getAccessToken() != 200) {
-        return new CocExtError(CocExtError.ERR_AUTH, "[Kimi] Auth fail");
+        return new ExtError(ExtError.ERR_AUTH, "[Kimi] Auth fail");
       }
       resp = await sendHttpRequest(req);
     }
     if (resp.statusCode != 200 || !resp.body) {
-      return new CocExtError(
-        CocExtError.ERR_KIMI,
+      return new ExtError(
+        ExtError.ERR_KIMI,
         `[Kimi] statusCode: ${resp.statusCode}, path: ${path8}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
       );
     }
     return resp.body;
   }
-  async createChatId(name) {
-    let resp = await this.postJsonRequest("/api/chat", {
-      name,
-      is_example: false
-    });
-    if (resp instanceof Error) {
-      return resp;
-    }
-    let obj = JSON.parse(resp.toString());
-    return obj["id"];
+  async createChatId(_name) {
+    return globalKimi.newChatIdPlaceholder;
   }
   async getChatList() {
     let resp = await this.postJsonRequest(
@@ -3373,47 +3298,49 @@ var KimiChatV2 = class extends BaseChatChannel {
               `\uEA7B [file: ${block.file.meta.name}](${block.file.blob.previewUrl})`
             );
           } else {
-            logger.debug(block);
+            this.logger.info(block);
           }
         }
       } else if (msg.role == "assistant") {
         this.currentMsgid = msg.id;
-        this.chan.append(`>> id:${msg.id}
+        this.chan.appendLine(`>> id:${msg.id}
 `);
         for (let block of msg.blocks) {
           if (block.search) {
-            logger.debug("1");
             let cacheKey = `${this.chatId}-${msg.id}-search.json`;
             await this.cache.set(
               cacheKey,
               JSON.stringify(block.search.webPages)
             );
             if (block.search && block.search.webPages) {
-              this.chan.append(
+              this.chan.appendLine(
                 `\uE68F [search result (${block.search.webPages.length})]
 `
               );
             }
           } else if (block.tool && block.tool.name === "web_search") {
-            logger.debug("2");
             let cacheKey = `${this.chatId}-${msg.id}-search.json`;
             let webPages = [];
             for (let content of block.tool.contents) {
               webPages.push(content.searchResult.base);
             }
             await this.cache.set(cacheKey, JSON.stringify(webPages));
-            this.chan.append(
+            this.chan.appendLine(
               `\uE68F [search result (${block.tool.contents.length})]
 `
             );
+          } else if (block.think) {
+            this.chan.appendLine("---");
+            this.chan.appendLine(block.think.content);
+            this.chan.appendLine("\n---\n");
           } else if (block.text) {
-            this.chan.append(block.text.content);
+            this.chan.appendLine(block.text.content);
           } else if (block.exception) {
-            this.chan.append(
+            this.chan.appendLine(
               `\uEA87 ${block.exception.error.localizedMessage.message}`
             );
           } else {
-            logger.debug(block);
+            this.logger.info(block);
           }
         }
         if (msg.refs && msg.refs.searchChunks && msg.refs.searchChunks.length > 0) {
@@ -3441,34 +3368,58 @@ var KimiChatV2 = class extends BaseChatChannel {
     let refs = [];
     let decoder = new StreamDecoder();
     let searchEnd = false;
+    let inThinking = false;
+    const closeThinking = () => {
+      if (!inThinking) {
+        return;
+      }
+      this.chan.appendLine("\n\n---\n");
+      inThinking = false;
+    };
     let cb = {
       onData: (chunk, rsp) => {
         if (rsp.statusCode != 200) {
-          logger.error(`statusCode: ${rsp.statusCode}`);
+          this.logger.error(`statusCode: ${rsp.statusCode}`);
           return;
         }
         let msgList = decoder.decode(chunk);
         for (const strMsg of msgList) {
           try {
             let msg = JSON.parse(strMsg);
-            if (msg.op === "set" && msg.mask === "message" && msg.message && msg.message.status === "MESSAGE_STATUS_GENERATING") {
-              this.chan.append(`>> id:${msg.message.id}
+            if (this.chatId === globalKimi.newChatIdPlaceholder && msg.op === "set" && msg.mask === "chat.lastRequest" && msg.chat && msg.chat.id) {
+              this.chatId = msg.chat.id;
+            } else if (msg.op === "set" && msg.mask === "message" && msg.message && msg.message.status === "MESSAGE_STATUS_GENERATING") {
+              this.chan.appendLine(`>> id:${msg.message.id}
 `);
               this.currentMsgid = msg.message.id;
+            } else if (msg.op === "set" && msg.mask === "block.think" && msg.block && msg.block.think && msg.block.think.content) {
+              if (!inThinking) {
+                this.chan.appendLine("---");
+                inThinking = true;
+              }
+              this.chan.append(msg.block.think.content);
             } else if (msg.op === "set" && msg.mask === "block.text" && msg.block && msg.block.text && msg.block.text.content) {
-              this.chan.append(msg.block.text.content, false);
+              closeThinking();
+              this.chan.append(msg.block.text.content);
             } else if (msg.op === "append" && msg.block) {
-              if (msg.block.text && msg.block.text.content && msg.mask === "block.text.content") {
+              if (msg.block.think && msg.block.think.content && msg.mask === "block.think.content") {
+                if (!inThinking) {
+                  this.chan.appendLine("---");
+                  inThinking = true;
+                }
+                this.chan.append(msg.block.think.content);
+              } else if (msg.block.text && msg.block.text.content && msg.mask === "block.text.content") {
+                closeThinking();
                 if (!searchEnd) {
                   searchEnd = true;
                   if (webPages.length > 0) {
-                    this.chan.append(
+                    this.chan.appendLine(
                       `\uE68F [search result (${webPages.length})]
 `
                     );
                   }
                 }
-                this.chan.append(msg.block.text.content, false);
+                this.chan.append(msg.block.text.content);
               } else if (msg.block.search && msg.block.search.webPages && msg.mask === "block.search.webPages") {
                 webPages.push(...msg.block.search.webPages);
               } else if (msg.message && msg.message.ref && msg.message.ref.searchChunks && msg.mask === "message.refs.searchChunks") {
@@ -3476,42 +3427,54 @@ var KimiChatV2 = class extends BaseChatChannel {
                   webPages.push(ch.base);
                 }
               } else {
-                logger.debug(msg);
+                this.logger.info(msg);
               }
             } else if (msg.ref) {
               refs.push(msg.ref.search);
             } else if (msg.done) {
-              this.chan.append("\n(END)");
+              closeThinking();
+              this.chan.appendLine("\n(END)");
             } else if (msg.heartbeat) {
             } else {
-              logger.debug(msg);
+              this.logger.info(msg);
             }
           } catch (e) {
-            logger.error(e);
-            logger.debug(strMsg);
+            this.logger.error(e);
+            this.logger.info(strMsg);
           }
         }
       },
       onError: (err) => {
-        logger.error(err);
+        this.logger.error(err);
       },
       onEnd: (rsp) => {
-        logger.debug(rsp.statusCode);
+        this.logger.info(rsp.statusCode);
       },
       onTimeout: () => {
-        logger.error("time out");
+        this.logger.error("time out");
       }
     };
     let chatReq = {
-      chatId: this.chatId,
+      chatId: this.chatId === globalKimi.newChatIdPlaceholder ? void 0 : this.chatId,
       scenario: globalKimi.scenario,
-      tools: [{ type: "TOOL_TYPE_SEARCH", search: {} }],
+      tools: [
+        { type: "TOOL_TYPE_SEARCH", search: {} },
+        { type: "TOOL_TYPE_ASK_USER" }
+      ],
       message: {
         parent_id: this.currentMsgid,
         role: "user",
         blocks: [{ message_id: "", text: { content: text } }],
         scenario: globalKimi.scenario
-      }
+      },
+      options: {
+        thinking: true,
+        enable_plugin: true,
+        reasoning_effort: globalKimi.reasoningEffort,
+        context_length: globalKimi.contextLength,
+        model: globalKimi.model
+      },
+      kimiplus_id: globalKimi.kimiplusId
     };
     const req = {
       args: {
@@ -3524,6 +3487,7 @@ var KimiChatV2 = class extends BaseChatChannel {
       data: this.encodeBuffer(chatReq)
     };
     await sendHttpRequestWithCallback(req, cb);
+    this.chan.flush();
     if (webPages.length > 0) {
       let cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
       await this.cache.set(cacheKey, JSON.stringify(webPages));
@@ -3541,308 +3505,622 @@ var KimiChatV2 = class extends BaseChatChannel {
     return resp instanceof Error ? resp : null;
   }
 };
-var kimiChatV2 = new KimiChatV2(
-  process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : ""
+
+// src/ai/kimi.ts
+var searchWindow2 = new ScratchWindow("Kimi Search", "markdown");
+var chan2 = new CocChatChannel("Kimi", searchWindow2);
+var kimiChat = new KimiChat(
+  process.env.MY_AI_KIMI_CHAT_KEY ? process.env.MY_AI_KIMI_CHAT_KEY : "",
+  chan2,
+  cocLogger
 );
 
-// src/ai/zai.ts
-var import_url3 = require("url");
-var import_crypto2 = require("crypto");
-var globalZAi = {
-  host: "chat.z.ai",
-  timeout: 5e3,
-  model: "glm-5",
-  enable_thinking: false,
-  auto_web_search: true,
-  // mcp_servers: ['advanced-search'],
-  mcp_servers: [],
-  user_language: "zh-CN",
-  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36 Edg/91.0.864.41",
-  client_version: "prod-fe-1.0.237",
-  hmac_key: "key-@@@@)))()((9))-xxxx&&&%%%%%"
+// src/lib/ai/mimo.ts
+var globalMimo = {
+  host: "aistudio.xiaomimimo.com",
+  port: 443,
+  timeout: 1e4,
+  genTitleTimeout: 3e4,
+  model: "mimo-v2.6-pro",
+  enableThinking: true,
+  webSearchStatus: "disabled",
+  pageSize: 50
 };
-function hmacSha256Hex(key, data) {
-  const hmac = (0, import_crypto2.createHmac)("sha256", key);
-  hmac.update(data);
-  return hmac.digest("hex");
+function normalizeSearchResult(e) {
+  var _a, _b, _c, _d, _e, _f, _g, _h;
+  if (!e || typeof e != "object" || !e.url) {
+    return null;
+  }
+  return {
+    index: typeof e.index == "number" ? e.index : -1,
+    url: String(e.url),
+    title: String((_b = (_a = e.name) != null ? _a : e.title) != null ? _b : ""),
+    site: String((_d = (_c = e.siteName) != null ? _c : e.site) != null ? _d : ""),
+    summary: String((_f = (_e = e.snippet) != null ? _e : e.summary) != null ? _f : ""),
+    siteIcon: String((_g = e.siteIcon) != null ? _g : ""),
+    datePublished: String((_h = e.datePublished) != null ? _h : "")
+  };
 }
-function generateSignature(userId, requestId, userContent, timestamp) {
-  const requestInfo = `requestId,${requestId},timestamp,${timestamp},user_id,${userId}`;
-  const contentBase64 = Buffer.from(userContent).toString("base64");
-  const signData = `${requestInfo}|${contentBase64}|${timestamp}`;
-  const period = Math.floor(timestamp / (5 * 60 * 1e3));
-  const firstHmac = hmacSha256Hex(globalZAi.hmac_key, `${period}`);
-  const signature = hmacSha256Hex(firstHmac, signData);
-  return signature;
+function extractSearchResults(resp) {
+  if (resp.name != "search" || !resp.responseData) {
+    return [];
+  }
+  let data;
+  try {
+    data = JSON.parse(resp.responseData);
+    if (typeof data == "string") {
+      data = JSON.parse(data);
+    }
+  } catch (e) {
+    return [];
+  }
+  if (!Array.isArray(data)) {
+    return [];
+  }
+  const out = [];
+  for (const e of data) {
+    const r = normalizeSearchResult(e);
+    if (r != null) {
+      out.push(r);
+    }
+  }
+  return out;
 }
-var ZAiChat = class extends BaseChatChannel {
-  constructor(token) {
-    super();
-    this.token = token;
-    __publicField(this, "headers");
-    __publicField(this, "currentId");
-    __publicField(this, "userId");
-    this.headers = {
-      "User-Agent": globalZAi.user_agent,
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${this.token}`,
-      "X-FE-Version": "prod-fe-1.0.237"
-    };
-    this.currentId = null;
-    this.userId = "";
+function searchResult2Lines(item, idx) {
+  const lines = [];
+  const meta = [];
+  if (item.site) {
+    meta.push(item.site);
+  }
+  if (item.datePublished) {
+    meta.push(item.datePublished.substring(0, 10));
+  }
+  lines.push(`# ${idx} - ${item.title}`);
+  lines.push("");
+  lines.push(`[${meta.join(" - ")}](${item.url})`);
+  lines.push("");
+  lines.push(item.summary);
+  return lines;
+}
+function genId32() {
+  let id = "";
+  for (let i = 0; i < 16; ++i) {
+    id += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
+  }
+  return id;
+}
+function genTraceparent() {
+  return `00-${genId32()}-${genId32().substring(0, 16)}-01`;
+}
+var MimoChat = class extends BaseChat {
+  constructor(auth, chan4, logger) {
+    super(chan4);
+    this.auth = auth;
+    this.logger = logger;
+    __publicField(this, "currentMsgid");
+    this.currentMsgid = "";
   }
   reset() {
+    this.currentMsgid = "";
   }
   getChatName() {
-    return "ZAi";
+    return "Mimo";
   }
-  async sendRequest(method, path8, data = null) {
-    var _a;
-    let req = {
-      args: {
-        host: globalZAi.host,
-        path: path8,
-        method,
-        protocol: "https:",
-        headers: this.headers,
-        timeout: globalZAi.timeout
-      },
-      data: data == null ? void 0 : JSON.stringify(data)
+  setCurrentChatId(chatId) {
+    super.setCurrentChatId(chatId);
+    this.currentMsgid = "";
+  }
+  getCookie() {
+    const strip = (v) => v.replace(/^"|"$/g, "");
+    return `xiaomichatbot_serviceToken="${strip(this.auth.serviceToken)}"; userId=${strip(this.auth.userId)}; xiaomichatbot_ph="${strip(this.auth.ph)}"`;
+  }
+  // every open-apis POST must carry the ph cookie value as query param
+  withPh(path8) {
+    const ph = encodeURIComponent(this.auth.ph.replace(/^"|"$/g, ""));
+    const sep = path8.includes("?") ? "&" : "?";
+    return `${path8}${sep}xiaomichatbot_ph=${ph}`;
+  }
+  getHeader() {
+    return {
+      "User-Agent": BaseChat.browserUserAgent,
+      Accept: "*/*",
+      "Content-Type": "application/json",
+      Origin: `https://${globalMimo.host}`,
+      Referer: `https://${globalMimo.host}/`,
+      "x-timezone": "Asia/Shanghai",
+      traceparent: genTraceparent(),
+      cookie: this.getCookie()
     };
-    let resp = await sendHttpRequest(req);
-    if (resp.statusCode != 200 || !resp.body) {
-      return new CocExtError(
-        CocExtError.ERR_ZAI,
-        `[Z.ai] statusCode: ${resp.statusCode}, path: ${path8}, resp: ${(_a = resp.body) == null ? void 0 : _a.toString()}`
+  }
+  checkAuth() {
+    if (this.auth.serviceToken.length == 0 || this.auth.ph.length == 0 || this.auth.userId.length == 0) {
+      return new ExtError(
+        ExtError.ERR_AUTH,
+        "[Mimo] empty auth (serviceToken / userId / ph)"
       );
-    }
-    return resp.body;
-  }
-  async auth() {
-    let resp = await this.sendRequest("GET", "/api/v1/auths/");
-    if (resp instanceof Error) {
-      return resp;
-    }
-    let au = JSON.parse(resp.toString());
-    logger.debug(au);
-    if (au.token) {
-      this.token = au.token;
-    }
-  }
-  async getChatList() {
-    let chats = [];
-    for (let page = 1; page < 10; ++page) {
-      let resp = await this.sendRequest("GET", `/api/v1/chats/?page=${page}`);
-      if (resp instanceof Error) {
-        return resp;
-      }
-      let list = JSON.parse(resp.toString());
-      if (list.length == 0) {
-        break;
-      }
-      for (const i of list) {
-        chats.push({
-          label: i.title,
-          chatId: i.id,
-          description: new Date(i.updated_at * 1e3).toISOString()
-        });
-      }
-    }
-    return chats;
-  }
-  async createChatId(_name) {
-    return "";
-  }
-  async showHistoryMessages() {
-    let resp = await this.sendRequest("GET", `/api/v1/chats/${this.chatId}`);
-    if (resp instanceof Error) {
-      return resp;
-    }
-    let firstMsg = null;
-    let historyMsgids = [];
-    let chatInfo = JSON.parse(resp.toString());
-    Object.entries(chatInfo.chat.history.messages).forEach(([key, value]) => {
-      historyMsgids.push(key);
-      if (value.parentId == null) {
-        firstMsg = value;
-      }
-    });
-    if (firstMsg == null) {
-      return null;
-    }
-    this.currentId = chatInfo.chat.history.currentId;
-    this.userId = chatInfo.user_id;
-    resp = await this.sendRequest(
-      "POST",
-      `/api/v1/chats/${this.chatId}/messages/batch`,
-      { ids: historyMsgids }
-    );
-    if (resp instanceof Error) {
-      return resp;
-    }
-    let historyChatDetail = JSON.parse(resp.toString());
-    let messages = [firstMsg];
-    let currIdx = 0;
-    while (currIdx < messages.length) {
-      let currMsg = messages[currIdx];
-      let detail = historyChatDetail.data[currMsg.id];
-      if (detail.role == "user") {
-        let time = new Date(detail.created_at * 1e3).toISOString();
-        if (detail.content) {
-          this.chan.appendUserInput(time, detail.content);
-        } else if (detail.content_blocks) {
-          let cont = "";
-          for (const i of detail.content_blocks) {
-            cont += i.content;
-          }
-          this.chan.appendUserInput(time, cont);
-        }
-        this.chan.append("");
-      } else {
-        if (detail.content) {
-          this.chan.append(detail.content);
-        } else if (detail.content_blocks) {
-          for (let i of detail.content_blocks) {
-            if (typeof i.content == "string") {
-              if (i.type == "reasoning") {
-                this.chan.append("---");
-                this.chan.append(i.content);
-                this.chan.append("---");
-              } else {
-                this.chan.append(i.content);
-              }
-            }
-          }
-        }
-      }
-      for (let id of currMsg.childrenIds) {
-        messages.push(chatInfo.chat.history.messages[id]);
-      }
-      currIdx += 1;
     }
     return null;
   }
-  async showItem() {
-    return;
+  async httpQuery(method, path8, d, timeout = globalMimo.timeout) {
+    const authErr = this.checkAuth();
+    if (authErr) {
+      return authErr;
+    }
+    const req = {
+      args: {
+        host: globalMimo.host,
+        port: globalMimo.port,
+        path: method == "POST" ? this.withPh(path8) : path8,
+        method,
+        protocol: "https:",
+        headers: this.getHeader(),
+        timeout
+      }
+    };
+    if (d !== void 0) {
+      req.data = JSON.stringify(d);
+    }
+    const resp = await sendHttpRequest(req);
+    let obj = null;
+    if (resp.body) {
+      try {
+        obj = JSON.parse(resp.body.toString());
+      } catch (e) {
+        obj = null;
+      }
+    }
+    if (resp.statusCode != 200 || !obj || obj.code != 0) {
+      const isAuth = obj != null && (obj.code == 401 || obj.loginUrl != void 0);
+      let msg = `[Mimo] statusCode: ${resp.statusCode}, code: ${obj ? obj.code : "-"}, msg: ${obj ? obj.msg : resp.error}, path: ${req.args.path}`;
+      if (obj && obj.loginUrl) {
+        msg += `, login: ${obj.loginUrl}`;
+      }
+      return new ExtError(isAuth ? ExtError.ERR_AUTH : ExtError.ERR_MIMO, msg);
+    }
+    return obj.data;
   }
-  async chat(text) {
+  async getChatList() {
+    var _a;
+    const data = await this.httpQuery(
+      "POST",
+      "/open-apis/chat/conversation/list",
+      {
+        pageInfo: { pageNum: 1, pageSize: globalMimo.pageSize }
+      }
+    );
+    if (data instanceof Error) {
+      return data;
+    }
+    const list = [];
+    for (const item of (_a = data.dataList) != null ? _a : []) {
+      list.push({
+        label: item.title,
+        chatId: item.conversationId,
+        description: item.updateTime ? item.updateTime : ""
+      });
+    }
+    return list;
+  }
+  async createChatId(name) {
+    const authErr = this.checkAuth();
+    if (authErr) {
+      return authErr;
+    }
+    const id = genId32();
+    const title = name.trim().length > 0 ? name.trim() : "New conversation";
+    const err = await this.httpQuery(
+      "POST",
+      "/open-apis/chat/conversation/save",
+      {
+        conversationId: id,
+        title,
+        type: "chat"
+      }
+    );
+    if (err instanceof Error) {
+      return err;
+    }
+    this.currentMsgid = "";
+    return id;
+  }
+  async showHistoryMessages() {
+    var _a, _b;
+    const data = await this.httpQuery(
+      "POST",
+      "/open-apis/react/dialog/list",
+      {
+        queryParam: { conversationId: this.chatId },
+        pageInfo: { pageNum: 1, pageSize: globalMimo.pageSize }
+      }
+    );
+    if (data instanceof Error) {
+      return data;
+    }
+    this.currentMsgid = "";
+    const dialogs = [...data].sort((a, b) => {
+      const ta = a.createTime ? a.createTime : "";
+      const tb = b.createTime ? b.createTime : "";
+      return ta < tb ? -1 : 1;
+    });
+    for (const dialog of dialogs) {
+      if (dialog.inputInfo && dialog.inputInfo.query) {
+        this.chan.appendUserInput(
+          dialog.createTime ? dialog.createTime : "",
+          dialog.inputInfo.query
+        );
+      }
+      for (const detail of (_a = dialog.dialogLogDetailList) != null ? _a : []) {
+        this.currentMsgid = String(detail.id);
+        this.chan.appendLine(`>> id:${detail.id}
+`);
+        if (detail.dialogStatus && detail.dialogStatus != "success") {
+          this.chan.appendLine(` ${detail.dialogStatus}
+`);
+        }
+        let inThinking = false;
+        let searchResults = [];
+        for (const r of (_b = detail.result) != null ? _b : []) {
+          if (Array.isArray(r.toolCalls)) {
+            for (const call of r.toolCalls) {
+              if (call.name == "search") {
+                this.chan.appendLine(" [searching...]");
+              }
+            }
+          } else if (Array.isArray(r.responses)) {
+            for (const resp of r.responses) {
+              const results = extractSearchResults(resp);
+              if (results.length > 0) {
+                searchResults.push(...results);
+                this.chan.appendLine(` [search result (${results.length})]`);
+              }
+            }
+          } else if (r.reasoningContent) {
+            if (!inThinking) {
+              this.chan.appendLine("---");
+              inThinking = true;
+            }
+            this.chan.appendLine(r.reasoningContent);
+          } else if (r.content) {
+            if (inThinking) {
+              this.chan.appendLine("\n---\n");
+              inThinking = false;
+            }
+            this.chan.appendLine(r.content);
+          }
+        }
+        if (inThinking) {
+          this.chan.appendLine("\n---\n");
+        }
+        if (searchResults.length > 0) {
+          const cacheKey = `${this.chatId}-${detail.id}-search.json`;
+          const err = await this.cache.set(cacheKey, JSON.stringify(searchResults));
+          if (err instanceof Error) {
+            this.logger.error(err);
+          }
+        }
+      }
+    }
+    return null;
+  }
+  // cursor on [citation:N] -> popup the referenced search source
+  async tryGetRef(messageId, refText) {
+    let regex = new RegExp(/^\[citation:([0-9]+)\]$/);
+    let arr = regex.exec(refText);
+    if (!arr || arr.length != 2) {
+      return -1;
+    }
+    const refId = parseInt(arr[1]);
+    const cacheKey = `${this.chatId}-${messageId}-search.json`;
+    const cache = await this.cache.get(cacheKey);
+    if (cache instanceof Error) {
+      return -1;
+    }
+    const items = JSON.parse(cache.toString());
+    for (const item of items) {
+      if (item.index != refId) {
+        continue;
+      }
+      const text = searchResult2Lines(item, item.index).join("\n");
+      await this.chan.popup(text, "", "markdown");
+      return;
+    }
+    return -1;
+  }
+  // cursor on [search result (N)] -> open all sources of that dialog
+  async tryGetSearchResult(messageId, refText) {
+    let regex = new RegExp(/^\[search result \([0-9]+\)\]$/);
+    let arr = regex.exec(refText);
+    if (!arr || arr.length != 1) {
+      return;
+    }
+    const cacheKey = `${this.chatId}-${messageId}-search.json`;
+    const cache = await this.cache.get(cacheKey);
+    if (cache instanceof Error) {
+      return;
+    }
+    const items = JSON.parse(cache.toString());
+    const lines = [];
+    let idx = 0;
+    for (const item of items) {
+      idx += 1;
+      lines.push(...searchResult2Lines(item, idx));
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+    }
+    await this.chan.openSearchWindow(lines);
+  }
+  async showItem() {
+    const refItem = await this.chan.getCurrentRef();
+    if (!refItem) {
+      return;
+    }
+    if (await this.tryGetRef(refItem.segmentId, refItem.refText) !== -1) {
+      return;
+    }
+    await this.tryGetSearchResult(refItem.segmentId, refItem.refText);
+  }
+  async genTitle(content) {
+    const data = await this.httpQuery(
+      "POST",
+      "/open-apis/chat/conversation/genTitle",
+      { conversationId: this.chatId, content },
+      globalMimo.genTitleTimeout
+    );
+    if (data instanceof Error) {
+      return data;
+    }
+    this.logger.info(`[Mimo] genTitle: ${data}`);
+    return null;
+  }
+  async chat(prompt) {
     if (!this.chatId) {
       return;
     }
-    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), text);
-    let chatReq = {
-      stream: true,
-      model: globalZAi.model,
-      messages: [{ role: "user", content: text }],
-      signature_prompt: text,
-      params: {},
-      extra: {},
-      mcp_servers: globalZAi.mcp_servers,
-      features: {
-        image_generation: false,
-        web_search: true,
-        auto_web_search: globalZAi.auto_web_search,
-        preview_mode: true,
-        flags: [],
-        enable_thinking: globalZAi.enable_thinking
+    const authErr = this.checkAuth();
+    if (authErr) {
+      this.logger.error(authErr);
+      return;
+    }
+    this.chan.appendUserInput((/* @__PURE__ */ new Date()).toISOString(), prompt);
+    const firstMsg = this.currentMsgid.length == 0;
+    let previousDialogueId = parseInt(this.currentMsgid);
+    if (!Number.isFinite(previousDialogueId) || previousDialogueId <= 0) {
+      previousDialogueId = void 0;
+    }
+    const body = {
+      msgId: genId32(),
+      conversationId: this.chatId,
+      query: prompt,
+      isEditedQuery: false,
+      modelConfig: {
+        enableThinking: globalMimo.enableThinking,
+        webSearchStatus: globalMimo.webSearchStatus,
+        model: globalMimo.model
       },
-      variables: {
-        "{{USER_LANGUAGE}}": globalZAi.user_language
-      },
-      chat_id: this.chatId,
-      id: crypto.randomUUID(),
-      current_user_message_id: crypto.randomUUID(),
-      current_user_message_parent_id: this.currentId,
-      background_tasks: {
-        title_generation: true,
-        tags_generation: true
-      }
+      multiMedias: []
     };
-    logger.debug(chatReq);
-    const kStatusNone = 0;
-    const kStatusReasoning = 1;
-    const kStatusContent = 2;
-    const kStatusStop = 3;
-    let decoder = new ChunkDecoder();
-    let status = kStatusNone;
-    let cb = {
-      onData: (chunk, rsp) => {
-        if (rsp.statusCode != 200) {
-          logger.error(`statusCode: ${rsp.statusCode}, ${chunk.toString()}`);
-          return;
-        }
-        let msgList = decoder.decode(chunk);
-        for (let m of msgList) {
-          try {
-            let d = JSON.parse(m.data);
-            logger.debug(d);
-            if (d.data.phase == "thinking" && d.data.delta_content) {
-              if (status != kStatusReasoning) {
-                this.chan.append("\n---");
-              }
-              status = kStatusReasoning;
-              this.chan.append(d.data.delta_content, false);
-            } else if (d.data.phase == "answer" && d.data.delta_content) {
-              if (status == kStatusReasoning) {
-                this.chan.append("\n---");
-              }
-              status = kStatusContent;
-              this.chan.append(d.data.delta_content, false);
-            } else if (d.data.phase == "tool_response" && d.data.metadata && d.data.metadata.browser && d.data.metadata.browser.search_result) {
-            } else if (d.data.done) {
-              status = kStatusStop;
-              this.chan.append("\n(END)");
-            }
-          } catch (e) {
-            logger.error(e);
-            logger.debug(m.data);
-          }
-        }
-      }
-    };
-    let timestamp = Date.now();
-    let requestId = crypto.randomUUID();
-    let params = new import_url3.URLSearchParams({
-      timestamp: timestamp.toString(),
-      requestId,
-      user_id: this.userId,
-      version: "0.0.1",
-      platform: "web",
-      user_agent: globalZAi.user_agent,
-      browser_name: "Firefox",
-      signature_timestamp: timestamp.toString()
-    });
-    let sign = generateSignature(this.userId, requestId, text, timestamp);
-    logger.debug(params.toString());
-    this.headers["X-Signature"] = sign;
-    let req = {
+    if (previousDialogueId !== void 0) {
+      body.previousDialogueId = previousDialogueId;
+    }
+    const req = {
       args: {
-        host: globalZAi.host,
-        path: `/api/v2/chat/completions?${params.toString()}`,
+        host: globalMimo.host,
+        port: globalMimo.port,
+        path: this.withPh("/open-apis/react/chat"),
         method: "POST",
         protocol: "https:",
-        headers: this.headers
+        headers: this.getHeader()
       },
-      data: JSON.stringify(chatReq)
+      data: JSON.stringify(body)
+    };
+    const decoder = new ChunkDecoder(this.logger);
+    let event = "";
+    let inThinking = false;
+    let reasoningText = "";
+    let contentText = "";
+    let gotError = false;
+    const searchResults = [];
+    const errBuf = [];
+    const closeThinking = () => {
+      if (!inThinking) {
+        return;
+      }
+      this.chan.appendLine("\n\n---\n");
+      inThinking = false;
+    };
+    const onStreamMessage = (data) => {
+      let obj;
+      try {
+        obj = JSON.parse(data);
+      } catch (e) {
+        this.logger.debug(data);
+        return;
+      }
+      const msgType = obj.messageType ? obj.messageType : "";
+      if (msgType == "error") {
+        closeThinking();
+        gotError = true;
+        this.chan.appendLine(` (ERROR) ${obj.content ? obj.content : ""}`);
+        return;
+      } else if (msgType == "sensitive_query") {
+        closeThinking();
+        this.chan.appendLine(" (sensitive query) ");
+        return;
+      } else if (msgType == "sensitive_title") {
+        this.logger.debug(data);
+        return;
+      }
+      if (Array.isArray(obj.toolCalls)) {
+        for (const call of obj.toolCalls) {
+          if (call.name == "search") {
+            this.chan.appendLine(" [searching...]");
+          }
+        }
+        return;
+      }
+      if (Array.isArray(obj.responses)) {
+        for (const resp of obj.responses) {
+          const results = extractSearchResults(resp);
+          if (results.length > 0) {
+            searchResults.push(...results);
+            this.chan.appendLine(` [search result (${results.length})]`);
+          }
+        }
+        return;
+      }
+      if (typeof obj.reasoningContent == "string") {
+        if (!inThinking) {
+          this.chan.appendLine("---");
+          inThinking = true;
+        }
+        reasoningText += obj.reasoningContent;
+        this.chan.append(obj.reasoningContent);
+      }
+      if (typeof obj.content == "string") {
+        closeThinking();
+        contentText += obj.content;
+        this.chan.append(obj.content);
+      }
+    };
+    const parseData = (data) => {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        this.logger.debug(data);
+        return null;
+      }
+    };
+    const dispatch = (ev, data) => {
+      if (ev == "message") {
+        onStreamMessage(data);
+      } else if (ev == "dialogId") {
+        const obj = parseData(data);
+        const id = obj && obj.content != void 0 ? String(obj.content) : "";
+        if (id.length > 0) {
+          this.currentMsgid = id;
+          this.chan.appendLine(`>> id:${id}
+`);
+        }
+      } else if (ev == "finish") {
+        const obj = parseData(data);
+        closeThinking();
+        this.chan.appendLine("\n(END)");
+        if (obj && obj.thinkingCostTime != void 0) {
+          this.logger.debug(`[Mimo] thinkingCostTime: ${obj.thinkingCostTime}`);
+        }
+      } else if (ev == "error") {
+        const obj = parseData(data);
+        closeThinking();
+        gotError = true;
+        this.chan.appendLine(
+          ` (ERROR) ${obj && obj.content ? obj.content : data}`
+        );
+      } else if (ev == "sensitive_query") {
+        closeThinking();
+        this.chan.appendLine(" (sensitive query) ");
+      } else {
+        this.logger.debug({ event: ev, data });
+      }
+    };
+    const cb = {
+      onData: (chunk, rsp) => {
+        if (rsp.statusCode != 200) {
+          errBuf.push(chunk);
+          return;
+        }
+        for (const m of decoder.decode(chunk)) {
+          if (m.type == "event") {
+            event = m.data;
+          } else if (m.type == "data") {
+            if (event.length > 0) {
+              dispatch(event, m.data);
+            }
+          } else if (m.type != "id") {
+            this.logger.debug(m);
+          }
+        }
+      },
+      onError: (err) => {
+        this.chan.appendLine(" (ERROR) ");
+        this.chan.appendLine(err.message);
+      },
+      onEnd: (rsp) => {
+        if (rsp.statusCode != 200) {
+          let msg = "";
+          try {
+            const obj = JSON.parse(Buffer.concat(errBuf).toString());
+            if (obj.msg) {
+              msg = obj.msg;
+            }
+            if (obj.loginUrl) {
+              msg += ` (login: ${obj.loginUrl})`;
+            }
+          } catch (e) {
+            msg = Buffer.concat(errBuf).toString().substring(0, 200);
+          }
+          closeThinking();
+          this.chan.appendLine(` (ERROR) ${rsp.statusCode} ${msg}`);
+        }
+        this.logger.info(
+          `[Mimo] chat statusCode: ${rsp.statusCode}, msg: ${rsp.statusMessage}`
+        );
+      },
+      onTimeout: () => {
+        this.logger.error("[Mimo] timeout");
+      }
     };
     await sendHttpRequestWithCallback(req, cb);
-    return;
+    closeThinking();
+    this.chan.flush();
+    if (searchResults.length > 0 && this.currentMsgid.length > 0) {
+      const cacheKey = `${this.chatId}-${this.currentMsgid}-search.json`;
+      const err = await this.cache.set(cacheKey, JSON.stringify(searchResults));
+      if (err instanceof Error) {
+        this.logger.error(err);
+      }
+    }
+    if (firstMsg && !gotError && contentText.length > 0) {
+      const err = await this.genTitle(
+        `${prompt} ${reasoningText}
+
+${contentText}`
+      );
+      if (err instanceof Error) {
+        this.logger.error(err);
+      }
+    }
   }
-  async delSession(_chatId) {
-    return null;
+  async delSession(chatId) {
+    const err = await this.httpQuery(
+      "POST",
+      "/open-apis/chat/conversation/delete",
+      [chatId]
+    );
+    return err instanceof Error ? err : null;
   }
 };
-var zaiChat = new ZAiChat(
-  process.env.MY_AI_ZAI_CHAT_KEY ? process.env.MY_AI_ZAI_CHAT_KEY : ""
+
+// src/ai/mimo.ts
+var searchWindow3 = new ScratchWindow("Mimo Search", "markdown");
+var chan3 = new CocChatChannel("Mimo", searchWindow3);
+var mimoChat = new MimoChat(
+  {
+    serviceToken: process.env.MY_AI_MIMO_SERVICE_TOKEN ? process.env.MY_AI_MIMO_SERVICE_TOKEN : "",
+    userId: process.env.MY_AI_MIMO_USER_ID ? process.env.MY_AI_MIMO_USER_ID : "",
+    ph: process.env.MY_AI_MIMO_PH ? process.env.MY_AI_MIMO_PH : ""
+  },
+  chan3,
+  cocLogger
 );
 
 // src/ai/chat.ts
-var import_coc22 = require("coc.nvim");
 var name2AiChat = /* @__PURE__ */ new Map([
-  [kimiChatV2.getChatName(), kimiChatV2],
+  [kimiChat.getChatName(), kimiChat],
   [deepseekChat.getChatName(), deepseekChat],
-  [llmCommonChat.getChatName(), llmCommonChat],
-  [zaiChat.getChatName(), zaiChat]
+  [mimoChat.getChatName(), mimoChat]
+  // [llmCommonChat.getChatName(), llmCommonChat],
+  // [zaiChat.getChatName(), zaiChat],
 ]);
 var globalAiChat = null;
 var globalScratchWindow = new ScratchWindow("Chat Input", "text");
@@ -3874,7 +4152,7 @@ async function aiChatOpen() {
   if (!globalAiChat.getCurrentChatId()) {
     let items = await globalAiChat.getChatList();
     if (items instanceof Error) {
-      logger.error(items);
+      cocLogger.error(items);
       echoMessage("ErrorMsg", items.message);
       return -1;
     }
@@ -3889,7 +4167,7 @@ async function aiChatOpen() {
       }
       let chatId = await globalAiChat.createChatId(new_name);
       if (chatId instanceof Error) {
-        logger.error(chatId);
+        cocLogger.error(chatId);
         return -1;
       }
       globalAiChat.setCurrentChatId(chatId);
@@ -3897,7 +4175,7 @@ async function aiChatOpen() {
       globalAiChat.setCurrentChatId(choose.chatId);
       let err = await globalAiChat.showHistoryMessages();
       if (err instanceof Error) {
-        logger.error(err);
+        cocLogger.error(err);
       }
     }
   }
@@ -3943,7 +4221,7 @@ var AiChatList = class extends import_coc22.BasicList {
       }
       let chatId = await this.aiChat.createChatId(new_name);
       if (chatId instanceof Error) {
-        logger.error(chatId);
+        cocLogger.error(chatId);
         echoMessage("ErrorMsg", "create session fail");
         return;
       }
@@ -3967,7 +4245,7 @@ var AiChatList = class extends import_coc22.BasicList {
         this.aiChat.setCurrentChatId(data.chatId);
         let err = await this.aiChat.showHistoryMessages();
         if (err instanceof Error) {
-          logger.error(err);
+          cocLogger.error(err);
         }
         globalAiChat = this.aiChat;
         await globalAiChat.show();
@@ -3981,7 +4259,7 @@ var AiChatList = class extends import_coc22.BasicList {
         if (del) {
           let err = await this.aiChat.delSession(i.chatId);
           if (err instanceof Error) {
-            logger.error(err);
+            cocLogger.error(err);
           }
           if (this.aiChat.getCurrentChatId() === i.chatId) {
             this.aiChat.clear();
@@ -4001,7 +4279,7 @@ var AiChatList = class extends import_coc22.BasicList {
   async loadItems(_context) {
     let items = await this.aiChat.getChatList();
     if (items instanceof Error) {
-      logger.error(items);
+      cocLogger.error(items);
       echoMessage("ErrorMsg", items.message);
       return null;
     }
@@ -4095,7 +4373,7 @@ async function replaceExecText(doc, range, res) {
     const ed = import_coc23.TextEdit.replace(range, res.data.toString("utf8"));
     await doc.applyEdits([ed]);
   } else {
-    logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
+    cocLogger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
   }
 }
 async function getCursorSymbolInfo() {
@@ -4166,7 +4444,7 @@ function decodeStrFn(enc) {
     if (res.exitCode == 0 && res.data) {
       popup(res.data.toString("utf8"), `[${enc.toUpperCase()} decode]`);
     } else {
-      logger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
+      cocLogger.error((_a = res.error) == null ? void 0 : _a.toString("utf8"));
     }
   };
 }
@@ -4201,9 +4479,9 @@ async function aiChatSelectAndOpen() {
 }
 async function activate(context) {
   context.logger.info(`coc-ext-common works`);
-  logger.info(`coc-ext-common works`);
-  logger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
-  logger.info(process.env.COC_VIMCONFIG);
+  cocLogger.info(`coc-ext-common works`);
+  cocLogger.info(import_coc23.workspace.getConfiguration("coc-ext.common"));
+  cocLogger.info(process.env.COC_VIMCONFIG);
   const langFmtSet = /* @__PURE__ */ new Set();
   const formatterSettings = getcfg("formatting", []);
   formatterSettings.forEach((s) => {
@@ -4264,10 +4542,22 @@ async function activate(context) {
     }),
     import_coc23.workspace.registerKeymap(
       ["v"],
-      "ext-copy-xclip",
+      "ext-copy-text",
       async () => {
         const text = await getText("v", false);
-        await callShell("xclip", ["-selection", "clipboard", "-i"], text);
+        let res;
+        if (process.env.WAYLAND_DISPLAY) {
+          res = await callShell("wl-copy", ["--type", "text/plain"], text);
+          if (res.exitCode != 0) {
+            res = await callShell("xclip", ["-selection", "clipboard", "-i"], text);
+          }
+        } else {
+          res = await callShell("xclip", ["-selection", "clipboard", "-i"], text);
+        }
+        if (res.exitCode != 0) {
+          const detail = res.error ? `: ${res.error.toString()}` : "";
+          import_coc23.window.showErrorMessage(`copy failed (${res.exitCode})${detail}`);
+        }
       },
       { sync: false }
     ),
