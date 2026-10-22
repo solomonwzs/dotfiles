@@ -2,7 +2,7 @@
 #
 # @author   Solomon Ng <solomon.wzs@gmail.com>
 # @date     2026-10-22
-# @version  2.0
+# @version  2.1
 # @license  GPL-2.0+
 #
 # rofi-driven media-player toggle on top of playerctl.
@@ -21,7 +21,8 @@
 # Bind from a window manager / panel keybinding, e.g. xfce:
 #   <Mod4>m  -> /home/solomon/dotfiles/shell/rofi_player_breeze.sh
 #
-# Requires: playerctl, rofi.
+# Requires: playerctl, rofi. Optional: busctl for portal color-scheme detection.
+# Uses Breeze dark for a dark preference; otherwise defaults to Breeze light.
 
 set -euo pipefail
 
@@ -95,7 +96,26 @@ function run_menu() {
     done
 }
 
+# Read the application color preference from the desktop portal.
+# Missing busctl/portal, errors, and unspecified preferences fall back to light.
+function theme_for() {
+    local scheme
+    scheme="$(busctl --user --timeout=2s call \
+        org.freedesktop.portal.Desktop \
+        /org/freedesktop/portal/desktop \
+        org.freedesktop.portal.Settings \
+        Read ss org.freedesktop.appearance color-scheme 2>/dev/null || true)"
+
+    case "$scheme" in
+        "v u 1") printf '%s\n' "themes/rounded-breeze-dark.rasi" ;;
+        *)       printf '%s\n' "themes/rounded-breeze-light.rasi" ;;
+    esac
+}
+
 function show_menu() {
+    local theme
+    theme="$(theme_for)"
+
     # Use the case-sensitive icon theme directory name, not its display
     # name (Name=Breeze). "Breeze" is not installed and causes rofi to
     # fall back to the desktop icon theme (Gruvbox-Plus-Dark via GTK).
@@ -108,14 +128,14 @@ function show_menu() {
                -show-icons \
                -format i \
                -icon-theme "breeze" \
-               -theme "themes/rounded-breeze-light.rasi" \
+               -theme "$theme" \
                -application-fallback-icon "$FALLBACK_ICON"
 }
 
 function main() {
     local players_raw
     if ! players_raw="$(playerctl -l 2>/dev/null)" || [[ -z "$players_raw" ]]; then
-        rofi -e "no MPRIS players are running" >/dev/null
+        rofi -theme "$(theme_for)" -e "no MPRIS players are running" >/dev/null
         exit 0
     fi
 
