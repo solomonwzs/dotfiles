@@ -26,4 +26,4 @@
     fg3:    #7c6f64;
 }
 
-@import "template/rounded-template.rasi"
+@import "template/rounded-template-hidpi.rasi"

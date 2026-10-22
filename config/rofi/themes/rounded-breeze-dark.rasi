@@ -1,0 +1,34 @@
+/*
+ * @author   solomon
+ * @date     2026-05-07
+ * @license  GPL-2.0+
+ *
+ * KDE Breeze color palette for the rounded template.
+ */
+
+* {
+    // window-bg
+    bg0:    #31363b;
+
+    // selected-text, inputbar-bg
+    bg1:    #232629;
+
+    // message-border, message-bg
+    bg2:    #2980b9;
+
+    // inputbar-border, active-text-color, selected-bg
+    bg3:    #3daee9;
+
+    // text
+    fg0:    #eff0f1;
+
+    fg1:    #fcfcfc;
+
+    // prompt-text, scrollbar
+    fg2:    #bdc3c7;
+
+    // search-placeholder
+    fg3:    #777b7f;
+}
+
+@import "template/rounded-template.rasi"

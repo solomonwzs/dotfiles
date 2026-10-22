@@ -1,8 +1,9 @@
 /* ROUNDED THEME FOR ROFI */
 /* Author: Newman Sanchez (https://github.com/newmanls) */
+/* Half-scale version of rounded-template-hidpi.rasi. */
 
 * {
-    font:   "Mononoki Nerd Font 24";
+    font:   "Mononoki Nerd Font 12";
 
     background-color:   transparent;
     text-color:         @fg0;
@@ -14,26 +15,26 @@
 
 window {
     location:       north;
-    y-offset:       calc(50% - 450px);
-    width:          1280;
-    border-radius:  10px;
+    y-offset:       calc(50% - 225px);
+    width:          640;
+    border-radius:  5px;
 
     background-color:   @bg0;
 }
 
 mainbox {
-    padding:    12px;
+    padding:    6px;
 }
 
 inputbar {
     background-color:   @bg1;
     border-color:       @bg3;
 
-    border:         3px;
-    border-radius:  8px;
+    border:         1.5px;
+    border-radius:  4px;
 
-    padding:    8px 16px;
-    spacing:    8px;
+    padding:    4px 8px;
+    spacing:    4px;
     children:   [ prompt, entry ];
 }
 
@@ -47,20 +48,20 @@ entry {
 }
 
 message {
-    margin:             12px 0 0;
-    border-radius:      10px;
+    margin:             6px 0 0;
+    border-radius:      5px;
     border-color:       @bg2;
     background-color:   @bg2;
 }
 
 textbox {
-    padding:    8px 24px;
+    padding:    4px 12px;
 }
 
 listview {
     background-color:   transparent;
 
-    margin:     12px 0 0;
+    margin:     6px 0 0;
     lines:      10;
     columns:    1;
 
@@ -70,15 +71,15 @@ listview {
 }
 
 scrollbar {
-  handle-width : 4px;
+  handle-width : 2px;
   handle-color : @fg2;
-  padding      : 0 0 0 8px;
+  padding      : 0 0 0 4px;
 }
 
 element {
-    padding:        8px 16px;
-    spacing:        8px;
-    border-radius:  10px;
+    padding:        4px 8px;
+    spacing:        4px;
+    border-radius:  5px;
 }
 
 element normal active {
