@@ -178,3 +178,4 @@ fi
 - [XFCE 配置重载](memory/xfce_config_reload.md) — 修改 xfconf xml 后如何让 xfconfd / xfsettingsd 重读，以及更省事的 xfconf-query 路径
 - [Wine 字体问题](memory/wine_fonts.md) — winetricks cjkfonts/corefonts/fakechinese 解决中文方块乱码
 - [Chroot 开发环境](memory/chroot_dev.md) — chroot_dev.sh 的调用、挂载点准备、清理和诊断经验
+- [空闲却高频唤醒风暴](memory/cpu_idle_high_freq_wakeups.md) — %CPU 高不高看不出来，要看 ctxt/s；timerfd 1kHz 复现实验、cpuidle 延迟对照、wineserver 案例
