@@ -385,6 +385,13 @@ else
     skip "kitty (binary not found)"
 fi
 
+if (hash ghostty 2>/dev/null); then
+    group "ghostty"
+    make_link "$EXECUTE_DIRNAME/config/ghostty" "$HOME/.config/ghostty"
+else
+    skip "ghostty (binary not found)"
+fi
+
 if (hash alacritty 2>/dev/null); then
     group "alacritty"
     make_link "$EXECUTE_DIRNAME/config/alacritty" "$HOME/.config/alacritty"

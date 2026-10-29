@@ -1,0 +1,28 @@
+# Match the active settings in ../kitty/kitty.conf.
+config-file = themes/Gruvbox-Dark-Soft
+
+# Fonts: bold/italic faces are selected automatically from the family.
+font-family = Mononoki Nerd Font Mono
+font-size = 12
+# Preserve the existing Ghostty font-rendering preference.
+font-thicken = true
+adjust-cell-height = 0
+
+background-opacity = 0.75
+
+# Native GTK tabs stay at the top; Ghostty has no Kitty-style Powerline
+# tab renderer or "{index}: {title}" tab-title template.
+gtk-tabs-location = top
+
+# Kitty's no_op consumes these shortcuts rather than passing them to apps.
+keybind = ctrl+shift+right=ignore
+keybind = ctrl+shift+left=ignore
+keybind = alt+1=goto_tab:1
+keybind = alt+2=goto_tab:2
+keybind = alt+3=goto_tab:3
+keybind = alt+4=goto_tab:4
+keybind = alt+5=goto_tab:5
+keybind = alt+6=goto_tab:6
+
+# No direct equivalents for Kitty's narrow_symbols, pixel_scroll=no,
+# or momentum_scroll=0; retain Ghostty's default glyph widths/scrolling.
