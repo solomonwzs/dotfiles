@@ -2406,6 +2406,7 @@ var CocChatChannel = _CocChatChannel;
 var import_fs3 = __toESM(require("fs"));
 var globalDeepseek = {
   host: "chat.deepseek.com",
+  port: 443,
   timeout: 5e3
 };
 var Sha3Wasm = class {
@@ -2529,6 +2530,7 @@ var DeepseekChat = class extends BaseChat {
     let req = {
       args: {
         host: globalDeepseek.host,
+        port: globalDeepseek.port,
         path: path8,
         method,
         protocol: "https:",
@@ -2579,14 +2581,14 @@ var DeepseekChat = class extends BaseChat {
     return list;
   }
   async createChatId(_name) {
-    var _a;
+    var _a, _b, _c, _d;
     let resp = await this.httpQuery("POST", "/api/v0/chat_session/create", {
       character_id: null
     });
     if (resp instanceof Error) {
       return resp;
     }
-    let id = (_a = resp.data.biz_data) == null ? void 0 : _a.id;
+    const id = (_d = (_b = (_a = resp.data.biz_data) == null ? void 0 : _a.chat_session) == null ? void 0 : _b.id) != null ? _d : (_c = resp.data.biz_data) == null ? void 0 : _c.id;
     if (!id || id.length == 0) {
       return new ExtError(ExtError.ERR_DEEPSEEK, "[Deepseek] create chat fail");
     }
@@ -2763,6 +2765,7 @@ var DeepseekChat = class extends BaseChat {
     const req = {
       args: {
         host: globalDeepseek.host,
+        port: globalDeepseek.port,
         path: "/api/v0/chat/completion",
         method: "POST",
         protocol: "https:",
